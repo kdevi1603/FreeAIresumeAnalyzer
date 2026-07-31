@@ -1,4 +1,5 @@
 import fs from 'fs/promises';
+import fsSync from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
@@ -41,7 +42,7 @@ async function readDB() {
 }
 
 async function writeDB(data) {
-  await fs.writeFile(DB_FILE, JSON.stringify(data, null, 2), 'utf8');
+  fsSync.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf8');
 }
 
 // Helper for matching queries like { email: '...' } or { userId: '...' }
@@ -105,6 +106,16 @@ export const db = {
         return { deletedCount: initialLen - data.resumes.length };
       }
       return { deletedCount: 0 };
+    },
+    async update(id, updatedData) {
+      const data = await readDB();
+      const index = data.resumes.findIndex(r => r.id === id);
+      if (index !== -1) {
+        data.resumes[index] = { ...data.resumes[index], ...updatedData };
+        await writeDB(data);
+        return data.resumes[index];
+      }
+      return null;
     }
   }
 };

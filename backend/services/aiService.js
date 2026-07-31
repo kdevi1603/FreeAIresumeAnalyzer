@@ -102,20 +102,77 @@ function runSmartDemoAnalysis(resumeText) {
   if (foundSkills.length > 5) baseScore += 5;
   const atsScore = Math.min(Math.max(baseScore, 45), 94);
 
+  // Basic parsing for demo mode
+  const emailMatch = resumeText.match(/[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+/i);
+  const email = emailMatch ? emailMatch[0] : '';
+  
+  const phoneMatch = resumeText.match(/(?:\+?\d{1,3}[\s-]?)?\(?\d{3}\)?[\s-]?\d{3}[\s-]?\d{4}/);
+  const phone = phoneMatch ? phoneMatch[0] : '';
+
+  const lines = resumeText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  const name = lines.length > 0 ? lines[0] : 'Parsed Resume';
+
+  // Extract raw sections crudely
+  let summary = '';
+  let education = '';
+  let experience = '';
+
+  const expIndex = textLower.indexOf('experience');
+  const edIndex = textLower.indexOf('education');
+
+  if (expIndex !== -1 && edIndex !== -1) {
+    const firstIdx = Math.min(expIndex, edIndex);
+    const lastIdx = Math.max(expIndex, edIndex);
+    summary = resumeText.substring(0, firstIdx).replace(name, '').trim().substring(0, 300);
+    
+    if (expIndex < edIndex) {
+      experience = resumeText.substring(expIndex, edIndex).trim().substring(0, 1000);
+      education = resumeText.substring(edIndex).trim().substring(0, 500);
+    } else {
+      education = resumeText.substring(edIndex, expIndex).trim().substring(0, 500);
+      experience = resumeText.substring(expIndex).trim().substring(0, 1000);
+    }
+  } else {
+    summary = resumeText.substring(0, 300);
+    experience = resumeText.substring(300, 1300) || '';
+    education = resumeText.substring(1300, 1800) || '';
+  }
+
+  // Clean up experience text for bullets
+  const expBullets = experience.replace(/experience/i, '').trim();
+
+  // Clean up summary: remove email and phone
+  if (email) summary = summary.replace(email, '');
+  if (phone) summary = summary.replace(phone, '');
+  // also remove common url patterns like linkedin.com/...
+  summary = summary.replace(/linkedin\.com\/in\/[^\s]+/gi, '');
+  summary = summary.trim();
+
+  // Clean up education remnant
+  education = education.replace(/^education/i, '').replace(/^& academic details/i, '').trim();
+  education = education.replace(/^[\s&|-]+/, '').trim();
+
   return {
     atsScore,
     personalInfo: {
-      name: '[Parsed from Resume]',
-      jobTitle: 'Candidate',
-      email: 'candidate@example.com',
-      phone: '',
+      name: name,
+      jobTitle: '',
+      email: email,
+      phone: phone,
       city: '',
       linkedin: '',
       github: ''
     },
-    summary: 'An experienced professional with a track record of delivering results.',
-    education: 'Bachelor of Science',
-    experienceList: [],
+    summary: summary || 'Resume summary extracted here...',
+    education: education.replace(/education/i, '').trim() || 'Education details extracted here...',
+    experienceList: [
+      {
+        company: 'Resume Experience Section',
+        role: '',
+        period: '',
+        bullets: expBullets
+      }
+    ],
     sectionScores: {
       structure: 90,
       experience: Math.min(100, baseScore + 15),

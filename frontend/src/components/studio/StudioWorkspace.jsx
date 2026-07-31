@@ -8,47 +8,39 @@ import { aiService } from '../../services/aiService.js';
 import { ArrowLeft, Sparkles, Download, Layers, MessageSquare, FileText, Columns, LayoutGrid, Palette, Briefcase } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 
-export default function StudioWorkspace({ resumeData, onBackToDashboard, initialTemplate = 'modern' }) {
+export default function StudioWorkspace({ resumeData, onBackToDashboard, initialTemplate = 'original', onUpdateResume }) {
   const [activeResume, setActiveResume] = useState(() => {
-    if (resumeData?.isScratch) {
-      return {
-        id: 'scratch-' + Date.now(),
-        fileName: 'Untitled Resume',
-        personalInfo: { fullName: '', jobTitle: '', email: '', phone: '', location: '', linkedin: '' },
-        summary: '',
-        experienceList: [],
-        education: '',
-        atsScore: 0,
-        sectionScores: { structure: 0, experience: 0, education: 0, projects: 0, skills: 0 },
-        grammar: { score: 100, readability: 'A', passiveSentences: 0 },
-        formatting: [],
-        skillsFound: [],
-        missingSkills: [],
-        suggestions: []
-      };
+    if (resumeData && !resumeData.isScratch) {
+      return resumeData;
     }
-    return resumeData || {
-      id: 'demo-123',
-      fileName: 'K.DEVAKI.pdf',
-    atsScore: 41,
-    sectionScores: { structure: 40, experience: 20, education: 80, projects: 50, skills: 30 },
-    grammar: { score: 70, readability: 'C', passiveSentences: 5 },
-    formatting: [
-      { label: 'ATS Friendly Layout', passed: false },
-      { label: 'Proper Headings', passed: true },
-      { label: 'Font Size', passed: true },
-      { label: 'Bullet Points', passed: false },
-      { label: 'No Images Detected', passed: true }
-    ],
-    skillsFound: ['Java', 'HTML', 'CSS'],
-    missingSkills: ['React', 'Node.js', 'Docker', 'AWS'],
-    suggestions: [
-      { text: 'Quantify your bullet points with measurable outcomes.', priority: 'High' },
-      { text: 'Add a dedicated Technical Summary.', priority: 'Medium' }
-    ],
-    rawText: 'Objective: Software Engineer...\nProjects: Bank Transaction...'
-  };
+    return {
+      id: 'scratch-' + Date.now(),
+      fileName: 'Untitled Resume',
+      personalInfo: { fullName: '', jobTitle: '', email: '', phone: '', location: '', linkedin: '' },
+      summary: '',
+      experienceList: [],
+      education: '',
+      atsScore: 0,
+      sectionScores: { structure: 0, experience: 0, education: 0, projects: 0, skills: 0 },
+      grammar: { score: 0, readability: 'N/A', passiveSentences: 0 },
+      formatting: [],
+      skillsFound: [],
+      missingSkills: [],
+      suggestions: []
+    };
   });
+
+  const lastSavedResume = React.useRef(null);
+
+  useEffect(() => {
+    if (activeResume && onUpdateResume) {
+      const currentString = JSON.stringify(activeResume);
+      if (lastSavedResume.current !== currentString) {
+        lastSavedResume.current = currentString;
+        onUpdateResume(activeResume);
+      }
+    }
+  }, [activeResume]);
 
   const [selectedTemplate, setSelectedTemplate] = useState(initialTemplate);
   const [accentColor, setAccentColor] = useState('#2563EB');
@@ -145,9 +137,30 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
       // Delegate all conversational logic to the Live AI service
       const res = await aiService.chatWithResumeAgent(userText, activeResume, chatMessages);
 
+      if (res.proposedFix) {
+        setShowSplitChat(true);
+        setActiveResume(prev => {
+          const updated = { ...prev };
+          const sec = res.proposedFix.section.toLowerCase();
+          if (sec.includes('project')) {
+            updated.fixedProjects = res.proposedFix.content;
+          } else if (sec.includes('skill')) {
+            updated.fixedSkills = res.proposedFix.content;
+          } else if (sec.includes('summary')) {
+            updated.fixedSummary = res.proposedFix.content;
+          } else {
+            updated.rawText = res.proposedFix.content;
+          }
+          // Increment ATS score for this fix, similar to handleApplyFix
+          updated.atsScore = Math.min(100, (updated.atsScore || 41) + 4);
+          updated.customHtml = ''; // Clear customHtml so structural updates take effect
+          return updated;
+        });
+      }
+
       setChatMessages(prev => [
         ...prev,
-        { sender: 'bot', text: res.reply, proposedFix: res.proposedFix, options: res.options }
+        { sender: 'bot', text: res.reply, proposedFix: res.autoApply ? null : res.proposedFix, options: res.options }
       ]);
     } catch (err) {
       console.error('Chat error:', err);
@@ -195,6 +208,7 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
     setActiveResume(prev => ({
       ...prev,
       ...updatedFields,
+      customHtml: '', // Clear manual HTML edits to force structured data render
       atsScore: Math.min(100, (prev.atsScore || 41) + 8)
     }));
 
@@ -231,7 +245,7 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
           <button
-            onClick={onBackToDashboard}
+            onClick={() => onBackToDashboard(activeResume)}
             className="btn"
             style={{ 
               padding: '8px 14px', 
@@ -279,11 +293,11 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
       {/* 6-Card ATS Dashboard */}
       <div className="animate-fade-in ats-dashboard-grid" style={{ marginTop: '8px' }}>
         {[
-          { title: 'Overall ATS Score', value: `${activeResume?.atsScore || 41}%`, color: '#00F2FE' }, // Cyan
-          { title: 'Resume Score', value: `${Math.min(100, (activeResume?.atsScore || 41) + 4)}/100`, color: '#3B82F6' }, // Blue
-          { title: 'Keyword Match', value: `${Math.round(((activeResume?.skillsFound?.length || 0) / ((activeResume?.skillsFound?.length || 1) + (activeResume?.missingSkills?.length || 1))) * 100)}%`, color: '#F97316' }, // Orange
-          { title: 'Grammar Score', value: `${activeResume?.grammar?.score || 94}%`, color: '#10B981' }, // Green
-          { title: 'Formatting', value: activeResume?.formatting?.every(f => f.passed) ? 'Excellent' : 'Needs Work', color: '#8B5CF6' }, // Purple
+          { title: 'Overall ATS Score', value: `${activeResume?.atsScore ?? 0}%`, color: '#00F2FE' }, // Cyan
+          { title: 'Resume Score', value: `${(activeResume?.atsScore ?? 0) > 0 ? Math.min(100, activeResume.atsScore + 4) : 0}/100`, color: '#3B82F6' }, // Blue
+          { title: 'Keyword Match', value: `${Math.round(((activeResume?.skillsFound?.length || 0) / ((activeResume?.skillsFound?.length || 0) + (activeResume?.missingSkills?.length || 1))) * 100)}%`, color: '#F97316' }, // Orange
+          { title: 'Grammar Score', value: `${activeResume?.grammar?.score ?? 0}%`, color: '#10B981' }, // Green
+          { title: 'Formatting', value: (activeResume?.formatting?.length > 0 && activeResume?.formatting?.every(f => f.passed)) ? 'Excellent' : 'Needs Work', color: '#8B5CF6' }, // Purple
           { title: 'Missing Skills', value: `${activeResume?.missingSkills?.length || 0}`, color: '#EF4444' } // Red
         ].map((card, i) => (
           <div key={i} style={{
@@ -505,12 +519,20 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
               resumeData={activeResume}
               templateStyle={selectedTemplate}
               accentColor={accentColor}
+              onManualEdit={(html) => setActiveResume(prev => ({ ...prev, customHtml: html }))}
+              onAcceptChanges={() => {
+                setActiveResume(prev => {
+                  const updated = { ...prev };
+                  updated.atsScore = Math.min(100, (updated.atsScore || 41) + 5);
+                  return updated;
+                });
+              }}
             />
           </div>
         )}
 
         {activeView === 'AI Chat' && (
-          <div className="animate-fade-in" style={{ display: 'flex', gap: '24px', height: '100%', minHeight: '800px' }}>
+          <div className="animate-fade-in" style={{ display: 'flex', gap: '24px', height: 'calc(100vh - 180px)', minHeight: '500px' }}>
             <div style={{ flex: 1, minWidth: showSplitChat ? '350px' : '100%' }}>
               <AiAgentChat
                 resumeData={activeResume}
@@ -547,6 +569,14 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
                   resumeData={activeResume}
                   templateStyle={selectedTemplate}
                   accentColor={accentColor}
+                  onManualEdit={(html) => setActiveResume(prev => ({ ...prev, customHtml: html }))}
+                  onAcceptChanges={() => {
+                    setActiveResume(prev => {
+                      const updated = { ...prev };
+                      updated.atsScore = Math.min(100, (updated.atsScore || 41) + 5);
+                      return updated;
+                    });
+                  }}
                 />
               </div>
             )}

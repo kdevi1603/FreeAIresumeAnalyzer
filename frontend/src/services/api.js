@@ -77,6 +77,10 @@ export const resumeService = {
     const response = await api.delete(`/resumes/${id}`);
     return response.data;
   },
+  updateResume: async (id, updatedData) => {
+    const response = await api.put(`/resumes/${id}`, updatedData);
+    return response.data;
+  },
   matchJob: async (resumeId, jobDescription) => {
     const response = await api.post('/resumes/match-job', { resumeId, jobDescription });
     return response.data;

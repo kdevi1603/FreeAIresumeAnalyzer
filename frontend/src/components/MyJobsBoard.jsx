@@ -5,6 +5,9 @@ export default function MyJobsBoard({ currentAnalysis }) {
   const [jobs, setJobs] = useState([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newJob, setNewJob] = useState({ company: '', role: '', location: '', stage: 'Saved' });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCompany, setSelectedCompany] = useState('All companies');
+  const [sortOrder, setSortOrder] = useState('Newest first');
 
   // Initialize with dummy data based on user's resume
   useEffect(() => {
@@ -24,7 +27,19 @@ export default function MyJobsBoard({ currentAnalysis }) {
     setNewJob({ company: '', role: '', location: '', stage: 'Saved' });
   };
 
-  const getJobsByStage = (stage) => jobs.filter(job => job.stage === stage);
+  const uniqueCompanies = ['All companies', ...new Set(jobs.map(job => job.company).filter(Boolean))];
+
+  const filteredJobs = jobs.filter(job => {
+    const matchesSearch = (job.company?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                           job.role?.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesCompany = selectedCompany === 'All companies' || job.company === selectedCompany;
+    return matchesSearch && matchesCompany;
+  }).sort((a, b) => {
+    if (sortOrder === 'Newest first') return b.id - a.id;
+    return a.id - b.id;
+  });
+
+  const getJobsByStage = (stage) => filteredJobs.filter(job => job.stage === stage);
 
   return (
     <div style={{ padding: '0 20px', maxWidth: '1400px', margin: '0 auto' }}>
@@ -59,6 +74,8 @@ export default function MyJobsBoard({ currentAnalysis }) {
           <input 
             type="text" 
             placeholder="Search jobs or companies" 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             style={{
               width: '100%', padding: '10px 14px 10px 44px',
               backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)',
@@ -70,13 +87,31 @@ export default function MyJobsBoard({ currentAnalysis }) {
 
         {/* Dropdowns */}
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-          <Dropdown label="All companies" />
-          <Dropdown label="Any date" />
-          <Dropdown label="Newest first" />
+          <select 
+            value={selectedCompany} 
+            onChange={e => setSelectedCompany(e.target.value)}
+            style={dropdownStyle}
+          >
+            {uniqueCompanies.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+          <select style={dropdownStyle} defaultValue="Any date">
+            <option value="Any date">Any date</option>
+            <option value="Past 24 hours">Past 24 hours</option>
+            <option value="Past week">Past week</option>
+            <option value="Past month">Past month</option>
+          </select>
+          <select 
+            value={sortOrder} 
+            onChange={e => setSortOrder(e.target.value)}
+            style={dropdownStyle}
+          >
+            <option value="Newest first">Newest first</option>
+            <option value="Oldest first">Oldest first</option>
+          </select>
         </div>
         
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-          {jobs.length} of {jobs.length}
+          {filteredJobs.length} of {jobs.length}
         </div>
       </div>
 
@@ -183,22 +218,21 @@ const inputStyle = {
   outline: 'none', boxSizing: 'border-box'
 };
 
-function Dropdown({ label }) {
-  return (
-    <button style={{
-      display: 'flex', alignItems: 'center', gap: '8px',
-      padding: '10px 16px', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)',
-      borderRadius: '8px', color: 'var(--text-main)', fontSize: '0.9rem', cursor: 'pointer'
-    }}>
-      {label}
-      <ChevronDown size={16} color="var(--text-muted)" />
-    </button>
-  );
-}
+const dropdownStyle = {
+  padding: '10px 16px',
+  backgroundColor: 'var(--bg-card)', 
+  border: '1px solid var(--border-color)',
+  borderRadius: '8px', 
+  color: 'var(--text-main)', 
+  fontSize: '0.9rem', 
+  cursor: 'pointer',
+  outline: 'none',
+  appearance: 'auto'
+};
 
 function KanbanColumn({ title, jobs, icon, color, emptyText, emptySub, emptyIcon, onAdd }) {
   return (
-    <div style={{ backgroundColor: 'var(--bg-dark)', borderRadius: '12px', display: 'flex', flexDirection: 'column', minHeight: '600px', borderTop: `3px solid ${color}` }}>
+    <div style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '12px', display: 'flex', flexDirection: 'column', minHeight: '600px', borderTop: `4px solid ${color}`, boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
       
       <div style={{ padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid transparent' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -233,7 +267,7 @@ function KanbanColumn({ title, jobs, icon, color, emptyText, emptySub, emptyIcon
         ) : (
           <>
             {jobs.map(job => (
-              <div key={job.id} style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+              <div key={job.id} style={{ backgroundColor: 'var(--bg-dark)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', transition: 'transform 0.2s' }} onMouseOver={e => e.currentTarget.style.transform = 'translateY(-2px)'} onMouseOut={e => e.currentTarget.style.transform = 'none'}>
                 <h4 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-main)', margin: '0 0 4px 0' }}>{job.role}</h4>
                 <p style={{ fontSize: '0.9rem', color: 'var(--text-dim)', margin: '0 0 12px 0' }}>{job.company}</p>
                 {job.location && (

@@ -3,11 +3,19 @@ import { ZoomIn, ZoomOut, RotateCcw, Download, Check, Eye, X, Maximize } from 'l
 import confetti from 'canvas-confetti';
 import html2pdf from 'html2pdf.js';
 
-export default function LiveResumePreview({ resumeData, onDownload, templateStyle = 'modern', accentColor = '#2563EB' }) {
+export default function LiveResumePreview({ resumeData, templateStyle = 'modern', accentColor = '#2563EB', onManualEdit, onAcceptChanges }) {
   const [zoom, setZoom] = useState(window.innerWidth <= 768 ? 65 : 85);
   const [showDiff, setShowDiff] = useState(true);
   const [changesAccepted, setChangesAccepted] = useState(false);
   const [showPrintPreview, setShowPrintPreview] = useState(false);
+  const [customHtml, setCustomHtml] = useState(resumeData?.customHtml || '');
+  
+  useEffect(() => {
+    if (resumeData?.customHtml !== undefined && resumeData?.customHtml !== customHtml) {
+      setCustomHtml(resumeData.customHtml);
+    }
+  }, [resumeData?.customHtml]);
+
   const containerRef = useRef(null);
   const resumeContentRef = useRef(null);
 
@@ -52,15 +60,9 @@ export default function LiveResumePreview({ resumeData, onDownload, templateStyl
   };
 
   const executeDownload = () => {
-    if (onDownload) {
-      onDownload();
-      setShowPrintPreview(false);
-      return;
-    }
     const element = resumeContentRef.current;
     if (!element) return;
     
-    // Temporarily reset transform for clean PDF generation
     const originalTransform = element.style.transform;
     element.style.transform = 'scale(1)';
     
@@ -73,7 +75,6 @@ export default function LiveResumePreview({ resumeData, onDownload, templateStyl
     };
     
     html2pdf().set(opt).from(element).save().then(() => {
-      // Restore transform
       element.style.transform = originalTransform;
       setShowPrintPreview(false);
     });
@@ -93,6 +94,9 @@ export default function LiveResumePreview({ resumeData, onDownload, templateStyl
     setChangesAccepted(true);
     setShowDiff(false);
     confetti({ particleCount: 50, spread: 70, origin: { y: 0.6 } });
+    if (onAcceptChanges) {
+      onAcceptChanges();
+    }
   };
 
   const candidateName = resumeData?.personalInfo?.name ?? (resumeData?.fileName?.replace(/\.pdf$/i, '') || 'K.DEVAKI');
@@ -188,6 +192,30 @@ export default function LiveResumePreview({ resumeData, onDownload, templateStyl
       )}
 
       <div style={{ flex: 1, overflow: 'auto', padding: window.innerWidth <= 768 ? '15px 10px' : '30px 20px', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', background: 'var(--bg-dark)' }}>
+        {customHtml && templateStyle !== 'original' ? (
+          <div
+            ref={resumeContentRef}
+            className="a4-print-container"
+            style={{
+              transform: `scale(${zoom / 100})`, transformOrigin: 'top center', transition: 'transform 0.2s ease',
+              width: '595px', minHeight: '842px', backgroundColor: '#ffffff', color: '#1a1a1a',
+              padding: '48px 40px',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.6)', borderRadius: '4px',
+              fontFamily: ['academic', 'corporate', 'serif'].includes(templateStyle) ? "'Times New Roman', serif"
+                : ['minimalist', 'software'].includes(templateStyle) ? "'Courier New', monospace"
+                : "'Inter', sans-serif",
+              position: 'relative'
+            }}
+            contentEditable={true}
+            suppressContentEditableWarning={true}
+            onBlur={(e) => {
+              const html = e.currentTarget.innerHTML;
+              setCustomHtml(html);
+              if (onManualEdit) onManualEdit(html);
+            }}
+            dangerouslySetInnerHTML={{ __html: customHtml }}
+          />
+        ) : (
         <div ref={resumeContentRef} className="a4-print-container" style={{
           transform: `scale(${zoom / 100})`, transformOrigin: 'top center', transition: 'transform 0.2s ease',
           width: '595px', minHeight: '842px', backgroundColor: '#ffffff', color: '#1a1a1a',
@@ -197,6 +225,15 @@ export default function LiveResumePreview({ resumeData, onDownload, templateStyl
             : ['minimalist', 'software'].includes(templateStyle) ? "'Courier New', monospace"
             : "'Inter', sans-serif",
           position: 'relative'
+        }}
+        contentEditable={templateStyle !== 'original'}
+        suppressContentEditableWarning={true}
+        onBlur={(e) => {
+            if (templateStyle !== 'original') {
+                const html = e.currentTarget.innerHTML;
+                setCustomHtml(html);
+                if (onManualEdit) onManualEdit(html);
+            }
         }}>
           
           {/* 1. Modern Professional (formerly modern) */}
@@ -460,6 +497,7 @@ export default function LiveResumePreview({ resumeData, onDownload, templateStyl
             <span>Score: {score}/100</span>
           </div>
         </div>
+        )}
       </div>
     </div>
   );

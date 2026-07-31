@@ -15,6 +15,28 @@ export default function ResumeBuilderModal({
 
   const [activeTab, setActiveTab] = useState('templates'); // 'templates' | 'personal' | 'summary' | 'experience' | 'skills'
 
+  const cleanSummary = (text, pInfo) => {
+    if (!text) return 'Seeking a position to utilize my skills and abilities in an organization that offers security and professional growth while being resourceful, innovative and flexible.';
+    let cleaned = text;
+    if (pInfo?.email) cleaned = cleaned.replace(pInfo.email, '');
+    if (pInfo?.phone) cleaned = cleaned.replace(pInfo.phone, '');
+    cleaned = cleaned.replace(/linkedin\.com\/in\/[^\s]+/gi, '').replace(/^[\s-]+/, '').trim();
+    cleaned = cleaned.replace(/^[-\s•|*+0-9()]+$/, '').trim();
+    let alphaCount = (cleaned.match(/[a-zA-Z]/g) || []).length;
+    if (alphaCount < 10) return 'Seeking a position to utilize my skills and abilities in an organization that offers security and professional growth while being resourceful, innovative and flexible.';
+    return cleaned;
+  };
+
+  const cleanEducation = (text) => {
+    if (!text) return 'BCA — Palaniammal Arts College For Women (2021) | 88%\nHSC — Government Higher Secondary School (2018) | 81%\nSSLC — Government Higher Secondary School (2016) | 92%\nMCA — Mother Teresa Womens University (2023) | 85%';
+    let cleaned = text;
+    const skillsMatch = cleaned.match(/technical skills|skills & tools|skills/i);
+    if (skillsMatch) {
+      cleaned = cleaned.substring(0, skillsMatch.index).trim();
+    }
+    return cleaned || 'BCA — Palaniammal Arts College For Women (2021) | 88%\nHSC — Government Higher Secondary School (2018) | 81%\nSSLC — Government Higher Secondary School (2016) | 92%\nMCA — Mother Teresa Womens University (2023) | 85%';
+  };
+
   // Local state initialized from resumeData
   const [personalInfo, setPersonalInfo] = useState({
     name: resumeData?.personalInfo?.name || 'K.DEVAKI',
@@ -28,8 +50,8 @@ export default function ResumeBuilderModal({
     profilePicture: resumeData?.personalInfo?.profilePicture || null
   });
 
-  const [summary, setSummary] = useState(
-    resumeData?.summary || 'Seeking a position to utilize my skills and abilities in an organization that offers security and professional growth while being resourceful, innovative and flexible.'
+  const [summary, setSummary] = useState(() => 
+    cleanSummary(resumeData?.fixedSummary || resumeData?.summary, resumeData?.personalInfo)
   );
 
   const [experience, setExperience] = useState(
@@ -43,8 +65,8 @@ export default function ResumeBuilderModal({
     ]
   );
 
-  const [education, setEducation] = useState(
-    resumeData?.education || 'BCA — Palaniammal Arts College For Women (2021) | 88%\nHSC — Government Higher Secondary School (2018) | 81%\nSSLC — Government Higher Secondary School (2016) | 92%\nMCA — Mother Teresa Womens University (2023) | 85%'
+  const [education, setEducation] = useState(() => 
+    cleanEducation(resumeData?.education)
   );
 
   const [skills, setSkills] = useState(
@@ -64,7 +86,7 @@ export default function ResumeBuilderModal({
         github: 'github.com/devaki-codes',
         profilePicture: null
       });
-      setSummary(resumeData.fixedSummary || resumeData.summary || 'Seeking a position to utilize my skills and abilities in an organization that offers security and professional growth while being resourceful, innovative and flexible.');
+      setSummary(cleanSummary(resumeData.fixedSummary || resumeData.summary, resumeData.personalInfo));
       setExperience(resumeData.experienceList || [
         {
           company: 'Bank Transaction Systems',
@@ -73,15 +95,16 @@ export default function ResumeBuilderModal({
           bullets: 'Applied and updated Bank Transaction modules in VB.Net with SQL Server 2005.\nOptimized database transaction queries reducing latency by 20%.'
         }
       ]);
-      setEducation(resumeData.education || 'BCA — Palaniammal Arts College For Women (2021) | 88%\nHSC — Government Higher Secondary School (2018) | 81%\nSSLC — Government Higher Secondary School (2016) | 92%\nMCA — Mother Teresa Womens University (2023) | 85%');
+      setEducation(cleanEducation(resumeData.education));
       setSkills(resumeData.fixedSkills || 'C, C++, Java, Oracle, SQL Server, MS Office, HTML, Tally, Python, Operating Systems, Agile Methodology, Git/GitHub');
     }
-  }, [isOpen, resumeData]);
+  }, [isOpen]);
 
   const [isGenerating, setIsGenerating] = useState(false);
 
   // Template options
   const templates = [
+    { id: 'original', name: 'Original PDF', desc: 'Your original uploaded resume without changes.', icon: '📄' },
     { id: 'modern', name: 'Modern Professional', desc: 'Clean two-column layout. Best for IT, Software, Business.', icon: '🏢' },
     { id: 'minimalist', name: 'Minimal ATS', desc: 'Single-column design. Maximum ATS compatibility.', icon: '⚡' },
     { id: 'fresher', name: 'Fresher / Student', desc: 'Focus on education, skills, and projects. Suitable for fresh graduates.', icon: '🎓' },

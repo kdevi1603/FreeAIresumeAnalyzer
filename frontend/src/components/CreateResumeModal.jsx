@@ -17,8 +17,11 @@ export default function CreateResumeModal({ isOpen, onClose, onBuild, onImportSu
     const file = e.target.files[0];
     if (!file) return;
 
-    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
-      setError('Please upload a valid PDF document (.pdf).');
+    const allowedExtensions = ['.pdf', '.docx', '.doc', '.txt', '.jpg', '.jpeg', '.png'];
+    const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+    
+    if (!allowedExtensions.includes(ext)) {
+      setError('Please upload a valid PDF, DOCX, TXT, or Image file.');
       return;
     }
 
@@ -118,7 +121,7 @@ export default function CreateResumeModal({ isOpen, onClose, onBuild, onImportSu
                   type="file" 
                   ref={fileInputRef} 
                   style={{ display: 'none' }} 
-                  accept=".pdf" 
+                  accept=".pdf,.docx,.doc,.txt,.jpg,.jpeg,.png" 
                   onChange={handleFileChange}
                 />
               </div>

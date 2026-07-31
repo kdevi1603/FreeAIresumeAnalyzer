@@ -4,6 +4,7 @@ import {
   getUserResumes,
   getResumeById,
   deleteResume,
+  updateResume,
   matchJob,
   generateCoverLetterEndpoint,
   generateInterviewQuestionsEndpoint,
@@ -21,6 +22,7 @@ router.use(protect);
 router.post('/upload', upload.single('resume'), uploadResume);
 router.get('/', getUserResumes);
 router.get('/:id', getResumeById);
+router.put('/:id', updateResume);
 router.delete('/:id', deleteResume);
 
 // Bonus AI features & Studio actions

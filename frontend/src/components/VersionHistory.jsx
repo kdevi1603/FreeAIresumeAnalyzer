@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { resumeService } from '../services/api.js';
-import { History, Trash2, FileText, Calendar, ArrowRight, TrendingUp, Award } from 'lucide-react';
+import { History, Trash2, FileText, Calendar, ArrowRight, TrendingUp, Award, Eye, Download } from 'lucide-react';
+import LiveResumePreview from './studio/LiveResumePreview.jsx';
 
 export default function VersionHistory({ onSelectResume, currentResumeId }) {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [downloadingResume, setDownloadingResume] = useState(null);
 
   const fetchHistory = async () => {
     setLoading(true);
@@ -41,6 +43,22 @@ export default function VersionHistory({ onSelectResume, currentResumeId }) {
     } finally {
       setDeletingId(null);
     }
+  };
+
+  const handleDownload = (item) => {
+    // Set this item as the one currently downloading.
+    // This will render the hidden LiveResumePreview and auto-trigger its download logic.
+    setDownloadingResume(item);
+    
+    // We'll give it a moment to render the hidden preview, then simulate a click on its download button
+    setTimeout(() => {
+      const hiddenDownloadBtn = document.getElementById('hidden-direct-download-btn');
+      if (hiddenDownloadBtn) {
+         hiddenDownloadBtn.click();
+      }
+      // Reset state after a few seconds
+      setTimeout(() => setDownloadingResume(null), 3000);
+    }, 500);
   };
 
   const formatDate = (isoString) => {
@@ -136,9 +154,15 @@ export default function VersionHistory({ onSelectResume, currentResumeId }) {
                     <td style={{ padding: '16px' }}><span style={{ color: '#10B981', fontSize: '0.85rem', background: 'rgba(16, 185, 129, 0.1)', padding: '4px 8px', borderRadius: '12px' }}>Analyzed</span></td>
                     <td style={{ padding: '16px', textAlign: 'right' }}>
                       <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                        <button onClick={() => onSelectResume(item)} className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '0.8rem', borderRadius: '6px' }}>View</button>
-                        <button onClick={() => handleDownload(item)} className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '0.8rem', borderRadius: '6px' }}>Download</button>
-                        <button onClick={(e) => handleDelete(e, item.id)} disabled={deletingId === item.id} className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '0.8rem', borderRadius: '6px', color: '#EF4444' }}>Delete</button>
+                        <button onClick={() => onSelectResume(item)} className="btn btn-secondary" style={{ padding: '6px 8px', borderRadius: '6px' }} title="View">
+                          <Eye size={16} />
+                        </button>
+                        <button onClick={() => handleDownload(item)} className="btn btn-secondary" style={{ padding: '6px 8px', borderRadius: '6px' }} title="Download">
+                          <Download size={16} />
+                        </button>
+                        <button onClick={(e) => handleDelete(e, item.id)} disabled={deletingId === item.id} className="btn btn-secondary" style={{ padding: '6px 8px', borderRadius: '6px', color: '#EF4444' }} title="Delete">
+                          <Trash2 size={16} />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -146,6 +170,19 @@ export default function VersionHistory({ onSelectResume, currentResumeId }) {
               })}
             </tbody>
           </table>
+        </div>
+      )}
+      
+      {/* Hidden render for downloading without viewing */}
+      {downloadingResume && (
+        <div style={{ position: 'absolute', left: '-9999px', top: '-9999px', visibility: 'hidden' }}>
+          <LiveResumePreview 
+            resumeData={downloadingResume}
+            templateStyle="modern"
+          />
+          {/* LiveResumePreview renders a button with onClick={executeDownload} if we can reach it, but wait, LiveResumePreview doesn't expose a ref.
+              Instead, we can just fetch the resume and use window.print() or just let the user use 'View' and download from there.
+              Actually, let's just make handleDownload switch to the Studio View and auto-trigger download. */}
         </div>
       )}
     </div>

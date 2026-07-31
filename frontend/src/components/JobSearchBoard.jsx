@@ -8,6 +8,7 @@ export default function JobSearchBoard({ resumes = [], currentAnalysis }) {
   const [selectedJobId, setSelectedJobId] = useState(1);
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
   const [selectedResumeId, setSelectedResumeId] = useState(null);
+  const [showMoreSources, setShowMoreSources] = useState(false);
 
   // Determine active resume
   const defaultResume = resumes.length > 0 ? resumes[0] : { id: 'dummy', title: 'Devi', jobTitle: 'Software Project Manager', education: 'B.Tech Computer Science' };
@@ -153,16 +154,35 @@ export default function JobSearchBoard({ resumes = [], currentAnalysis }) {
 
           {/* Platform Badges */}
           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '16px', maxWidth: '800px', marginBottom: '60px' }}>
-            <Badge text="indeed" color="#2563eb" bg="#dbeafe" font="Times New Roman, serif" />
-            <Badge text="LinkedIn" color="#1e40af" bg="#e0e7ff" font="Arial, sans-serif" />
-            <Badge text="seek" color="#1e3a8a" bg="#dbeafe" icon />
-            <Badge text="workable" color="#065f46" bg="#d1fae5" font="monospace" />
-            <Badge text="greenhouse" color="#10b981" bg="#ecfdf5" />
-            <Badge text="naukri" color="#3b82f6" bg="#eff6ff" />
-            <Badge text="GLASSDOOR" color="#16a34a" bg="#dcfce7" font="Impact, sans-serif" />
-            <div style={{ backgroundColor: 'var(--text-main)', color: 'var(--bg-dark)', padding: '8px 16px', borderRadius: '24px', fontSize: '0.9rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <LayoutGrid size={14} /> + more sources
-            </div>
+            <Badge text="indeed" color="#2563eb" bg="#dbeafe" font="Times New Roman, serif" href="https://www.indeed.com" />
+            <Badge text="LinkedIn" color="#1e40af" bg="#e0e7ff" font="Arial, sans-serif" href="https://www.linkedin.com/jobs" />
+            <Badge text="seek" color="#1e3a8a" bg="#dbeafe" icon href="https://www.seek.com.au" />
+            <Badge text="workable" color="#065f46" bg="#d1fae5" font="monospace" href="https://www.workable.com" />
+            <Badge text="greenhouse" color="#10b981" bg="#ecfdf5" href="https://www.greenhouse.io" />
+            <Badge text="naukri" color="#3b82f6" bg="#eff6ff" href="https://www.naukri.com" />
+            <Badge text="GLASSDOOR" color="#16a34a" bg="#dcfce7" font="Impact, sans-serif" href="https://www.glassdoor.com" />
+            
+            {showMoreSources && (
+              <>
+                <Badge text="Monster" color="#6b21a8" bg="#f3e8ff" font="Arial, sans-serif" href="https://www.monster.com" />
+                <Badge text="ZipRecruiter" color="#166534" bg="#dcfce7" href="https://www.ziprecruiter.com" />
+                <Badge text="Dice" color="#dc2626" bg="#fee2e2" font="monospace" href="https://www.dice.com" />
+                <Badge text="Wellfound" color="#1e3a8a" bg="#dbeafe" href="https://wellfound.com" />
+                <Badge text="SimplyHired" color="#0f766e" bg="#ccfbf1" href="https://www.simplyhired.com" />
+                <Badge text="Y Combinator" color="#ea580c" bg="#ffedd5" href="https://www.ycombinator.com/jobs" />
+                <Badge text="FlexJobs" color="#0369a1" bg="#e0f2fe" href="https://www.flexjobs.com" />
+                <Badge text="Remote.co" color="#4f46e5" bg="#e0e7ff" href="https://remote.co" />
+              </>
+            )}
+
+            <button 
+              onClick={() => setShowMoreSources(!showMoreSources)}
+              style={{ backgroundColor: 'var(--text-main)', color: 'var(--bg-dark)', border: 'none', padding: '8px 16px', borderRadius: '24px', fontSize: '0.9rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', transition: 'opacity 0.2s' }}
+              onMouseOver={e => e.currentTarget.style.opacity = '0.8'}
+              onMouseOut={e => e.currentTarget.style.opacity = '1'}
+            >
+              <LayoutGrid size={14} /> {showMoreSources ? '- show less sources' : '+ 8 more sources'}
+            </button>
           </div>
 
           {/* Search Bar Container */}
@@ -409,16 +429,23 @@ export default function JobSearchBoard({ resumes = [], currentAnalysis }) {
   );
 }
 
-const Badge = ({ text, color, bg, font, icon }) => (
-  <div style={{ 
-    backgroundColor: bg, color: color, padding: '8px 16px', borderRadius: '24px', 
-    fontSize: '0.9rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px',
-    fontFamily: font || 'inherit'
-  }}>
+const Badge = ({ text, color, bg, font, icon, href }) => (
+  <a 
+    href={href || '#'}
+    target={href ? "_blank" : undefined}
+    rel={href ? "noopener noreferrer" : undefined}
+    style={{ 
+      backgroundColor: bg, color: color, padding: '8px 16px', borderRadius: '24px', 
+      fontSize: '0.9rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px',
+      fontFamily: font || 'inherit', textDecoration: 'none', cursor: 'pointer', transition: 'transform 0.2s'
+    }}
+    onMouseOver={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+    onMouseOut={e => e.currentTarget.style.transform = 'none'}
+  >
     {icon && <div style={{ width: '12px', height: '12px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px' }}>
       <div style={{ backgroundColor: color }} /><div style={{ backgroundColor: color }} />
       <div style={{ backgroundColor: color }} /><div style={{ backgroundColor: color }} />
     </div>}
     {text}
-  </div>
+  </a>
 );

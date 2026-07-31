@@ -1,23 +1,23 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { db } from '../config/db.js';
-import { extractTextFromPDF } from '../services/pdfService.js';
+import { extractTextFromFile } from '../services/documentService.js';
 import { analyzeResume, matchJobDescription, generateCoverLetter, generateInterviewQuestions, fixResumeSection, agentChat } from '../services/aiService.js';
 
 export async function uploadResume(req, res) {
   try {
     if (!req.file) {
-      return res.status(400).json({ message: 'Please upload a valid PDF resume file.' });
+      return res.status(400).json({ message: 'No file uploaded' });
     }
 
     const filePath = req.file.path;
-    console.log(`📄 Extracting text from uploaded PDF: ${req.file.originalname}`);
+    const fileName = req.file.originalname;
 
     // Extract text
-    const { text: rawText, pages } = await extractTextFromPDF(filePath);
+    const { text: rawText, pages } = await extractTextFromFile(filePath, fileName);
     if (!rawText || rawText.trim().length < 50) {
       await fs.unlink(filePath).catch(() => {});
-      return res.status(400).json({ message: 'Could not extract sufficient text from the PDF. Please ensure it is not a scanned image.' });
+      return res.status(400).json({ message: 'Could not extract sufficient text. Please try uploading a different format.' });
     }
 
     console.log(`🧠 Running AI Analysis on ${rawText.length} characters...`);
@@ -101,6 +101,29 @@ export async function deleteResume(req, res) {
   } catch (error) {
     console.error('Delete Resume Error:', error);
     return res.status(500).json({ message: 'Server error deleting resume.' });
+  }
+}
+
+export async function updateResume(req, res) {
+  try {
+    const { id } = req.params;
+    const resume = await db.resumes.findById(id);
+
+    if (!resume) {
+      return res.status(404).json({ message: 'Resume not found.' });
+    }
+
+    if (resume.userId !== req.user.id) {
+      return res.status(403).json({ message: 'Not authorized to update this resume.' });
+    }
+
+    const updatedData = { ...resume, ...req.body };
+    const updatedResume = await db.resumes.update(id, updatedData);
+    
+    return res.json(updatedResume);
+  } catch (error) {
+    console.error('Update Resume Error:', error);
+    return res.status(500).json({ message: 'Server error updating resume.' });
   }
 }
 

@@ -9,7 +9,7 @@ import AccountSettingsBoard from '../components/AccountSettingsBoard.jsx';
 import JobSearchBoard from '../components/JobSearchBoard.jsx';
 import MyCoverLettersBoard from '../components/MyCoverLettersBoard.jsx';
 
-export default function SidebarDashboard({ onCreateNew, onEditResume, onBackToLanding, onCreateCoverLetter, currentAnalysis, savedCoverLetters, setSavedCoverLetters, onEditCoverLetter }) {
+export default function SidebarDashboard({ onCreateNew, onEditResume, onDeleteResume, savedResumes, onBackToLanding, onCreateCoverLetter, currentAnalysis, savedCoverLetters, setSavedCoverLetters, onEditCoverLetter }) {
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('My Resumes');
   const [isDarkMode, setIsDarkMode] = useState(() => !document.body.classList.contains('light-mode'));
@@ -23,15 +23,6 @@ export default function SidebarDashboard({ onCreateNew, onEditResume, onBackToLa
       setIsDarkMode(true);
     }
   };
-  // Dummy resume data based on the screenshot
-  const resumes = [
-    {
-      id: 'res_1',
-      title: 'Devi',
-      jobTitle: 'Software Project Manager',
-      lastUpdated: '2 days ago'
-    }
-  ];
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--bg-dark)', margin: 0, padding: 0 }}>
@@ -105,10 +96,13 @@ export default function SidebarDashboard({ onCreateNew, onEditResume, onBackToLa
           </div>
           <div style={{ overflow: 'hidden' }}>
             <div style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-main)', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
-              {user?.email || 'thulasidevi9843@gmail.com'}
+              {user?.email || 'Guest User'}
             </div>
             <button 
-              onClick={logout}
+              onClick={() => {
+                logout();
+                if (onBackToLanding) onBackToLanding();
+              }}
               style={{ background: 'none', border: 'none', padding: 0, color: 'var(--accent-danger)', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', marginTop: '4px', fontWeight: 600 }}
             >
               <LogOut size={14} /> Logout
@@ -175,11 +169,11 @@ export default function SidebarDashboard({ onCreateNew, onEditResume, onBackToLa
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
             <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-main)', margin: 0 }}>Resumes</h2>
-            <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>({resumes.length})</span>
+            <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>({(savedResumes || []).length})</span>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {resumes.map(resume => (
+            {(savedResumes || []).map(resume => (
               <div key={resume.id} style={{ 
                 backgroundColor: 'var(--bg-card)', borderRadius: '12px', border: '1px solid var(--border-color)', 
                 padding: '24px', display: 'flex', gap: '24px', alignItems: 'center',
@@ -204,11 +198,11 @@ export default function SidebarDashboard({ onCreateNew, onEditResume, onBackToLa
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                     <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Resume Title:</span>
-                    <span style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-main)' }}>{resume.title}</span>
+                    <span style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-main)' }}>{resume.personalInfo?.name || resume.fileName || resume.title || 'Untitled Resume'}</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Job Title:</span>
-                    <span style={{ fontSize: '0.95rem', color: 'var(--text-dim)' }}>{resume.jobTitle}</span>
+                    <span style={{ fontSize: '0.95rem', color: 'var(--text-dim)' }}>{resume.personalInfo?.jobTitle || resume.jobTitle || 'N/A'}</span>
                   </div>
                 </div>
 
@@ -217,18 +211,17 @@ export default function SidebarDashboard({ onCreateNew, onEditResume, onBackToLa
                   <button onClick={() => onEditResume(resume.id)} style={actionBtnStyle('var(--accent-blue)')}>
                     <Edit3 size={16} /> Edit Resume
                   </button>
-                  <button style={actionBtnStyle('var(--accent-green)')}>
-                    <Target size={16} /> Tailor to Job
-                  </button>
-                  <button style={actionBtnStyle('var(--accent-purple)')}>
-                    <Copy size={16} /> Duplicate
-                  </button>
-                  <button style={actionBtnStyle('var(--accent-danger)')}>
+                  <button onClick={() => onDeleteResume(resume.id)} style={actionBtnStyle('var(--accent-danger)')}>
                     <Trash2 size={16} /> Delete
                   </button>
                 </div>
               </div>
             ))}
+            {(!savedResumes || savedResumes.length === 0) && (
+              <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                You haven't created or uploaded any resumes yet. Click "Create New" above to get started!
+              </div>
+            )}
           </div>
         </div>
 
@@ -240,7 +233,7 @@ export default function SidebarDashboard({ onCreateNew, onEditResume, onBackToLa
         )}
 
         {activeTab === 'Jobs' && (
-          <JobSearchBoard resumes={resumes} currentAnalysis={currentAnalysis} />
+          <JobSearchBoard resumes={savedResumes} currentAnalysis={currentAnalysis} />
         )}
 
         {activeTab === 'My Cover Letters' && (

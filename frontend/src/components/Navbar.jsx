@@ -81,7 +81,10 @@ export default function Navbar({ onOpenAuth, viewMode, setViewMode, onOpenContac
                   <User size={16} color="var(--accent-cyan)" />
                   <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>{user?.name}</span>
                 </div>
-                <button onClick={logout} className="btn btn-secondary" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
+                <button onClick={() => {
+                  logout();
+                  setViewMode('landing');
+                }} className="btn btn-secondary" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
                   <LogOut size={16} />
                   <span>Logout</span>
                 </button>
@@ -128,7 +131,11 @@ export default function Navbar({ onOpenAuth, viewMode, setViewMode, onOpenContac
           </div>
           
           {isAuthenticated ? (
-            <button onClick={logout} className="btn btn-secondary" style={{ width: '100%', justifyContent: 'center' }}>
+            <button onClick={() => {
+              logout();
+              setViewMode('landing');
+              setIsMobileMenuOpen(false);
+            }} className="btn btn-secondary" style={{ width: '100%', justifyContent: 'center' }}>
               <LogOut size={16} />
               <span>Logout ({user?.name})</span>
             </button>

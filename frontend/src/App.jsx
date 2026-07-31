@@ -25,6 +25,8 @@ export default function App() {
     { id: '1', title: 'Software Engineer Cover Letter', target: 'Google - Frontend', date: '1 day ago', content: '' },
     { id: '2', title: 'Product Manager Cover Letter', target: 'Microsoft', date: '3 days ago', content: '' }
   ]);
+  
+  const [savedResumes, setSavedResumes] = useState([]);
 
   const handleApplyTemplate = (templateId) => {
     setIsTemplateModalOpen(false);
@@ -40,13 +42,24 @@ export default function App() {
       <>
         <SidebarDashboard
           onCreateNew={() => setIsCreateResumeModalOpen(true)}
-          onEditResume={() => setViewMode('studio')}
+          onEditResume={(id) => {
+            const res = savedResumes.find(r => r.id === id);
+            if (res) {
+              setCurrentAnalysis(res);
+              setViewMode('studio');
+            }
+          }}
+          onDeleteResume={(id) => {
+            setSavedResumes(prev => prev.filter(r => r.id !== id));
+          }}
+          savedResumes={savedResumes}
           onBackToLanding={() => setViewMode('landing')}
           currentAnalysis={currentAnalysis}
           onCreateCoverLetter={(name) => {
             setCurrentCoverLetterId(Date.now().toString());
             setCurrentCoverLetterName(name);
-            setCurrentCoverLetterContent('');
+            const dateStr = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+            setCurrentCoverLetterContent(`[Your Name]<br><br>[Position Title]<br><br>[Your Address]<br><br>[Your Email]<br><br>[Your Phone]<br><br>${dateStr}<br><br>[Hiring Manager Name]<br><br>[Company Name]<br><br>Dear Hiring Manager,<br><br><br><br><br><br>Sincerely,<br><b>[Your Name]</b>`);
             setViewMode('cover_letter_studio');
           }}
           savedCoverLetters={savedCoverLetters}
@@ -71,12 +84,16 @@ export default function App() {
           onClose={() => setIsCreateResumeModalOpen(false)}
           onBuild={() => {
             setIsCreateResumeModalOpen(false);
-            setCurrentAnalysis({ isScratch: true });
+            const newRes = { id: 'scratch-' + Date.now(), isScratch: true, personalInfo: { name: 'Untitled Resume' } };
+            setSavedResumes(prev => [newRes, ...prev]);
+            setCurrentAnalysis(newRes);
             setViewMode('templates');
           }}
           onImportSuccess={(data) => {
             setIsCreateResumeModalOpen(false);
-            setCurrentAnalysis(data);
+            const newRes = { ...data, id: data.id || 'upload-' + Date.now() };
+            setSavedResumes(prev => [newRes, ...prev]);
+            setCurrentAnalysis(newRes);
             setViewMode('studio');
           }}
         />
@@ -115,6 +132,7 @@ export default function App() {
         onOpenTemplateModal={() => setIsTemplateModalOpen(true)}
         currentAnalysis={currentAnalysis}
         setCurrentAnalysis={setCurrentAnalysis}
+        setSavedResumes={setSavedResumes}
         onTemplateSelect={handleTemplateSelectFromGallery}
       />
     );
@@ -139,6 +157,7 @@ export default function App() {
             onOpenTemplateModal={() => setIsTemplateModalOpen(true)}
             currentAnalysis={currentAnalysis}
             setCurrentAnalysis={setCurrentAnalysis}
+            setSavedResumes={setSavedResumes}
           />
         </main>
       </div>

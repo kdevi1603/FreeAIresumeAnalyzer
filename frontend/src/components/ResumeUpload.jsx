@@ -36,8 +36,11 @@ export default function ResumeUpload({ onAnalysisComplete, requireAuth }) {
 
   const validateAndSetFile = (selectedFile) => {
     if (!selectedFile) return;
-    if (selectedFile.type !== 'application/pdf' && !selectedFile.name.toLowerCase().endsWith('.pdf')) {
-      setError('Please upload a valid PDF document (.pdf).');
+    const allowedExtensions = ['.pdf', '.docx', '.doc', '.txt', '.jpg', '.jpeg', '.png'];
+    const ext = selectedFile.name.substring(selectedFile.name.lastIndexOf('.')).toLowerCase();
+    
+    if (!allowedExtensions.includes(ext)) {
+      setError('Please upload a valid PDF, DOCX, TXT, or Image file.');
       return;
     }
     if (selectedFile.size > 10 * 1024 * 1024) {
@@ -98,7 +101,7 @@ export default function ResumeUpload({ onAnalysisComplete, requireAuth }) {
           Get Instant AI Resume Feedback
         </h2>
         <p style={{ color: 'var(--text-muted)', marginBottom: '32px' }}>
-          Upload your PDF resume to receive your ATS compatibility score, keyword gap analysis, and tailored formatting recommendations.
+          Upload your PDF, DOCX, TXT, or Image resume to receive your ATS compatibility score, keyword gap analysis, and tailored formatting recommendations.
         </p>
 
         {error && (
@@ -139,7 +142,7 @@ export default function ResumeUpload({ onAnalysisComplete, requireAuth }) {
             type="file"
             ref={fileInputRef}
             onChange={handleFileChange}
-            accept=".pdf"
+            accept=".pdf,.docx,.doc,.txt,.jpg,.jpeg,.png"
             style={{ display: 'none' }}
           />
 
@@ -151,7 +154,7 @@ export default function ResumeUpload({ onAnalysisComplete, requireAuth }) {
               </div>
               <div>
                 <h4 style={{ fontSize: '1.2rem', marginBottom: '4px' }}>
-                  {progress < 40 ? 'Uploading PDF Document...' : progress < 80 ? 'AI Parsing Keywords & Sections...' : 'Generating ATS Score Report...'}
+                  {progress < 40 ? 'Uploading Document...' : progress < 80 ? 'AI Parsing Keywords & Sections...' : 'Generating ATS Score Report...'}
                 </h4>
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
                   This takes just a few seconds. Please don't close this tab.
@@ -173,7 +176,7 @@ export default function ResumeUpload({ onAnalysisComplete, requireAuth }) {
                 </span>
               </div>
               <span style={{ fontSize: '0.8rem', color: 'var(--accent-cyan)', marginTop: '8px' }}>
-                Click to select a different PDF
+                Click to select a different file
               </span>
             </div>
           ) : (
@@ -190,7 +193,7 @@ export default function ResumeUpload({ onAnalysisComplete, requireAuth }) {
                 </p>
               </div>
               <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
-                Supported Format: PDF (Max size 10MB)
+                Supported Formats: PDF, DOCX, TXT, Image (Max size 10MB)
               </span>
             </div>
           )}

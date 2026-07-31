@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
+import { resumeService } from '../services/api.js';
 import ResumeUpload from '../components/ResumeUpload.jsx';
 import AtsScoreCard from '../components/AtsScoreCard.jsx';
 import SkillsBreakdown from '../components/SkillsBreakdown.jsx';
@@ -13,7 +14,7 @@ import TemplateGallery from '../components/TemplateGallery.jsx';
 import BeforeAfterGraphic from '../components/BeforeAfterGraphic.jsx';
 import { Award, Zap, Lightbulb, History, Target, FileText, MessageSquare, Download, Sparkles, PlusCircle, Search, Bot, Layers, ArrowRight, CheckCircle2, DollarSign } from 'lucide-react';
 
-export default function Dashboard({ onOpenAuth, viewMode, setViewMode, onOpenTemplateModal, currentAnalysis, setCurrentAnalysis, onTemplateSelect }) {
+export default function Dashboard({ onOpenAuth, viewMode, setViewMode, onOpenTemplateModal, currentAnalysis, setCurrentAnalysis, onTemplateSelect, setSavedResumes }) {
   const { isAuthenticated } = useAuth();
   const [selectedTemplateId, setSelectedTemplateId] = useState('modern');
   const [activeTab, setActiveTab] = useState('overview');
@@ -27,7 +28,16 @@ export default function Dashboard({ onOpenAuth, viewMode, setViewMode, onOpenTem
   const [isInterviewPrepOpen, setIsInterviewPrepOpen] = useState(false);
 
   const handleAnalysisComplete = (data) => {
-    setCurrentAnalysis(data);
+    const newRes = { ...data, id: data.id || 'upload-' + Date.now() };
+    setCurrentAnalysis(newRes);
+    if (setSavedResumes) {
+      setSavedResumes(prev => {
+        if (prev.find(r => r.id === newRes.id)) {
+          return prev.map(r => r.id === newRes.id ? newRes : r);
+        }
+        return [newRes, ...prev];
+      });
+    }
     setViewMode('templates'); 
   };
 
@@ -60,7 +70,41 @@ export default function Dashboard({ onOpenAuth, viewMode, setViewMode, onOpenTem
       <div className="container" style={{ padding: '20px 15px' }}>
         <StudioWorkspace
           resumeData={currentAnalysis}
-          onBackToDashboard={() => setViewMode('sidebar_dashboard')}
+          onUpdateResume={async (updatedResume) => {
+            if (updatedResume) {
+              if (setSavedResumes) {
+                setSavedResumes(prev => {
+                  const exists = prev.find(r => r.id === updatedResume.id);
+                  if (exists) return prev.map(r => r.id === updatedResume.id ? updatedResume : r);
+                  return [updatedResume, ...prev];
+                });
+              }
+              try {
+                await resumeService.updateResume(updatedResume.id, updatedResume);
+              } catch (err) {
+                console.error("Failed to save resume updates to backend:", err);
+              }
+              setCurrentAnalysis(updatedResume);
+            }
+          }}
+          onBackToDashboard={async (updatedResume) => {
+            if (updatedResume) {
+              if (setSavedResumes) {
+                setSavedResumes(prev => {
+                  const exists = prev.find(r => r.id === updatedResume.id);
+                  if (exists) {
+                    return prev.map(r => r.id === updatedResume.id ? updatedResume : r);
+                  }
+                  return [updatedResume, ...prev];
+                });
+              }
+              try {
+                await resumeService.updateResume(updatedResume.id, updatedResume);
+              } catch (e) {}
+              setCurrentAnalysis(updatedResume);
+            }
+            setViewMode('sidebar_dashboard');
+          }}
           initialTemplate={selectedTemplateId}
         />
       </div>

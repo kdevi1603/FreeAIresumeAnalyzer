@@ -10,7 +10,7 @@ if (API_KEY && API_KEY !== 'your_api_key_here') {
 export const aiService = {
   chatWithResumeAgent: async (message, resumeContext, chatHistory) => {
     if (!genAI) {
-      return await mockSimulateChat(message, resumeContext);
+      return await mockSimulateChat(message, resumeContext, chatHistory);
     }
 
     try {
@@ -21,8 +21,9 @@ Your goal is to help the user improve their resume to bypass ATS and land a job.
 CRITICAL INSTRUCTIONS:
 1. If the user just says "hi", "hello", etc., ONLY respond with a short greeting like "Hello! How can I help you?". DO NOT analyze the resume unless they ask.
 2. Be concise. Avoid huge walls of text.
-3. If the user asks you to fix or rewrite a section, you MUST output the new rewritten text wrapped inside a <fix section="[section_name]">...</fix> tag, where [section_name] is one of: 'projects', 'skills', 'summary', or 'rawText'. 
-Example: "Here is your rewritten project:\n<fix section="projects">New rewritten bullet point</fix>"
+3. If the user asks you to fix or rewrite a section, or if they provide a short keyword/skill (like "system design", "react"), you MUST output the new rewritten text wrapped inside a <fix section="[section_name]">...</fix> tag, where [section_name] is one of: 'projects', 'skills', 'summary', or 'rawText'. 
+4. If they just provided a keyword/skill, assume they want to add it to their skills, and output the updated full skills list in a <fix section="skills">...</fix> tag.
+Example: "I have added that keyword to your skills:\n<fix section="skills">Python, System Design, React</fix>"
 
 Context of user's resume:
 ${JSON.stringify(resumeContext, null, 2)}`;
@@ -55,11 +56,8 @@ ${JSON.stringify(resumeContext, null, 2)}`;
         proposedFix: proposedFix
       };
     } catch (error) {
-      console.error("Gemini API Error:", error);
-      return {
-        reply: `API Error: ${error.message || error.toString()}`,
-        options: []
-      };
+      console.error("Gemini API Error, falling back to mock:", error);
+      return await mockSimulateChat(message, resumeContext, chatHistory);
     }
   },
   
@@ -108,16 +106,13 @@ ${coverLetterContext}`;
         proposedFix: proposedFix
       };
     } catch (error) {
-      console.error("Gemini API Error:", error);
-      return {
-        reply: `API Error: ${error.message || error.toString()}`,
-        options: []
-      };
+      console.error("Gemini API Error, falling back to mock:", error);
+      return await mockSimulateCoverLetterChat(message, coverLetterContext);
     }
   }
 };
 
-const mockSimulateChat = async (message, resumeContext) => {
+const mockSimulateChat = async (message, resumeContext, chatHistory = []) => {
   await new Promise(r => setTimeout(r, 1200)); // Simulate human typing delay
   const lowerMsg = message.toLowerCase();
   
@@ -146,9 +141,15 @@ const mockSimulateChat = async (message, resumeContext) => {
     };
   }
 
+  if (lowerMsg.includes('summary') || lowerMsg.includes('objective')) {
+    return {
+      reply: `Your executive summary is the first thing an ATS algorithm scans! I recommend keeping it under 4 lines and explicitly mentioning your target role, years of experience, and your #1 proudest achievement.\n\nHere is a draft I created for you:\n*"Innovative Full Stack Developer with 5+ years building cloud-native web applications. Proven track record of scaling user architectures and mentoring junior developers to increase sprint velocity by 25%."*\n\nIf you type **"Fix with AI"** or just say **"fix it"**, I can automatically update that for you in the editor!`
+    };
+  }
+
   if (lowerMsg.includes('rewrite') || lowerMsg.includes('bullet')) {
     return {
-      reply: `Awesome! Let's take your "Bank Transaction" project. Instead of just stating what you did, we can make it pop:\n\n*"Engineered an enterprise-grade banking transaction system, optimizing SQL queries to reduce processing latency by 20%."*\n\nIf you type **"Fix with AI"** or just say **"fix"**, I can automatically update that for you in the editor!`
+      reply: `Awesome! Let's take your "Bank Transaction" project. Instead of just stating what you did, we can make it pop:\n\n*"Engineered an enterprise-grade banking transaction system, optimizing SQL queries to reduce processing latency by 20%."*\n\nIf you type **"Fix with AI"** or just say **"fix it"**, I can automatically update that for you in the editor!`
     };
   }
   
@@ -156,6 +157,40 @@ const mockSimulateChat = async (message, resumeContext) => {
     const missing = resumeContext?.missingSkills?.length > 0 ? resumeContext.missingSkills.join(', ') : 'React, Node.js, AWS';
     return {
       reply: `Right now, the top things missing that recruiters want for this role are: **${missing}**.\n\nAdding these into a 'Technical Skills' section or weaving them naturally into your project descriptions will instantly jump your ATS score. Want me to help you rewrite a section to include them?`
+    };
+  }
+
+  if (lowerMsg === 'fix' || lowerMsg.includes('fix with ai') || lowerMsg.includes('apply') || lowerMsg.includes('fix it')) {
+    const lastAssistantMessage = chatHistory.slice().reverse().find(m => m.sender === 'assistant' || m.sender === 'bot')?.text || '';
+    
+    if (lastAssistantMessage.includes('Innovative Full Stack Developer') || lowerMsg.includes('summary')) {
+      return {
+        reply: `✨ Done! I've automatically updated your Executive Summary. Look at your live document preview on the right!`,
+        proposedFix: {
+          section: 'summary',
+          content: `Innovative Full Stack Developer with 5+ years building cloud-native web applications. Proven track record of scaling user architectures and mentoring junior developers to increase sprint velocity by 25%.`
+        },
+        autoApply: true
+      };
+    }
+
+    let rewrittenExperience = `Bank Transaction (Project) — Engineered an enterprise-grade banking transaction system, optimizing SQL queries to reduce processing latency by 20%.`;
+    if (resumeContext?.experience) {
+      // Keep the rest of the experience, just prepend the rewritten part for demo purposes
+      rewrittenExperience = `${rewrittenExperience}\n\n${resumeContext.experience}`;
+    } else if (resumeContext?.experienceList && resumeContext.experienceList.length > 0) {
+      const exp = resumeContext.experienceList[0];
+      const rest = exp.bullets ? exp.bullets : '';
+      rewrittenExperience = `${rewrittenExperience}\n\n${rest}`;
+    }
+
+    return {
+      reply: `✨ Done! I've automatically applied the new optimized bullet point to your 'Work & Project Experience' section. Look at your live document preview on the right!`,
+      proposedFix: {
+        section: 'projects',
+        content: rewrittenExperience
+      },
+      autoApply: true
     };
   }
 
@@ -184,18 +219,7 @@ const mockSimulateCoverLetterChat = async (message, coverLetterContext) => {
       reply: `I have analyzed your cover letter. I've rewritten the opening paragraph to be more impactful and added some placeholders for specific metrics. How does this look?`,
       proposedFix: {
         section: 'cover_letter',
-        content: `Dear Hiring Manager,
-
-I am writing to express my strong interest in the role at your company. With a proven track record of delivering high-quality results and a passion for innovation, I am confident in my ability to contribute effectively to your team's success. 
-
-In my previous role, I successfully drove key initiatives that resulted in a 30% improvement in overall efficiency. This experience has equipped me with the skills necessary to hit the ground running. I am particularly drawn to your organization because of its commitment to excellence.
-
-I would welcome the opportunity to discuss how my background and skills will be beneficial to your team. Please find my resume attached for your review.
-
-Thank you for your time and consideration.
-
-Sincerely,
-[Your Name]`
+        content: `[Your Name]\n\n[Position Title]\n\n[Your Address]\n\n[Your Email]\n\n[Your Phone]\n\nJuly 31, 2026\n\n[Hiring Manager Name]\n\n[Company Name]\n\nDear Hiring Manager,\n\nI am writing to express my strong interest in the role at your company. With a proven track record of delivering high-quality results and a passion for innovation, I am confident in my ability to contribute effectively to your team's success.\n\nIn my previous role, I successfully drove key initiatives that resulted in a 30% improvement in overall efficiency. This experience has equipped me with the skills necessary to hit the ground running. I am particularly drawn to your organization because of its commitment to excellence.\n\nI would welcome the opportunity to discuss how my background and skills will be beneficial to your team. Please find my resume attached for your review.\n\nThank you for your time and consideration.\n\nSincerely,\n<b>[Your Name]</b>`
       }
     };
   }
