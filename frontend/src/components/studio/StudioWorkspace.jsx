@@ -58,7 +58,9 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
   const [autoFixMessage, setAutoFixMessage] = useState(null);
   const [showSplitChat, setShowSplitChat] = useState(false);
 
-  const [activeView, setActiveView] = useState('Overview');
+  const [activeView, setActiveView] = useState(() => {
+    return (resumeData?.isScratch || !resumeData?.atsScore) ? 'Resume Preview' : 'Overview';
+  });
 
   useEffect(() => {
     if (resumeData) {

@@ -2,20 +2,23 @@ import React, { useState, useRef, useEffect } from 'react';
 import { 
   ChevronLeft, Sparkles, Send, Mic, Download, Save,
   Undo2, Redo2, Bold, Italic, Underline, Strikethrough, Link as LinkIcon, 
-  AlignLeft, AlignCenter, AlignRight, AlignJustify, Briefcase, FileText
+  AlignLeft, AlignCenter, AlignRight, AlignJustify, Briefcase, FileText,
+  AlertCircle, CheckCircle
 } from 'lucide-react';
 import { aiService } from '../../services/aiService.js';
+import CoverLetterTemplatesModal from './CoverLetterTemplatesModal.jsx';
 
 export default function CoverLetterStudio({ coverLetterName, onBack, onSave, initialContent }) {
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      sender: 'bot',
-      text: 'Hi there! I can help you improve your cover letter. Ask me for feedback, or improvements for specific sections.',
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    }
-  ]);
+  const initialMessage = {
+    id: 1,
+    sender: 'bot',
+    text: 'Hi there! I can help you improve your cover letter. Ask me for feedback, or improvements for specific sections. I can directly edit your cover letter.',
+    time: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' })
+  };
+  const [messages, setMessages] = useState([initialMessage]);
   const [inputText, setInputText] = useState('');
+  const [showTemplatesModal, setShowTemplatesModal] = useState(false);
+  const [activeTemplateName, setActiveTemplateName] = useState('Traditional Format');
 
   const [documentText, setDocumentText] = useState(initialContent || `[Your Name]<br>
 [Position Title]<br>
@@ -64,7 +67,7 @@ Sincerely,<br>
       id: Date.now(),
       sender: 'user',
       text: userMessage,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      time: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' })
     }]);
     
     setInputText('');
@@ -83,8 +86,59 @@ Sincerely,<br>
       id: Date.now(),
       sender: 'bot',
       text: response.reply,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      time: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' })
     }]);
+  };
+
+  const handleApplyTemplate = async (template) => {
+    setShowTemplatesModal(false);
+    setActiveTemplateName(template.name);
+    
+    const loadingId = Date.now();
+    setMessages(prev => [...prev, {
+      id: loadingId,
+      sender: 'bot',
+      isAction: true,
+      text: `editing cover letter with AI...`,
+      time: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' })
+    }]);
+
+    const prompt = `Please rewrite my cover letter using the following template structure and style:\n\nTemplate Name: ${template.name}\n\nTemplate Content:\n${template.content}`;
+
+    try {
+      const response = await aiService.chatWithCoverLetterAgent(prompt, documentText, messages);
+      
+      let formattedContent = '';
+      if (response.proposedFix && response.proposedFix.section === 'cover_letter') {
+        formattedContent = response.proposedFix.content
+          .replace(/\n\n+/g, '<br><br>') 
+          .replace(/(?<!<br>)\n(?!<br>)/g, '<br>');
+      } else {
+        formattedContent = response.reply
+          .replace(/\n\n+/g, '<br><br>') 
+          .replace(/(?<!<br>)\n(?!<br>)/g, '<br>');
+      }
+
+      setDocumentText(formattedContent);
+
+      setMessages(prev => prev.map(msg => msg.id === loadingId ? {
+        ...msg,
+        text: `cover letter edited`
+      } : msg));
+      
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1,
+        sender: 'bot',
+        text: `I have updated your cover letter to follow the "${template.name}" structure while preserving your original document structure.\n\n**Changes Made:**\n- Restructured formatting to match ${template.name}\n- Reorganized paragraphs for better flow`,
+        time: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' })
+      }]);
+    } catch (error) {
+      console.error(error);
+      setMessages(prev => prev.map(msg => msg.id === loadingId ? {
+        ...msg,
+        text: `Failed to edit cover letter. Please try again.`
+      } : msg));
+    }
   };
 
   const handleFormat = (command, value = null) => {
@@ -133,15 +187,14 @@ Sincerely,<br>
             <h1 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-main)', margin: 0 }}>
               {coverLetterName || 'Cover Letter'}
             </h1>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>AI Assistant</span>
           </div>
         </div>
 
         {/* Top Badges */}
         <div style={{ padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', gap: '8px' }}>
-            <button style={{ fontSize: '0.8rem', padding: '4px 12px', border: '1px solid var(--border-color)', borderRadius: '16px', background: 'transparent', color: 'var(--text-main)', cursor: 'pointer' }}>Clear</button>
-            <button style={{ fontSize: '0.8rem', padding: '4px 12px', border: '1px solid var(--border-color)', borderRadius: '16px', background: 'transparent', color: 'var(--text-main)', cursor: 'pointer' }}>Report Bug</button>
+            <button onClick={() => setMessages([initialMessage])} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', padding: '4px 12px', border: '1px solid var(--border-color)', borderRadius: '16px', background: 'transparent', color: 'var(--text-main)', cursor: 'pointer', fontWeight: 600 }}>Clear</button>
+            <button onClick={() => alert('Bug reported!')} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', padding: '4px 12px', border: '1px solid var(--border-color)', borderRadius: '16px', background: 'transparent', color: 'var(--text-main)', cursor: 'pointer', fontWeight: 600 }}><AlertCircle size={14} /> Report Bug</button>
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', padding: '4px 12px', backgroundColor: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', borderRadius: '4px', fontWeight: 600 }}>
@@ -159,19 +212,23 @@ Sincerely,<br>
             <div key={msg.id} style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px', alignItems: msg.sender === 'user' ? 'flex-end' : 'flex-start' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                 {msg.sender === 'bot' && <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'linear-gradient(135deg, #00F2FE 0%, #4FACFE 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}><Sparkles size={14} /></div>}
-                <span>{msg.sender === 'bot' ? 'AI Resume Assistant' : 'You'}</span>
-                <span>•</span>
-                <span>{msg.time}</span>
+                <span>{msg.sender === 'bot' ? 'JobSuit AI' : 'You'} • {msg.time}</span>
               </div>
               <div style={{ 
-                backgroundColor: msg.sender === 'user' ? 'var(--accent-blue)' : 'var(--bg-dark)', 
-                color: msg.sender === 'user' ? '#fff' : 'var(--text-main)',
-                padding: '16px', borderRadius: '12px', 
+                backgroundColor: msg.isAction ? 'transparent' : (msg.sender === 'user' ? 'var(--accent-blue)' : 'var(--bg-dark)'), 
+                color: msg.isAction ? '#3b82f6' : (msg.sender === 'user' ? '#fff' : 'var(--text-main)'),
+                padding: msg.isAction ? '8px 0' : '16px', borderRadius: '12px', 
                 borderTopLeftRadius: msg.sender === 'bot' ? '4px' : '12px',
                 borderTopRightRadius: msg.sender === 'user' ? '4px' : '12px',
                 maxWidth: '85%', fontSize: '0.95rem', lineHeight: 1.6
               }}>
-                {renderMarkdown(msg.text)}
+                {msg.isAction ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600 }}>
+                    <CheckCircle size={16} /> {msg.text}
+                  </div>
+                ) : (
+                  renderMarkdown(msg.text)
+                )}
               </div>
             </div>
           ))}
@@ -194,11 +251,12 @@ Sincerely,<br>
           </div>
         </div>
 
-        {/* Input Box */}
         <div style={{ padding: '20px', borderTop: '1px solid var(--border-color)', backgroundColor: 'var(--bg-card)' }}>
-          <div style={{ padding: '8px 12px', backgroundColor: 'rgba(139, 92, 246, 0.1)', borderRadius: '8px', color: '#8b5cf6', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+          <button 
+            onClick={() => setShowTemplatesModal(true)}
+            style={{ padding: '10px 16px', width: '100%', justifyContent: 'center', backgroundColor: 'rgba(139, 92, 246, 0.1)', border: 'none', borderRadius: '8px', color: '#8b5cf6', fontSize: '0.85rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', cursor: 'pointer', transition: 'all 0.2s' }}>
             <FileText size={16} /> COVER LETTER EXAMPLES
-          </div>
+          </button>
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: '12px', backgroundColor: 'var(--bg-dark)', padding: '12px 16px', borderRadius: '24px', border: '1px solid var(--border-color)' }}>
             <textarea
               value={inputText}
@@ -218,12 +276,12 @@ Sincerely,<br>
             />
             <button style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px' }}><Mic size={20} /></button>
             <button onClick={() => handleSend()} disabled={!inputText.trim()} style={{
-              background: inputText.trim() ? 'var(--text-main)' : 'var(--text-muted)',
-              color: 'var(--bg-dark)', border: 'none', borderRadius: '50%',
-              width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: inputText.trim() ? '#6b7280' : 'var(--text-muted)',
+              color: '#fff', border: 'none', borderRadius: '8px',
+              padding: '8px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600,
               cursor: inputText.trim() ? 'pointer' : 'not-allowed', transition: 'all 0.2s'
             }}>
-              <Send size={16} />
+              Send
             </button>
           </div>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: '12px' }}>
@@ -280,17 +338,17 @@ Sincerely,<br>
         </div>
 
         {/* Document Canvas */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '40px', display: 'flex', justifyContent: 'center' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '40px', display: 'flex', justifyContent: 'center', alignItems: 'flex-start' }}>
           <div style={{
             width: '100%', maxWidth: '800px', backgroundColor: '#fff', 
-            minHeight: '1056px', padding: '80px', borderRadius: '4px',
+            minHeight: '1056px', height: 'max-content', padding: '80px', borderRadius: '4px',
             boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)', color: '#000',
             position: 'relative'
           }}>
             {/* Template Badge (Mockup) */}
             <div style={{ position: 'absolute', top: '24px', left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#fef3c7', padding: '8px 24px', borderRadius: '24px', color: '#92400e', border: '1px solid #fde68a' }}>
               <div style={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '1px' }}>TEMPLATE</div>
-              <div style={{ fontSize: '0.9rem', fontWeight: 600 }}>Traditional Format</div>
+              <div style={{ fontSize: '0.9rem', fontWeight: 600 }}>{activeTemplateName}</div>
             </div>
 
             <div 
@@ -310,6 +368,12 @@ Sincerely,<br>
         </div>
 
       </div>
+
+      <CoverLetterTemplatesModal 
+        isOpen={showTemplatesModal} 
+        onClose={() => setShowTemplatesModal(false)} 
+        onApplyTemplate={handleApplyTemplate} 
+      />
 
     </div>
   );

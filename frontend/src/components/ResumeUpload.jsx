@@ -139,6 +139,7 @@ export default function ResumeUpload({ onAnalysisComplete, requireAuth }) {
           }}
         >
           <input
+            id="resume-upload-input"
             type="file"
             ref={fileInputRef}
             onChange={handleFileChange}

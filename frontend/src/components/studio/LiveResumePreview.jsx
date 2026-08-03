@@ -16,6 +16,14 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
     }
   }, [resumeData?.customHtml]);
 
+  useEffect(() => {
+    if (templateStyle === 'original') {
+      setCustomHtml(resumeData?.customHtml || '');
+    } else {
+      setCustomHtml('');
+    }
+  }, [templateStyle, resumeData?.customHtml]);
+
   const containerRef = useRef(null);
   const resumeContentRef = useRef(null);
 
@@ -99,19 +107,19 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
     }
   };
 
-  const candidateName = resumeData?.personalInfo?.name ?? (resumeData?.fileName?.replace(/\.pdf$/i, '') || 'K.DEVAKI');
-  const email = resumeData?.personalInfo?.email ?? 'devaki.professional@gmail.com';
-  const phone = resumeData?.personalInfo?.phone || '+91 98401 23456';
-  const city = resumeData?.personalInfo?.city || 'Chennai / Bangalore, India';
-  const linkedin = resumeData?.personalInfo?.linkedin || 'linkedin.com/in/devaki-tech';
-  const github = resumeData?.personalInfo?.github || 'github.com/devaki-codes';
+  const candidateName = resumeData?.personalInfo?.name === 'Untitled Resume' ? '' : (resumeData?.personalInfo?.name || resumeData?.fileName?.replace(/\.pdf$/i, '') || '');
+  const email = resumeData?.personalInfo?.email || '';
+  const phone = resumeData?.personalInfo?.phone || '';
+  const city = resumeData?.personalInfo?.city || '';
+  const linkedin = resumeData?.personalInfo?.linkedin || '';
+  const github = resumeData?.personalInfo?.github || '';
   const profilePicture = resumeData?.personalInfo?.profilePicture || null;
-  const score = resumeData?.atsScore || 41;
+  const score = resumeData?.atsScore || 0;
 
-  const summaryText = resumeData?.fixedSummary || resumeData?.summary || 'Seeking a position to utilize my skills and abilities in an organization that offers security and professional growth while being resourceful, innovative and flexible.';
-  const projectsText = resumeData?.fixedProjects || 'Bank Transaction (Project) — To apply and update Bank Transaction in the Project which is developed by VB.Net with SQL SERVER 2005.';
-  const skillsText = resumeData?.fixedSkills || 'C, C++, Java, Oracle, SQL Server, MS Office, HTML, Tally, Python, Operating Systems, Agile Methodology, Git/GitHub';
-  const educationText = resumeData?.education || 'BCA — Palaniammal Arts College For Women (2021) | 88%\nHSC — Government Higher Secondary School (2018) | 81%\nSSLC — Government Higher Secondary School (2016) | 92%\nMCA — Mother Teresa Womens University (2023) | 85%';
+  const summaryText = resumeData?.fixedSummary || resumeData?.summary || '';
+  const projectsText = resumeData?.fixedProjects || (resumeData?.experienceList?.map(exp => `${exp.company} - ${exp.role}\n${exp.bullets}`).join('\n\n')) || '';
+  const skillsText = resumeData?.fixedSkills || resumeData?.skillsFound?.map(s => s.skill).join(', ') || '';
+  const educationText = resumeData?.education || '';
 
   const sections = [
     { title: 'Executive Summary', content: summaryText, isModified: !!resumeData?.fixedSummary },
@@ -143,6 +151,9 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
             <button onClick={handleResetZoom} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }} title="Reset Zoom"><RotateCcw size={14} /></button>
             <button onClick={handleFullscreen} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', marginLeft: '4px', borderLeft: '1px solid rgba(255,255,255,0.1)', paddingLeft: '8px' }} title="Fullscreen"><Maximize size={14} /></button>
           </div>
+          <button id="hidden-direct-download-btn" onClick={executeDownload} style={{ padding: '8px 16px', fontSize: '0.85rem', background: '#2563EB', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'none' }}>
+            Direct Download
+          </button>
           <button onClick={handleDownloadPDF} style={{ padding: '8px 16px', fontSize: '0.85rem', background: '#2563EB', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>
             <Download size={16} /> <span>Download PDF</span>
           </button>
@@ -192,7 +203,7 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
       )}
 
       <div style={{ flex: 1, overflow: 'auto', padding: window.innerWidth <= 768 ? '15px 10px' : '30px 20px', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', background: 'var(--bg-dark)' }}>
-        {customHtml && templateStyle !== 'original' ? (
+        {templateStyle === 'original' ? (
           <div
             ref={resumeContentRef}
             className="a4-print-container"
@@ -201,9 +212,7 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
               width: '595px', minHeight: '842px', backgroundColor: '#ffffff', color: '#1a1a1a',
               padding: '48px 40px',
               boxShadow: '0 20px 60px rgba(0,0,0,0.6)', borderRadius: '4px',
-              fontFamily: ['academic', 'corporate', 'serif'].includes(templateStyle) ? "'Times New Roman', serif"
-                : ['minimalist', 'software'].includes(templateStyle) ? "'Courier New', monospace"
-                : "'Inter', sans-serif",
+              fontFamily: "'Inter', sans-serif",
               position: 'relative'
             }}
             contentEditable={true}
@@ -213,7 +222,7 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
               setCustomHtml(html);
               if (onManualEdit) onManualEdit(html);
             }}
-            dangerouslySetInnerHTML={{ __html: customHtml }}
+            dangerouslySetInnerHTML={{ __html: customHtml || '<div style="padding: 40px; text-align: center; color: #64748b;">Original formatting not available.</div>' }}
           />
         ) : (
         <div ref={resumeContentRef} className="a4-print-container" style={{

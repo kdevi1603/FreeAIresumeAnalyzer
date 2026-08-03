@@ -45,13 +45,13 @@ export async function extractTextFromFile(filePath, originalname) {
     const data = await pdfParse(dataBuffer);
     
     const rawText = data.text || '';
-    const cleanedText = rawText
+    let cleanedText = rawText
       .replace(/\r\n/g, '\n')
       .replace(/\n{3,}/g, '\n\n')
       .trim();
 
     if (cleanedText.length < 50) {
-      throw new Error('Could not extract text from this PDF. It appears to be a scanned image. Please upload it as a .png/.jpg image file, or upload a text-based PDF/Word document.');
+      throw new Error("Could not extract text from the PDF. If this is a scanned resume or an image-based PDF, please upload it as an image (JPG/PNG) or upload a standard text-based PDF or Word document.");
     }
 
     return {

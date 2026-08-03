@@ -27,6 +27,13 @@
       "name": "Devi",
       "email": "devi@gmail.com",
       "password": "$2a$10$xaD42c4nt/Vv5/sudEK6Kerrg3x4pHCWigkNpXhdWVSM2qQVRtqve"
+    },
+    {
+      "id": "a9b1d20f-cc95-497a-9db2-96b5d4d9dd28",
+      "createdAt": "2026-08-03T11:25:02.994Z",
+      "name": "Nisha",
+      "email": "nisha@gmail.com",
+      "password": "$2a$10$3TYpeYrRCX1ZnqiXos2FDuYy61jjp3.KVg0yhiTYmAru49NK/ON.6"
     }
   ],
   "resumes": [
@@ -285,7 +292,7 @@
         }
       ],
       "fixedProjects": "Resume Experience Section () — • Engineered high-performance banking transaction modules using VB.Net and SQL Server 2005, supporting 5,000+ daily secure operations.\n• Spearheaded query optimization initiatives that slashed latency by 20% and improved database indexing efficiency by 35%.",
-      "fixedSummary": "Innovative Full Stack Developer with 5+ years building cloud-native web applications. Proven track record of scaling user architectures and mentoring junior developers to increase sprint velocity by 25%.",
+      "fixedSummary": "Results-driven Full Stack Developer with 5+ years of experience designing and scaling cloud-native web applications. Proficient in Python, Java, SQL, and system architecture. Proven track record of optimizing database performance, improving application efficiency, and mentoring cross-functional teams to boost sprint velocity by 25%.",
       "fixedSkills": "C, C++, Java, Oracle, SQL Server, MS Office, HTML, Tally, Python, Operating Systems, Agile Methodology, Git/GitHub.",
       "customHtml": ""
     },
@@ -397,31 +404,31 @@
       "customHtml": ""
     },
     {
-      "id": "8d7beb76-2ee9-4052-9bc4-f98037822b62",
-      "createdAt": "2026-07-31T11:32:24.035Z",
-      "userId": "eee93475-69d2-4823-a818-ac1a7cdea6af",
-      "fileName": "Devaki K.pdf",
-      "fileUrl": "/uploads/1131aadf-8a1a-414f-bade-5376a06ae9df.pdf",
-      "rawText": "K.DEVAKI\nPalichiyamman Kovil Street,\nMoolaiyar,\nPannaikadu pirivu,\nKodaikanal.624210.\nDindigul (dt),\nTamilnadu.\nthulasidevi9843@gmail.com\n9345071788\nDOB 14.03.1998\nObjective\nTo seeking a position to utilise my skills and abilities in an organisation that offers\nsecurity and professional growth while being resourceful, innovative and flexible.\nEducation\nSkills\nLanguage Knowns : C,C++,Java.\nDatabase : Oracle,SQL Server\nTools : MS Office\nWeb Technology : HTML\nTechnical Qualification : Tally\nProjects\nLanguage\nTamil\nEnglish\nPersonal\nProfile\nArea of\nInterest\nArulmigu Palaniyandavar Arts College For Women,Palani.\nBCA\n2021 — 69%\nGovernment Higher Secondary School, Dindigul.\nHSC\n2014 — 81%\nGovernment Higher Secondary School, Dindigul.\nSSLC\n2016 — 88%\nMother Teresa Women's University,Kodaikanal.\nMCA\n2023 — 80%\nProject Title : Bank Transaction\nDescription : To apply and update Bank Transaction in this Project which is developed\nby VB.Net with SQL SERVER 2005.\nFather's Name : M.Krishnan(late)\nMother's Name : K.Annakamu\nReligion : Hindu\nNationality : Indian\nLanguage Known : Tamil, English\nStrength Obedience : Self confidence,Quick Learner, Hardworking\nHobbies : Reading Books,Drawing\nProgramming Language Such as Python.\nOperating System",
+      "id": "5b43b321-2f59-4a72-8ddf-9e482006dfbc",
+      "createdAt": "2026-08-03T12:02:40.151Z",
+      "userId": "a9b1d20f-cc95-497a-9db2-96b5d4d9dd28",
+      "fileName": "Nisha Resume.pdf",
+      "fileUrl": "/uploads/3380d173-4024-4286-baad-b8771cc9a415.pdf",
+      "rawText": "John Doe\nSoftware Engineer\nExperience: 5 years building scalable web applications using React and Node.js. Strong background in algorithms and system design. Familiar with AWS and CI/CD pipelines.",
       "pages": 1,
-      "atsScore": 78,
+      "atsScore": 70,
       "personalInfo": {
-        "name": "K.DEVAKI",
+        "name": "John Doe",
         "jobTitle": "",
-        "email": "thulasidevi9843@gmail.com",
-        "phone": "9345071788",
+        "email": "",
+        "phone": "",
         "city": "",
         "linkedin": "",
         "github": ""
       },
-      "summary": "K.DEVAKI\nPalichiyamman Kovil Street,\nMoolaiyar,\nPannaikadu pirivu,\nKodaikanal.624210.\nDindigul (dt),\nTamilnadu.\n\n\nDOB 14.03.1998\nObjective\nTo seeking a position to utilise my skills and abilities in an organisation that offers\nsecurity and professional growth while",
+      "summary": "John Doe\nSoftware Engineer\nExperience: 5 years building scalable web applications using React and Node.js. Strong background in algorithms and system design. Familiar with AWS and CI/CD pipelines.",
       "education": "Education details extracted here...",
       "experienceList": [
         {
           "company": "Resume Experience Section",
           "role": "",
           "period": "",
-          "bullets": "being resourceful, innovative and flexible.\nEducation\nSkills\nLanguage Knowns : C,C++,Java.\nDatabase : Oracle,SQL Server\nTools : MS Office\nWeb Technology : HTML\nTechnical Qualification : Tally\nProjects\nLanguage\nTamil\nEnglish\nPersonal\nProfile\nArea of\nInterest\nArulmigu Palaniyandavar Arts College For Women,Palani.\nBCA\n2021 — 69%\nGovernment Higher Secondary School, Dindigul.\nHSC\n2014 — 81%\nGovernment Higher Secondary School, Dindigul.\nSSLC\n2016 — 88%\nMother Teresa Women's University,Kodaikanal.\nMCA\n2023 — 80%\nProject Title : Bank Transaction\nDescription : To apply and update Bank Transaction in this Project which is developed\nby VB.Net with SQL SERVER 2005.\nFather's Name : M.Krishnan(late)\nMother's Name : K.Annakamu\nReligion : Hindu\nNationality : Indian\nLanguage Known : Tamil, English\nStrength Obedience : Self confidence,Quick Learner, Hardworking\nHobbies : Reading Books,Drawing\nProgramming Language Such as Python.\nOperating System"
+          "bullets": ""
         }
       ],
       "sectionScores": {
@@ -429,7 +436,7 @@
         "experience": 85,
         "education": 100,
         "projects": 85,
-        "skills": 75
+        "skills": 60
       },
       "grammar": {
         "score": 94,
@@ -467,18 +474,17 @@
         }
       ],
       "skillsFound": [
-        "Python",
-        "Java",
-        "C++",
-        "Sql",
-        "Html"
+        "React",
+        "Node.js",
+        "Aws",
+        "Ci/cd"
       ],
       "missingSkills": [
         "Cloud Architecture (AWS/GCP)",
         "Unit Testing (Jest/Cypress)",
-        "CI/CD Pipelines",
-        "System Design",
-        "Microservices"
+        "Microservices",
+        "GraphQL",
+        "Docker & Containerization"
       ],
       "suggestions": [
         {
@@ -497,11 +503,7 @@
           "text": "Use stronger action verbs (e.g., spearheaded, architected) instead of \"worked on\".",
           "priority": "Low"
         }
-      ],
-      "fixedSummary": "K.DEVAKI\nPalichiyamman Kovil Street,\nMoolaiyar,\nPannaikadu pirivu,\nKodaikanal.624210.\nDindigul (dt),\nTamilnadu.\n\n\nDOB 14.03.1998\nObjective\nTo seeking a position to utilise my skills and abilities in an organisation that offers\nsecurity and professional growth while",
-      "fixedProjects": "Resume Experience Section () — being resourceful, innovative and flexible.\nEducation\nSkills\nLanguage Knowns : C,C++,Java.\nDatabase : Oracle,SQL Server\nTools : MS Office\nWeb Technology : HTML\nTechnical Qualification : Tally\nProjects\nLanguage\nTamil\nEnglish\nPersonal\nProfile\nArea of\nInterest\nArulmigu Palaniyandavar Arts College For Women,Palani.\nBCA\n2021 — 69%\nGovernment Higher Secondary School, Dindigul.\nHSC\n2014 — 81%\nGovernment Higher Secondary School, Dindigul.\nSSLC\n2016 — 88%\nMother Teresa Women's University,Kodaikanal.\nMCA\n2023 — 80%\nProject Title : Bank Transaction\nDescription : To apply and update Bank Transaction in this Project which is developed\nby VB.Net with SQL SERVER 2005.\nFather's Name : M.Krishnan(late)\nMother's Name : K.Annakamu\nReligion : Hindu\nNationality : Indian\nLanguage Known : Tamil, English\nStrength Obedience : Self confidence,Quick Learner, Hardworking\nHobbies : Reading Books,Drawing\nProgramming Language Such as Python.\nOperating System",
-      "fixedSkills": "C, C++, Java, Oracle, SQL Server, MS Office, HTML, Tally, Python, Operating Systems, Agile Methodology, Git/GitHub",
-      "customHtml": ""
+      ]
     }
   ]
 }

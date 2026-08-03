@@ -16,37 +16,37 @@ export default function ResumeBuilderModal({
   const [activeTab, setActiveTab] = useState('templates'); // 'templates' | 'personal' | 'summary' | 'experience' | 'skills'
 
   const cleanSummary = (text, pInfo) => {
-    if (!text) return 'Seeking a position to utilize my skills and abilities in an organization that offers security and professional growth while being resourceful, innovative and flexible.';
+    if (!text) return '';
     let cleaned = text;
     if (pInfo?.email) cleaned = cleaned.replace(pInfo.email, '');
     if (pInfo?.phone) cleaned = cleaned.replace(pInfo.phone, '');
     cleaned = cleaned.replace(/linkedin\.com\/in\/[^\s]+/gi, '').replace(/^[\s-]+/, '').trim();
     cleaned = cleaned.replace(/^[-\s•|*+0-9()]+$/, '').trim();
     let alphaCount = (cleaned.match(/[a-zA-Z]/g) || []).length;
-    if (alphaCount < 10) return 'Seeking a position to utilize my skills and abilities in an organization that offers security and professional growth while being resourceful, innovative and flexible.';
+    if (alphaCount < 10) return '';
     return cleaned;
   };
 
   const cleanEducation = (text) => {
-    if (!text) return 'BCA — Palaniammal Arts College For Women (2021) | 88%\nHSC — Government Higher Secondary School (2018) | 81%\nSSLC — Government Higher Secondary School (2016) | 92%\nMCA — Mother Teresa Womens University (2023) | 85%';
+    if (!text) return '';
     let cleaned = text;
     const skillsMatch = cleaned.match(/technical skills|skills & tools|skills/i);
     if (skillsMatch) {
       cleaned = cleaned.substring(0, skillsMatch.index).trim();
     }
-    return cleaned || 'BCA — Palaniammal Arts College For Women (2021) | 88%\nHSC — Government Higher Secondary School (2018) | 81%\nSSLC — Government Higher Secondary School (2016) | 92%\nMCA — Mother Teresa Womens University (2023) | 85%';
+    return cleaned || '';
   };
 
   // Local state initialized from resumeData
   const [personalInfo, setPersonalInfo] = useState({
-    name: resumeData?.personalInfo?.name || 'K.DEVAKI',
-    jobTitle: resumeData?.personalInfo?.jobTitle || 'Junior Software Developer',
-    email: resumeData?.personalInfo?.email || 'devaki.professional@gmail.com',
-    phone: resumeData?.personalInfo?.phone || '+91 98401 23456',
-    city: resumeData?.personalInfo?.city || 'Chennai / Bangalore, India',
-    linkedin: resumeData?.personalInfo?.linkedin || 'linkedin.com/in/devaki-tech',
-    portfolio: resumeData?.personalInfo?.portfolio || 'devaki-portfolio.dev',
-    github: resumeData?.personalInfo?.github || 'github.com/devaki-codes',
+    name: resumeData?.personalInfo?.name === 'Untitled Resume' ? '' : (resumeData?.personalInfo?.name || ''),
+    jobTitle: resumeData?.personalInfo?.jobTitle || '',
+    email: resumeData?.personalInfo?.email || '',
+    phone: resumeData?.personalInfo?.phone || '',
+    city: resumeData?.personalInfo?.city || '',
+    linkedin: resumeData?.personalInfo?.linkedin || '',
+    portfolio: resumeData?.personalInfo?.portfolio || '',
+    github: resumeData?.personalInfo?.github || '',
     profilePicture: resumeData?.personalInfo?.profilePicture || null
   });
 
@@ -55,14 +55,7 @@ export default function ResumeBuilderModal({
   );
 
   const [experience, setExperience] = useState(
-    resumeData?.experienceList || [
-      {
-        company: 'Bank Transaction Systems',
-        role: 'Software Developer Intern',
-        period: '2023 - 2024',
-        bullets: 'Applied and updated Bank Transaction modules in VB.Net with SQL Server 2005.\nOptimized database transaction queries reducing latency by 20%.'
-      }
-    ]
+    resumeData?.experienceList?.length > 0 ? resumeData.experienceList : []
   );
 
   const [education, setEducation] = useState(() => 
@@ -75,28 +68,21 @@ export default function ResumeBuilderModal({
 
   useEffect(() => {
     if (isOpen && resumeData) {
-      setPersonalInfo(resumeData.personalInfo || {
-        name: resumeData.fileName?.replace(/\.pdf$/i, '') || 'K.DEVAKI',
-        jobTitle: 'Junior Software Developer',
-        email: 'devaki.professional@gmail.com',
-        phone: '+91 98401 23456',
-        city: 'Chennai / Bangalore, India',
-        linkedin: 'linkedin.com/in/devaki-tech',
-        portfolio: 'devaki-portfolio.dev',
-        github: 'github.com/devaki-codes',
-        profilePicture: null
+      setPersonalInfo({
+        name: resumeData.personalInfo?.name === 'Untitled Resume' ? '' : (resumeData.personalInfo?.name || ''),
+        jobTitle: resumeData.personalInfo?.jobTitle || '',
+        email: resumeData.personalInfo?.email || '',
+        phone: resumeData.personalInfo?.phone || '',
+        city: resumeData.personalInfo?.city || '',
+        linkedin: resumeData.personalInfo?.linkedin || '',
+        portfolio: resumeData.personalInfo?.portfolio || '',
+        github: resumeData.personalInfo?.github || '',
+        profilePicture: resumeData.personalInfo?.profilePicture || null
       });
       setSummary(cleanSummary(resumeData.fixedSummary || resumeData.summary, resumeData.personalInfo));
-      setExperience(resumeData.experienceList || [
-        {
-          company: 'Bank Transaction Systems',
-          role: 'Software Developer Intern',
-          period: '2023 - 2024',
-          bullets: 'Applied and updated Bank Transaction modules in VB.Net with SQL Server 2005.\nOptimized database transaction queries reducing latency by 20%.'
-        }
-      ]);
+      setExperience(resumeData.experienceList?.length > 0 ? resumeData.experienceList : []);
       setEducation(cleanEducation(resumeData.education));
-      setSkills(resumeData.fixedSkills || 'C, C++, Java, Oracle, SQL Server, MS Office, HTML, Tally, Python, Operating Systems, Agile Methodology, Git/GitHub');
+      setSkills(resumeData.fixedSkills || resumeData.skillsFound?.map(s => s.skill).join(', ') || '');
     }
   }, [isOpen]);
 
@@ -247,7 +233,7 @@ export default function ResumeBuilderModal({
               }}
             >
               <Palette size={18} />
-              <span>🎨 Templates & Color</span>
+              <span>Templates & Color</span>
             </button>
 
             <button
@@ -262,7 +248,7 @@ export default function ResumeBuilderModal({
               }}
             >
               <User size={18} />
-              <span>👤 Personal Info</span>
+              <span>Personal Info</span>
             </button>
 
             <button
@@ -277,7 +263,7 @@ export default function ResumeBuilderModal({
               }}
             >
               <FileText size={18} />
-              <span>📝 AI Summary</span>
+              <span>AI Summary</span>
             </button>
 
             <button
@@ -292,7 +278,7 @@ export default function ResumeBuilderModal({
               }}
             >
               <Briefcase size={18} />
-              <span>💼 Work Experience</span>
+              <span>Work Experience</span>
             </button>
 
             <button
@@ -307,7 +293,7 @@ export default function ResumeBuilderModal({
               }}
             >
               <Code size={18} />
-              <span>🛠️ Technical Skills</span>
+              <span>Technical Skills</span>
             </button>
 
             <button
@@ -322,7 +308,7 @@ export default function ResumeBuilderModal({
               }}
             >
               <GraduationCap size={18} />
-              <span>🎓 Education Details</span>
+              <span>Education Details</span>
             </button>
           </div>
 

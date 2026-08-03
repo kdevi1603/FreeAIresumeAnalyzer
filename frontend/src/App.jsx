@@ -5,7 +5,7 @@ import ContactModal from './components/ContactModal.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import SidebarDashboard from './pages/SidebarDashboard.jsx';
 import Footer from './components/Footer.jsx';
-import TemplateModal from './components/TemplateModal.jsx';
+import TemplateSelectionModal from './components/TemplateSelectionModal.jsx';
 import CoverLetterStudio from './components/studio/CoverLetterStudio.jsx';
 import CreateResumeModal from './components/CreateResumeModal.jsx';
 import { Sparkles, Shield, Heart, Github } from 'lucide-react';
@@ -20,20 +20,31 @@ export default function App() {
   const [currentCoverLetterName, setCurrentCoverLetterName] = useState('');
   const [currentCoverLetterContent, setCurrentCoverLetterContent] = useState('');
   const [currentCoverLetterId, setCurrentCoverLetterId] = useState(null);
-  
+
   const [savedCoverLetters, setSavedCoverLetters] = useState([
     { id: '1', title: 'Software Engineer Cover Letter', target: 'Google - Frontend', date: '1 day ago', content: '' },
     { id: '2', title: 'Product Manager Cover Letter', target: 'Microsoft', date: '3 days ago', content: '' }
   ]);
-  
+
   const [savedResumes, setSavedResumes] = useState([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState('modern');
 
   const handleApplyTemplate = (templateId) => {
     setIsTemplateModalOpen(false);
-    setViewMode('sidebar_dashboard');
+    setSelectedTemplateId(templateId);
+
+    // Check if we need to create a new scratch resume
+    if (!currentAnalysis) {
+      const newRes = { id: 'scratch-' + Date.now(), isScratch: true, personalInfo: { name: 'Untitled Resume' } };
+      setSavedResumes(prev => [newRes, ...prev]);
+      setCurrentAnalysis(newRes);
+    }
+
+    setViewMode('studio');
   };
 
   const handleTemplateSelectFromGallery = (templateId) => {
+    setSelectedTemplateId(templateId);
     setViewMode('studio');
   };
 
@@ -74,12 +85,12 @@ export default function App() {
             }
           }}
         />
-        <TemplateModal
+        <TemplateSelectionModal
           isOpen={isTemplateModalOpen}
           onClose={() => setIsTemplateModalOpen(false)}
           onApply={handleApplyTemplate}
         />
-        <CreateResumeModal 
+        <CreateResumeModal
           isOpen={isCreateResumeModalOpen}
           onClose={() => setIsCreateResumeModalOpen(false)}
           onBuild={() => {
@@ -87,7 +98,7 @@ export default function App() {
             const newRes = { id: 'scratch-' + Date.now(), isScratch: true, personalInfo: { name: 'Untitled Resume' } };
             setSavedResumes(prev => [newRes, ...prev]);
             setCurrentAnalysis(newRes);
-            setViewMode('templates');
+            setIsTemplateModalOpen(true);
           }}
           onImportSuccess={(data) => {
             setIsCreateResumeModalOpen(false);
@@ -103,7 +114,7 @@ export default function App() {
 
   if (viewMode === 'cover_letter_studio') {
     return (
-      <CoverLetterStudio 
+      <CoverLetterStudio
         coverLetterName={currentCoverLetterName}
         initialContent={currentCoverLetterContent}
         onBack={() => setViewMode('sidebar_dashboard')}
@@ -125,8 +136,8 @@ export default function App() {
   // Allow rendering StudioWorkspace globally if needed
   if (viewMode === 'studio' || viewMode === 'templates') {
     return (
-      <Dashboard 
-        onOpenAuth={() => setIsAuthOpen(true)} 
+      <Dashboard
+        onOpenAuth={() => setIsAuthOpen(true)}
         viewMode={viewMode}
         setViewMode={setViewMode}
         onOpenTemplateModal={() => setIsTemplateModalOpen(true)}
@@ -134,6 +145,8 @@ export default function App() {
         setCurrentAnalysis={setCurrentAnalysis}
         setSavedResumes={setSavedResumes}
         onTemplateSelect={handleTemplateSelectFromGallery}
+        selectedTemplateId={selectedTemplateId}
+        setSelectedTemplateId={setSelectedTemplateId}
       />
     );
   }
@@ -148,16 +161,18 @@ export default function App() {
           setViewMode={setViewMode}
           onOpenTemplateModal={() => setIsTemplateModalOpen(true)}
         />
-        
+
         <main style={{ marginTop: '20px' }}>
-          <Dashboard 
-            onOpenAuth={() => setIsAuthOpen(true)} 
+          <Dashboard
+            onOpenAuth={() => setIsAuthOpen(true)}
             viewMode={viewMode}
             setViewMode={setViewMode}
             onOpenTemplateModal={() => setIsTemplateModalOpen(true)}
             currentAnalysis={currentAnalysis}
             setCurrentAnalysis={setCurrentAnalysis}
             setSavedResumes={setSavedResumes}
+            selectedTemplateId={selectedTemplateId}
+            setSelectedTemplateId={setSelectedTemplateId}
           />
         </main>
       </div>
@@ -173,18 +188,18 @@ export default function App() {
         isOpen={isContactOpen}
         onClose={() => setIsContactOpen(false)}
       />
-      <TemplateModal
+      <TemplateSelectionModal
         isOpen={isTemplateModalOpen}
         onClose={() => setIsTemplateModalOpen(false)}
         onApply={handleApplyTemplate}
       />
-      <CreateResumeModal 
+      <CreateResumeModal
         isOpen={isCreateResumeModalOpen}
         onClose={() => setIsCreateResumeModalOpen(false)}
         onBuild={() => {
           setIsCreateResumeModalOpen(false);
           setCurrentAnalysis({ isScratch: true });
-          setViewMode('templates');
+          setIsTemplateModalOpen(true);
         }}
         onImportSuccess={(data) => {
           setIsCreateResumeModalOpen(false);

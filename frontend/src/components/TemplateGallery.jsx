@@ -1,170 +1,187 @@
-import React from 'react';
-import { ArrowLeft, Sparkles, Layout, Layers, GraduationCap, Code, Briefcase, Paintbrush, Building, BookOpen, FileText, Crown } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowLeft, Sparkles, Check } from 'lucide-react';
 
-const templates = [
+const TEMPLATES = [
   {
     id: 'modern',
-    name: 'Modern Professional',
-    description: 'Clean two-column layout. Best for IT, Software, Business. ATS-friendly.',
-    icon: <Layout size={24} />,
-    color: '#3B82F6' // Blue
+    name: '1. Modern Professional',
+    badge: 'Default',
+    description: 'Two-column layout with sidebar',
+    image: '/mockups/modern.png?v=2',
+    tags: ['Two column', 'With photo', 'ATS'],
+    displayTags: ['Two Column', 'With Photo', 'ATS Friendly']
   },
   {
     id: 'minimalist',
-    name: 'Minimal ATS',
-    description: 'Single-column design. Maximum ATS compatibility. Best for online job applications.',
-    icon: <Layers size={24} />,
-    color: '#64748B' // Slate
-  },
-  {
-    id: 'fresher',
-    name: 'Fresher / Student',
-    description: 'Focus on education, skills, and projects. Suitable for fresh graduates.',
-    icon: <GraduationCap size={24} />,
-    color: '#10B981' // Emerald
+    name: '2. Minimal ATS',
+    description: 'Single column ATS-friendly design',
+    image: '/mockups/minimal.png?v=2',
+    tags: ['Single column', 'ATS'],
+    displayTags: ['Single Column', 'ATS Friendly']
   },
   {
     id: 'software',
-    name: 'Software Engineer',
-    description: 'Highlights technical skills. Includes GitHub, portfolio, certifications, and projects.',
-    icon: <Code size={24} />,
-    color: '#8B5CF6' // Violet
+    name: '3. Software Engineer',
+    description: 'Technical layout for developers',
+    image: '/mockups/modern.png?v=2',
+    tags: ['Two column', 'With photo', 'ATS'],
+    displayTags: ['Two Column', 'With Photo', 'ATS Friendly']
+  },
+  {
+    id: 'fresher',
+    name: '4. Student / Fresher',
+    description: 'Perfect for students & freshers',
+    image: '/mockups/creative.png?v=2',
+    tags: ['Two column', 'With photo'],
+    displayTags: ['Two Column', 'With Photo']
   },
   {
     id: 'executive',
-    name: 'Executive',
-    description: 'Professional design. Emphasizes work experience and leadership.',
-    icon: <Briefcase size={24} />,
-    color: '#F59E0B' // Amber
-  },
-  {
-    id: 'creative',
-    name: 'Creative',
-    description: 'Modern colors and icons. Suitable for UI/UX, Graphic Design, Marketing.',
-    icon: <Paintbrush size={24} />,
-    color: '#EC4899' // Pink
+    name: '5. Executive',
+    description: 'For senior professionals & leaders',
+    image: '/mockups/modern.png?v=2',
+    tags: ['Two column', 'With photo'],
+    displayTags: ['Two Column', 'With Photo']
   },
   {
     id: 'corporate',
-    name: 'Corporate',
-    description: 'Formal business style. HR and management roles.',
-    icon: <Building size={24} />,
-    color: '#1E293B' // Slate Dark
+    name: '6. Corporate',
+    description: 'Professional corporate layout',
+    image: '/mockups/minimal.png?v=2',
+    tags: ['Two column', 'With photo', 'ATS'],
+    displayTags: ['Two Column', 'With Photo', 'ATS Friendly']
   },
   {
     id: 'academic',
-    name: 'Academic',
-    description: 'For teachers, researchers, and higher education. Includes publications and certifications.',
-    icon: <BookOpen size={24} />,
-    color: '#06B6D4' // Cyan
+    name: '7. Academic CV',
+    description: 'For academics & researchers',
+    image: '/mockups/minimal.png?v=2',
+    tags: ['Single column', 'ATS'],
+    displayTags: ['Single Column', 'ATS Friendly']
+  },
+  {
+    id: 'creative',
+    name: '8. Creative',
+    description: 'Creative design with visual elements',
+    image: '/mockups/creative.png?v=2',
+    tags: ['Two column', 'With photo'],
+    displayTags: ['Two Column', 'With Photo']
   },
   {
     id: 'onepage',
-    name: 'One-Page ATS',
-    description: 'Compact layout. Perfect for candidates with 0–5 years of experience.',
-    icon: <FileText size={24} />,
-    color: '#14B8A6' // Teal
+    name: '9. Business Analyst',
+    description: 'Data-driven professional layout',
+    image: '/mockups/modern.png?v=2',
+    tags: ['Two column', 'ATS'],
+    displayTags: ['Two Column', 'ATS Friendly']
   },
   {
     id: 'elegant',
-    name: 'Elegant',
-    description: 'Premium-looking design. Simple and ATS compatible.',
-    icon: <Crown size={24} />,
-    color: '#D946EF' // Fuchsia
+    name: '10. Clean Professional',
+    description: 'Simple & clean single column',
+    image: '/mockups/minimal.png?v=2',
+    tags: ['Single column', 'ATS'],
+    displayTags: ['Single Column', 'ATS Friendly']
   }
 ];
 
 export default function TemplateGallery({ onSelectTemplate, onBack }) {
+  const [hoveredTemplate, setHoveredTemplate] = useState(null);
+
   return (
-    <div className="animate-fade-in" style={{ padding: '20px 0', maxWidth: '1200px', margin: '0 auto' }}>
+    <div className="animate-fade-in font-sans" style={{ padding: '40px 20px', maxWidth: '1400px', margin: '0 auto' }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '40px' }}>
         <button
           onClick={onBack}
-          className="btn btn-secondary"
-          style={{ padding: '8px 16px', borderRadius: '12px' }}
+          className="bg-white/5 text-gray-300 border-white/10 hover:bg-white/10 hover:text-white transition-all shadow-[0_0_15px_rgba(0,0,0,0.2)] flex items-center gap-2"
+          style={{ padding: '10px 20px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}
         >
-          <ArrowLeft size={18} />
-          <span>Back</span>
+          <ArrowLeft size={20} />
+          <span className="font-medium">Back</span>
         </button>
         <div>
-          <h2 style={{ fontSize: '2rem', fontWeight: 800, margin: '0 0 4px 0', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Sparkles size={24} color="var(--accent-cyan)" />
+          <h2 style={{ fontSize: '2.2rem', fontWeight: 800, margin: '0 0 6px 0', display: 'flex', alignItems: 'center', gap: '12px', color: '#fff', letterSpacing: '-0.02em' }}>
+            <Sparkles size={28} className="text-cyan-400 drop-shadow-[0_0_10px_rgba(0,242,254,0.5)]" />
             Recommended Free Resume Templates
           </h2>
-          <p style={{ color: 'var(--text-muted)', margin: 0 }}>
+          <p style={{ color: '#9ca3af', margin: 0, fontSize: '1.05rem' }}>
             Select a starting template to launch the AI Resume Analyzer Studio. You can change this later.
           </p>
         </div>
       </div>
 
       {/* Grid */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-        gap: '24px'
-      }}>
-        {templates.map(tmpl => (
-          <div
-            key={tmpl.id}
-            onClick={() => onSelectTemplate(tmpl.id)}
-            style={{
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border-color)',
-              borderRadius: '16px',
-              padding: '24px',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '16px',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-              position: 'relative',
-              overflow: 'hidden'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-4px)';
-              e.currentTarget.style.border = `1px solid ${tmpl.color}`;
-              e.currentTarget.style.boxShadow = `0 12px 30px rgba(0,0,0,0.2), 0 0 20px ${tmpl.color}20`;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.border = '1px solid var(--border-color)';
-              e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.15)';
-            }}
-          >
-            {/* Top color bar accent */}
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: tmpl.color }} />
+      <div
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+          gap: '32px'
+        }}
+      >
+        {TEMPLATES.map(template => {
+          const isHovered = hoveredTemplate === template.id;
+          return (
+            <div
+              key={template.id}
+              onClick={() => onSelectTemplate(template.id)}
+              onMouseEnter={() => setHoveredTemplate(template.id)}
+              onMouseLeave={() => setHoveredTemplate(null)}
+              className={`group cursor-pointer flex flex-col bg-white border rounded-xl overflow-hidden p-4 transition-all duration-300 ${isHovered
+                  ? 'border-blue-500 shadow-xl ring-1 ring-blue-500 transform -translate-y-1'
+                  : 'border-gray-200 hover:shadow-lg hover:border-gray-300'
+                }`}
+            >
+              {/* Preview Area */}
+              <div
+                className="border border-gray-200 rounded-lg mb-4 bg-white flex justify-center items-start overflow-hidden relative"
+                style={{ width: '100%', height: '380px', overflow: 'hidden', boxSizing: 'border-box', position: 'relative' }}
+              >
+                <img
+                  src={template.image}
+                  alt={template.name}
+                  className="drop-shadow-sm"
+                  style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'top', maxWidth: '100%' }}
+                />
+                {/* Hover Overlay Button */}
+                {isHovered && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-white/40 backdrop-blur-[1px] rounded-lg z-20 transition-all duration-300">
+                    <div className="bg-blue-600 text-white text-[0.9rem] font-bold px-6 py-2.5 rounded-lg shadow-lg flex items-center gap-1.5">
+                      Use Template <ArrowLeft size={16} className="rotate-180" />
+                    </div>
+                  </div>
+                )}
+              </div>
 
-            <div style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '12px',
-              background: `${tmpl.color}20`,
-              color: tmpl.color,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              {tmpl.icon}
-            </div>
+              {/* Text Area */}
+              <div className="flex flex-col flex-1">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <h3 className="text-[1.05rem] font-bold text-gray-900 m-0 leading-tight">
+                    {template.name}
+                  </h3>
+                  {template.badge && (
+                    <span className="bg-blue-50 text-blue-600 border border-blue-100 text-[0.65rem] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
+                      {template.badge}
+                    </span>
+                  )}
+                </div>
+                <p className="text-gray-500 text-[0.85rem] leading-snug m-0 mb-4 line-clamp-1">
+                  {template.description}
+                </p>
 
-            <div>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-main)', margin: '0 0 8px 0' }}>
-                {tmpl.name}
-              </h3>
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
-                {tmpl.description}
-              </p>
+                {/* Tags */}
+                <div className="flex items-center gap-2 flex-wrap mt-auto">
+                  {template.displayTags.map(tag => (
+                    <span key={tag} className="text-[0.7rem] font-medium text-blue-600 bg-blue-50 border border-blue-100 px-2.5 py-0.5 rounded text-center">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
-            
-            <div style={{ marginTop: 'auto', paddingTop: '16px' }}>
-              <span style={{ fontSize: '0.8rem', fontWeight: 600, color: tmpl.color, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                Select Template <ArrowLeft size={14} style={{ transform: 'rotate(180deg)' }} />
-              </span>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
