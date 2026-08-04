@@ -406,7 +406,7 @@
       "fileUrl": "/uploads/89524428-6b36-4ffc-9b35-1f711885763f.pdf",
       "rawText": "",
       "pages": 1,
-      "atsScore": 69,
+      "atsScore": 100,
       "personalInfo": {
         "name": "Parsed Resume",
         "jobTitle": "",
@@ -414,9 +414,11 @@
         "phone": "",
         "city": "",
         "linkedin": "",
-        "github": ""
+        "portfolio": "",
+        "github": "",
+        "profilePicture": null
       },
-      "summary": "Resume summary extracted here...",
+      "summary": "Results-driven Software Engineer with expertise in system design, cloud architecture (AWS/GCP), and microservices. Proven track record of architecting scalable applications, streamlining CI/CD pipelines, and driving efficient cross-functional project management to deliver high-impact technical solutions.",
       "education": "Education details extracted here...",
       "experienceList": [
         {
@@ -501,7 +503,9 @@
         }
       ],
       "fixedSummary": "Results-driven Software Engineer with expertise in system design, cloud architecture (AWS/GCP), and microservices. Proven track record of architecting scalable applications, streamlining CI/CD pipelines, and driving efficient cross-functional project management to deliver high-impact technical solutions.",
-      "customHtml": ""
+      "customHtml": "",
+      "fixedProjects": "Resume Experience Section () — ",
+      "fixedSkills": ", , , , "
     }
   ]
 }
