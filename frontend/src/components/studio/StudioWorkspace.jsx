@@ -575,16 +575,12 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
         )}
 
         {activeView === 'Resume Preview' && (
-          <div className="animate-fade-in" style={{ 
-            height: '100%', 
-            minHeight: '800px', 
-            display: 'flex', 
-            flexDirection: 'column',
-            background: 'var(--bg-main, #f8fafc)',
+          <div className="animate-fade-in" style={{
+            background: 'var(--bg-card)',
             padding: '20px',
             borderRadius: '16px'
           }}>
-            {activeResume?.fileUrl ? (
+            {(activeResume?.fileUrl && !activeResume?.fixedSummary && !activeResume?.fixedProjects && !activeResume?.fixedSkills && !activeResume?.formattingCss) ? (
               <div style={{
                 flex: 1,
                 width: '100%',
@@ -603,7 +599,7 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
               </div>
             ) : (
               <div style={{ flex: 1, minHeight: '800px', background: '#fff', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.1)' }}>
-                <LiveResumePreview resumeData={activeResume} templateStyle={selectedTemplate} accentColor={accentColor} />
+                <LiveResumePreview resumeData={activeResume} templateStyle={selectedTemplate} accentColor={accentColor} onAcceptChanges={() => onUpdateResume && onUpdateResume(activeResume)} />
               </div>
             )}
           </div>
@@ -646,7 +642,7 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
             {showSplitChat && (
               <div style={{ flex: 1, minWidth: '400px', borderLeft: '1px solid var(--border-color)', paddingLeft: '24px' }}>
                   <div style={{ flex: 1, minHeight: '800px', background: '#fff', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.1)' }}>
-                    <LiveResumePreview resumeData={activeResume} templateStyle={selectedTemplate} accentColor={accentColor} />
+                    <LiveResumePreview resumeData={activeResume} templateStyle={selectedTemplate} accentColor={accentColor} onAcceptChanges={() => onUpdateResume && onUpdateResume(activeResume)} />
                   </div>
               </div>
             )}
