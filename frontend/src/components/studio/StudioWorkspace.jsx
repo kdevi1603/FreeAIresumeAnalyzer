@@ -57,6 +57,8 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
   const [isFixing, setIsFixing] = useState(false);
   const [autoFixMessage, setAutoFixMessage] = useState(null);
   const [showSplitChat, setShowSplitChat] = useState(false);
+  const [previewMode, setPreviewMode] = useState('original'); // 'original' | 'ai_edited'
+
 
   const [activeView, setActiveView] = useState(() => {
     return (resumeData?.isScratch || !resumeData?.atsScore) ? 'Resume Preview' : 'Overview';
@@ -575,12 +577,45 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
         )}
 
         {activeView === 'Resume Preview' && (
-          <div className="animate-fade-in" style={{
-            background: 'var(--bg-card)',
+          <div className="animate-fade-in" style={{ 
+            height: '100%', 
+            minHeight: '800px', 
+            display: 'flex', 
+            flexDirection: 'column',
+            background: 'var(--bg-main, #f8fafc)',
             padding: '20px',
             borderRadius: '16px'
           }}>
-            {(activeResume?.fileUrl && !activeResume?.fixedSummary && !activeResume?.fixedProjects && !activeResume?.fixedSkills && !activeResume?.formattingCss) ? (
+            {activeResume?.fileUrl && (
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+                <div style={{ display: 'flex', background: 'var(--bg-card)', borderRadius: '8px', padding: '4px', border: '1px solid var(--border-color)', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+                  <button 
+                    onClick={() => setPreviewMode('original')}
+                    style={{ 
+                      padding: '8px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem',
+                      background: previewMode === 'original' ? 'var(--accent-blue)' : 'transparent',
+                      color: previewMode === 'original' ? '#fff' : 'var(--text-muted)',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    Original PDF
+                  </button>
+                  <button 
+                    onClick={() => setPreviewMode('ai_edited')}
+                    style={{ 
+                      padding: '8px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem',
+                      background: previewMode === 'ai_edited' ? 'var(--accent-blue)' : 'transparent',
+                      color: previewMode === 'ai_edited' ? '#fff' : 'var(--text-muted)',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    AI Optimized
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            {(activeResume?.fileUrl && previewMode === 'original') ? (
               <div style={{
                 flex: 1,
                 width: '100%',
@@ -599,7 +634,7 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
               </div>
             ) : (
               <div style={{ flex: 1, minHeight: '800px', background: '#fff', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.1)' }}>
-                <LiveResumePreview resumeData={activeResume} templateStyle={selectedTemplate} accentColor={accentColor} onAcceptChanges={() => onUpdateResume && onUpdateResume(activeResume)} />
+                <LiveResumePreview resumeData={activeResume} templateStyle={selectedTemplate} accentColor={accentColor} />
               </div>
             )}
           </div>
@@ -616,6 +651,7 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
                 autoFixMessage={autoFixMessage}
                 onApplyFix={(section, content) => {
                   setShowSplitChat(true);
+                  setPreviewMode('ai_edited');
                   setActiveResume(prev => {
                     const updated = { ...prev };
                     const sec = section.toLowerCase();
@@ -641,9 +677,57 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
             </div>
             {showSplitChat && (
               <div style={{ flex: 1, minWidth: '400px', borderLeft: '1px solid var(--border-color)', paddingLeft: '24px' }}>
-                  <div style={{ flex: 1, minHeight: '800px', background: '#fff', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.1)' }}>
-                    <LiveResumePreview resumeData={activeResume} templateStyle={selectedTemplate} accentColor={accentColor} onAcceptChanges={() => onUpdateResume && onUpdateResume(activeResume)} />
+                {activeResume?.fileUrl && (
+                  <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+                    <div style={{ display: 'flex', background: 'var(--bg-card)', borderRadius: '8px', padding: '4px', border: '1px solid var(--border-color)', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+                      <button 
+                        onClick={() => setPreviewMode('original')}
+                        style={{ 
+                          padding: '8px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem',
+                          background: previewMode === 'original' ? 'var(--accent-blue)' : 'transparent',
+                          color: previewMode === 'original' ? '#fff' : 'var(--text-muted)',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        Original PDF
+                      </button>
+                      <button 
+                        onClick={() => setPreviewMode('ai_edited')}
+                        style={{ 
+                          padding: '8px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem',
+                          background: previewMode === 'ai_edited' ? 'var(--accent-blue)' : 'transparent',
+                          color: previewMode === 'ai_edited' ? '#fff' : 'var(--text-muted)',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        AI Optimized
+                      </button>
+                    </div>
                   </div>
+                )}
+                
+                {(activeResume?.fileUrl && previewMode === 'original') ? (
+                  <div style={{
+                    flex: 1,
+                    width: '100%',
+                    minHeight: '800px',
+                    borderRadius: '12px',
+                    overflow: 'hidden',
+                    boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
+                    border: '1px solid var(--border-color, #e2e8f0)',
+                    background: '#fff'
+                  }}>
+                    <iframe
+                      src={activeResume.fileUrl + (activeResume.fileUrl.toLowerCase().endsWith('.pdf') ? '#view=FitH&toolbar=0&navpanes=0' : '')}
+                      style={{ width: '100%', height: '100%', minHeight: '800px', border: 'none' }}
+                      title="Uploaded Resume Preview"
+                    />
+                  </div>
+                ) : (
+                  <div style={{ flex: 1, minHeight: '800px', background: '#fff', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.1)' }}>
+                    <LiveResumePreview resumeData={activeResume} templateStyle={selectedTemplate} accentColor={accentColor} />
+                  </div>
+                )}
               </div>
             )}
           </div>

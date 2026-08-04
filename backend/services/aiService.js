@@ -163,14 +163,14 @@ function runSmartDemoAnalysis(resumeText) {
       linkedin: '',
       github: ''
     },
-    summary: summary || 'Resume summary extracted here...',
-    education: education.replace(/education/i, '').trim() || 'Education details extracted here...',
+    summary: summary || resumeText.substring(0, 500) + '...',
+    education: education.replace(/education/i, '').trim() || '',
     experienceList: [
       {
-        company: 'Resume Experience Section',
+        company: expBullets ? 'Extracted Experience' : 'Original Content',
         role: '',
         period: '',
-        bullets: expBullets
+        bullets: expBullets || resumeText
       }
     ],
     sectionScores: {

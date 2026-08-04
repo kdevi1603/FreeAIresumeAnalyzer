@@ -406,7 +406,7 @@
       "fileUrl": "/uploads/4f1aff97-965c-4cc7-89ac-1d9b90a4f666.pdf",
       "rawText": "",
       "pages": 1,
-      "atsScore": 65,
+      "atsScore": 77,
       "personalInfo": {
         "name": "Parsed Resume",
         "jobTitle": "",
@@ -414,7 +414,9 @@
         "phone": "",
         "city": "",
         "linkedin": "",
-        "github": ""
+        "portfolio": "",
+        "github": "",
+        "profilePicture": null
       },
       "summary": "Resume summary extracted here...",
       "education": "Education details extracted here...",
@@ -499,7 +501,11 @@
           "text": "Use stronger action verbs (e.g., spearheaded, architected) instead of \"worked on\".",
           "priority": "Low"
         }
-      ]
+      ],
+      "fixedSkills": "• Technical Skills: System Design, Microservices, Cloud Architecture (AWS/GCP), CI/CD Pipelines, Unit Testing (Jest/Cypress), Data Analysis, Project Management\n• Tools & Technologies: Git, Docker, Kubernetes, Jira, Postman\n• Core Competencies: Problem Solving, Teamwork, Communication",
+      "customHtml": "",
+      "fixedSummary": "Resume summary extracted here...",
+      "fixedProjects": "Resume Experience Section () — "
     }
   ]
 }
