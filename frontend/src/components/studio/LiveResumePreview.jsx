@@ -4,7 +4,7 @@ import confetti from 'canvas-confetti';
 import html2pdf from 'html2pdf.js';
 
 export default function LiveResumePreview({ resumeData, templateStyle = 'modern', accentColor = '#2563EB', onManualEdit, onAcceptChanges }) {
-  const [zoom, setZoom] = useState(window.innerWidth <= 768 ? 65 : 70);
+  const [zoom, setZoom] = useState(window.innerWidth <= 768 ? 65 : 85);
   const [showDiff, setShowDiff] = useState(true);
   const [changesAccepted, setChangesAccepted] = useState(false);
   const [showPrintPreview, setShowPrintPreview] = useState(false);
@@ -32,7 +32,7 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
       if (!document.fullscreenElement) {
         if (window.innerWidth <= 500) setZoom(50);
         else if (window.innerWidth <= 768) setZoom(65);
-        else setZoom(70);
+        else setZoom(85);
       }
     };
     window.addEventListener('resize', handleResize);
@@ -54,7 +54,7 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
 
   const handleZoomIn = () => setZoom(prev => Math.min(150, prev + 10));
   const handleZoomOut = () => setZoom(prev => Math.max(40, prev - 10));
-  const handleResetZoom = () => setZoom(window.innerWidth <= 768 ? 65 : 70);
+  const handleResetZoom = () => setZoom(window.innerWidth <= 768 ? 65 : 85);
   
   const handleFullscreen = () => {
     if (containerRef.current) {
@@ -74,13 +74,13 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
     const originalTransform = element.style.transform;
     element.style.transform = 'scale(1)';
     
-    const contentHeight = Math.max(842, element.scrollHeight);
+    const contentHeight = Math.max(707, element.scrollHeight);
     const opt = {
       margin:       0,
       filename:     `${(resumeData?.fileName || 'resume').replace(/\.pdf$/i, '')}.pdf`,
       image:        { type: 'jpeg', quality: 0.98 },
       html2canvas:  { scale: 2, useCORS: true },
-      jsPDF:        { unit: 'px', format: [595, contentHeight], orientation: 'portrait' }
+      jsPDF:        { unit: 'px', format: [500, contentHeight], orientation: 'portrait' }
     };
     
     html2pdf().set(opt).from(element).save().then(() => {
@@ -210,8 +210,8 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
             className="a4-print-container"
             style={{
               transform: `scale(${zoom / 100})`, transformOrigin: 'top center', transition: 'transform 0.2s ease',
-              width: '595px', minHeight: '842px', backgroundColor: '#ffffff', color: '#1a1a1a',
-              padding: '48px 60px',
+              width: '500px', minHeight: '707px', backgroundColor: '#ffffff', color: '#1a1a1a',
+              padding: '48px 40px',
               boxShadow: '0 20px 60px rgba(0,0,0,0.6)', borderRadius: '4px',
               fontFamily: "'Inter', sans-serif",
               position: 'relative'
@@ -228,8 +228,8 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
         ) : (
         <div ref={resumeContentRef} className="a4-print-container" style={{
           transform: `scale(${zoom / 100})`, transformOrigin: 'top center', transition: 'transform 0.2s ease',
-          width: '595px', minHeight: '842px', backgroundColor: '#ffffff', color: '#1a1a1a',
-          padding: (templateStyle === 'sidebar' || templateStyle === 'executive') ? '0' : '48px 60px',
+          width: '500px', minHeight: '707px', backgroundColor: '#ffffff', color: '#1a1a1a',
+          padding: (templateStyle === 'sidebar' || templateStyle === 'executive') ? '0' : '48px 40px',
           boxShadow: '0 20px 60px rgba(0,0,0,0.6)', borderRadius: '4px',
           fontFamily: ['academic', 'corporate', 'serif'].includes(templateStyle) ? "'Times New Roman', serif"
             : ['minimalist', 'software'].includes(templateStyle) ? "'Courier New', monospace"

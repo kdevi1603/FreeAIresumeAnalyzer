@@ -593,13 +593,10 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
                 overflow: 'hidden',
                 boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
                 border: '1px solid var(--border-color, #e2e8f0)',
-                background: '#fff',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center'
+                background: '#fff'
               }}>
                 <iframe
-                  src={activeResume.fileUrl + (activeResume.fileUrl.toLowerCase().endsWith('.pdf') ? '#view=Fit&toolbar=0&navpanes=0' : '')}
+                  src={activeResume.fileUrl + (activeResume.fileUrl.toLowerCase().endsWith('.pdf') ? '#view=FitH&toolbar=0&navpanes=0' : '')}
                   style={{ width: '100%', height: '100%', minHeight: '800px', border: 'none' }}
                   title="Uploaded Resume Preview"
                 />
