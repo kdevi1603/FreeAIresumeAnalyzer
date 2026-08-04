@@ -21,8 +21,9 @@ Your goal is to help the user improve their resume to bypass ATS and land a job.
 CRITICAL INSTRUCTIONS:
 1. If the user just says "hi", "hello", etc., ONLY respond with a short greeting like "Hello! How can I help you?". DO NOT analyze the resume unless they ask.
 2. Be concise. Avoid huge walls of text.
-3. If the user asks you to fix or rewrite a section, or if they provide a short keyword/skill (like "system design", "react"), you MUST output the new rewritten text wrapped inside a <fix section="[section_name]">...</fix> tag, where [section_name] is one of: 'projects', 'skills', 'summary', or 'rawText'. 
-4. If they just provided a keyword/skill, assume they want to add it to their skills, and output the updated full skills list in a <fix section="skills">...</fix> tag.
+3. If the user asks you to fix, rewrite, or add a section, you MUST output the COMPLETE new text (including any additions) wrapped inside a <fix section="[section_name]">...</fix> tag, where [section_name] is one of: 'projects', 'skills', 'summary', or 'rawText'. 
+4. CRITICAL: Any new content or rewritten text MUST be placed INSIDE the <fix> tag. Do not output the new content outside the tag! If they ask to add a Technical Summary, append it to the summary inside the <fix section="summary"> tag.
+5. If they just provided a keyword/skill, assume they want to add it to their skills, and output the updated full skills list in a <fix section="skills">...</fix> tag.
 Example: "I have added that keyword to your skills:\n<fix section="skills">Python, System Design, React</fix>"
 
 Context of user's resume:
@@ -160,7 +161,31 @@ const mockSimulateChat = async (message, resumeContext, chatHistory = []) => {
     };
   }
 
-  if (lowerMsg === 'fix' || lowerMsg.includes('fix with ai') || lowerMsg.includes('apply') || lowerMsg.includes('fix it')) {
+  if (lowerMsg === 'fix' || lowerMsg.includes('fix with ai') || lowerMsg.includes('apply') || lowerMsg.includes('fix it') || lowerMsg.includes('fix this')) {
+    
+    // If the user clicked a formatting suggestion
+    if (lowerMsg.includes('format') || lowerMsg.includes('space') || lowerMsg.includes('heading') || lowerMsg.includes('font')) {
+      return {
+        reply: `I can help you with that! Click the button below to apply the fix to your resume.`,
+        proposedFix: {
+          section: 'formatting',
+          content: `/* Formatting Update Applied by AI */\n.a4-print-container h1, .a4-print-container h2, .a4-print-container h3 { line-height: 1.3 !important; letter-spacing: 0.5px !important; }\n.a4-print-container { font-size: 14.5px !important; }\n.a4-print-container ul { padding-left: 24px !important; }\n.a4-print-container li { margin-bottom: 6px !important; }`
+        }
+      };
+    }
+
+    // If the user clicked a project/experience suggestion
+    if (lowerMsg.includes('verb') || lowerMsg.includes('quantify') || lowerMsg.includes('bullet') || lowerMsg.includes('experience')) {
+      return {
+        reply: `I can help you with that! Click the button below to apply the fix to your resume.`,
+        proposedFix: {
+          section: 'project',
+          content: `New Company (Software Engineer) — Student Management System\n• Optimized system performance using HTML, CSS, JavaScript, improving API response time by 35%\n• Spearheaded development of a scalable backend architecture\n• Reduced database query latency by 20% through efficient indexing`
+        }
+      };
+    }
+
+    // Default mock response for summary
     const lastAssistantMessage = chatHistory.slice().reverse().find(m => m.sender === 'assistant' || m.sender === 'bot')?.text || '';
     
     if (lastAssistantMessage.includes('Innovative Full Stack Developer') || lowerMsg.includes('summary')) {

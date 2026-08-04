@@ -15,10 +15,7 @@ export async function uploadResume(req, res) {
 
     // Extract text
     const { text: rawText, pages } = await extractTextFromFile(filePath, fileName);
-    if (!rawText || rawText.trim().length < 50) {
-      await fs.unlink(filePath).catch(() => {});
-      return res.status(400).json({ message: 'Could not extract sufficient text. Please try uploading a different format.' });
-    }
+    // Removed strict length check to allow short or image-based resumes to bypass validation
 
     console.log(`🧠 Running AI Analysis on ${rawText.length} characters...`);
     const aiAnalysis = await analyzeResume(rawText);

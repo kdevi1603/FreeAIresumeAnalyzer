@@ -98,6 +98,21 @@ export default function AiAgentChat({ resumeData, chatMessages, onSendMessage, i
 
                 {msg.proposedFix && (
                   <div style={{ marginTop: '16px' }}>
+                    <div style={{ 
+                      padding: '12px', 
+                      background: isBot ? 'rgba(255,255,255,0.5)' : '#f8fafc', 
+                      borderRadius: '8px', 
+                      border: '1px solid var(--border-color)', 
+                      fontSize: '0.85rem', 
+                      marginBottom: '12px', 
+                      color: 'var(--text-main)', 
+                      fontFamily: 'monospace',
+                      whiteSpace: 'pre-wrap',
+                      maxHeight: '200px',
+                      overflowY: 'auto'
+                    }}>
+                      {msg.proposedFix.content || '/* Formatting updates */'}
+                    </div>
                     <button
                       onClick={() => onApplyFix && onApplyFix(msg.proposedFix.section, msg.proposedFix.content)}
                       style={{

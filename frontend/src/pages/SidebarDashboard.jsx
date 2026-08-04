@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
 import { 
   FileText, Briefcase, Search, Settings, CreditCard, 
-  HelpCircle, Star, LogOut, PlusCircle, Edit3, Target, Copy, Trash2, ChevronLeft, Sun, Moon
+  HelpCircle, Star, LogOut, PlusCircle, Edit3, Target, Copy, Trash2, ChevronLeft, Sun, Moon, Menu, X
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import MyJobsBoard from '../components/MyJobsBoard.jsx';
 import AccountSettingsBoard from '../components/AccountSettingsBoard.jsx';
 import JobSearchBoard from '../components/JobSearchBoard.jsx';
 import MyCoverLettersBoard from '../components/MyCoverLettersBoard.jsx';
+import HelpBoard from '../components/HelpBoard.jsx';
 
 export default function SidebarDashboard({ onCreateNew, onEditResume, onDeleteResume, savedResumes, onBackToLanding, onCreateCoverLetter, currentAnalysis, savedCoverLetters, setSavedCoverLetters, onEditCoverLetter }) {
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('My Resumes');
   const [isDarkMode, setIsDarkMode] = useState(() => !document.body.classList.contains('light-mode'));
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const toggleTheme = () => {
     if (isDarkMode) {
@@ -26,9 +28,25 @@ export default function SidebarDashboard({ onCreateNew, onEditResume, onDeleteRe
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--bg-dark)', margin: 0, padding: 0 }}>
+      {/* Mobile Menu Toggle Button */}
+      <button 
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        style={{ 
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          position: 'fixed', top: '16px', left: '16px', zIndex: 100, 
+          background: 'var(--accent-blue)', color: 'white', border: 'none', 
+          borderRadius: '8px', padding: '8px', cursor: 'pointer',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+        }}
+        className="mobile-menu-btn"
+      >
+        {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+      </button>
+
       {/* Sidebar */}
-      <div style={{ 
-        width: '260px', 
+      <div 
+        className={`sidebar-container ${isMobileMenuOpen ? 'open' : ''}`}
+        style={{ 
         backgroundColor: 'var(--bg-card)', 
         borderRight: '1px solid var(--border-color)',
         display: 'flex',
@@ -39,7 +57,7 @@ export default function SidebarDashboard({ onCreateNew, onEditResume, onDeleteRe
         {/* Logo Area */}
         <div 
           onClick={onBackToLanding}
-          style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+          style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginTop: '40px' }}
         >
           <div style={{ width: '32px', height: '32px', backgroundColor: 'var(--bg-dark)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border-color)' }}>
             <div style={{ width: '16px', height: '16px', border: '2px solid var(--accent-cyan)', borderRadius: '4px' }} />
@@ -80,6 +98,12 @@ export default function SidebarDashboard({ onCreateNew, onEditResume, onDeleteRe
           />
           <div style={{ margin: '16px 0', height: '1px', backgroundColor: 'var(--border-color)' }} />
           <SidebarItem 
+            icon={<HelpCircle size={18} />} 
+            label="Help" 
+            active={activeTab === 'Help'}
+            onClick={() => setActiveTab('Help')}
+          />
+          <SidebarItem 
             icon={<Settings size={18} />} 
             label="Account Settings" 
             active={activeTab === 'Account Settings'}
@@ -111,8 +135,8 @@ export default function SidebarDashboard({ onCreateNew, onEditResume, onDeleteRe
         </div>
       </div>
 
-      {/* Main Content */}
-      <div style={{ marginLeft: '260px', flex: 1, padding: '40px 60px' }}>
+      {/* Main Content Area */}
+      <div className="main-content" style={{ flex: 1, padding: '40px 60px' }}>
         {/* Top bar controls */}
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '40px' }}>
           <div 
@@ -247,6 +271,10 @@ export default function SidebarDashboard({ onCreateNew, onEditResume, onDeleteRe
 
         {activeTab === 'Account Settings' && (
           <AccountSettingsBoard />
+        )}
+
+        {activeTab === 'Help' && (
+          <HelpBoard setActiveTab={setActiveTab} />
         )}
       </div>
     </div>

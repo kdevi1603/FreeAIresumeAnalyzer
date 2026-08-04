@@ -245,6 +245,8 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
             }
         }}>
           
+          <style>{resumeData?.formattingCss || ''}</style>
+          
           {/* 1. Modern Professional (formerly modern) */}
           {templateStyle === 'modern' && (
             <>

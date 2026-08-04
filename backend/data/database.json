@@ -297,113 +297,6 @@
       "customHtml": ""
     },
     {
-      "id": "d3d5149b-73d8-4e81-8777-4d4a77f15492",
-      "createdAt": "2026-07-31T11:27:38.183Z",
-      "userId": "eee93475-69d2-4823-a818-ac1a7cdea6af",
-      "fileName": "Devaki K.pdf",
-      "fileUrl": "/uploads/ccb859e1-07aa-4bc1-82b4-0084bb5a0e8f.pdf",
-      "rawText": "K.DEVAKI\nPalichiyamman Kovil Street,\nMoolaiyar,\nPannaikadu pirivu,\nKodaikanal.624210.\nDindigul (dt),\nTamilnadu.\nthulasidevi9843@gmail.com\n9345071788\nDOB 14.03.1998\nObjective\nTo seeking a position to utilise my skills and abilities in an organisation that offers\nsecurity and professional growth while being resourceful, innovative and flexible.\nEducation\nSkills\nLanguage Knowns : C,C++,Java.\nDatabase : Oracle,SQL Server\nTools : MS Office\nWeb Technology : HTML\nTechnical Qualification : Tally\nProjects\nLanguage\nTamil\nEnglish\nPersonal\nProfile\nArea of\nInterest\nArulmigu Palaniyandavar Arts College For Women,Palani.\nBCA\n2021 — 69%\nGovernment Higher Secondary School, Dindigul.\nHSC\n2014 — 81%\nGovernment Higher Secondary School, Dindigul.\nSSLC\n2016 — 88%\nMother Teresa Women's University,Kodaikanal.\nMCA\n2023 — 80%\nProject Title : Bank Transaction\nDescription : To apply and update Bank Transaction in this Project which is developed\nby VB.Net with SQL SERVER 2005.\nFather's Name : M.Krishnan(late)\nMother's Name : K.Annakamu\nReligion : Hindu\nNationality : Indian\nLanguage Known : Tamil, English\nStrength Obedience : Self confidence,Quick Learner, Hardworking\nHobbies : Reading Books,Drawing\nProgramming Language Such as Python.\nOperating System",
-      "pages": 1,
-      "atsScore": 86,
-      "personalInfo": {
-        "name": "K.DEVAKI",
-        "jobTitle": "",
-        "email": "thulasidevi9843@gmail.com",
-        "phone": "9345071788",
-        "city": "",
-        "linkedin": "",
-        "github": ""
-      },
-      "summary": "K.DEVAKI\nPalichiyamman Kovil Street,\nMoolaiyar,\nPannaikadu pirivu,\nKodaikanal.624210.\nDindigul (dt),\nTamilnadu.\n\n\nDOB 14.03.1998\nObjective\nTo seeking a position to utilise my skills and abilities in an organisation that offers\nsecurity and professional growth while",
-      "education": "Education details extracted here...",
-      "experienceList": [
-        {
-          "company": "Resume Experience Section",
-          "role": "",
-          "period": "",
-          "bullets": "being resourceful, innovative and flexible.\nEducation\nSkills\nLanguage Knowns : C,C++,Java.\nDatabase : Oracle,SQL Server\nTools : MS Office\nWeb Technology : HTML\nTechnical Qualification : Tally\nProjects\nLanguage\nTamil\nEnglish\nPersonal\nProfile\nArea of\nInterest\nArulmigu Palaniyandavar Arts College For Women,Palani.\nBCA\n2021 — 69%\nGovernment Higher Secondary School, Dindigul.\nHSC\n2014 — 81%\nGovernment Higher Secondary School, Dindigul.\nSSLC\n2016 — 88%\nMother Teresa Women's University,Kodaikanal.\nMCA\n2023 — 80%\nProject Title : Bank Transaction\nDescription : To apply and update Bank Transaction in this Project which is developed\nby VB.Net with SQL SERVER 2005.\nFather's Name : M.Krishnan(late)\nMother's Name : K.Annakamu\nReligion : Hindu\nNationality : Indian\nLanguage Known : Tamil, English\nStrength Obedience : Self confidence,Quick Learner, Hardworking\nHobbies : Reading Books,Drawing\nProgramming Language Such as Python.\nOperating System"
-        }
-      ],
-      "sectionScores": {
-        "structure": 90,
-        "experience": 85,
-        "education": 100,
-        "projects": 85,
-        "skills": 75
-      },
-      "grammar": {
-        "score": 94,
-        "readability": "A+",
-        "passiveSentences": 2
-      },
-      "formatting": [
-        {
-          "label": "ATS Friendly Layout",
-          "passed": true
-        },
-        {
-          "label": "Proper Headings",
-          "passed": true
-        },
-        {
-          "label": "Font Size",
-          "passed": true
-        },
-        {
-          "label": "Bullet Points",
-          "passed": true
-        },
-        {
-          "label": "White Space",
-          "passed": true
-        },
-        {
-          "label": "No Images Detected",
-          "passed": true
-        },
-        {
-          "label": "No Large Tables",
-          "passed": false
-        }
-      ],
-      "skillsFound": [
-        "Python",
-        "Java",
-        "C++",
-        "Sql",
-        "Html"
-      ],
-      "missingSkills": [
-        "Cloud Architecture (AWS/GCP)",
-        "Unit Testing (Jest/Cypress)",
-        "CI/CD Pipelines",
-        "System Design",
-        "Microservices"
-      ],
-      "suggestions": [
-        {
-          "text": "Quantify your bullet points with measurable outcomes (e.g., \"Improved API response time by 35%\").",
-          "priority": "High"
-        },
-        {
-          "text": "Add a dedicated \"Technical Summary\" or \"Core Competencies\" section.",
-          "priority": "Medium"
-        },
-        {
-          "text": "Incorporate industry keywords such as CI/CD and System Architecture.",
-          "priority": "High"
-        },
-        {
-          "text": "Use stronger action verbs (e.g., spearheaded, architected) instead of \"worked on\".",
-          "priority": "Low"
-        }
-      ],
-      "fixedSummary": "K.DEVAKI\nPalichiyamman Kovil Street,\nMoolaiyar,\nPannaikadu pirivu,\nKodaikanal.624210.\nDindigul (dt),\nTamilnadu.\n\n\nDOB 14.03.1998\nObjective\nTo seeking a position to utilise my skills and abilities in an organisation that offers\nsecurity and professional growth while",
-      "fixedProjects": "Resume Experience Section () — being resourceful, innovative and flexible.\nEducation\nSkills\nLanguage Knowns : C,C++,Java.\nDatabase : Oracle,SQL Server\nTools : MS Office\nWeb Technology : HTML\nTechnical Qualification : Tally\nProjects\nLanguage\nTamil\nEnglish\nPersonal\nProfile\nArea of\nInterest\nArulmigu Palaniyandavar Arts College For Women,Palani.\nBCA\n2021 — 69%\nGovernment Higher Secondary School, Dindigul.\nHSC\n2014 — 81%\nGovernment Higher Secondary School, Dindigul.\nSSLC\n2016 — 88%\nMother Teresa Women's University,Kodaikanal.\nMCA\n2023 — 80%\nProject Title : Bank Transaction\nDescription : To apply and update Bank Transaction in this Project which is developed\nby VB.Net with SQL SERVER 2005.\nFather's Name : M.Krishnan(late)\nMother's Name : K.Annakamu\nReligion : Hindu\nNationality : Indian\nLanguage Known : Tamil, English\nStrength Obedience : Self confidence,Quick Learner, Hardworking\nHobbies : Reading Books,Drawing\nProgramming Language Such as Python.\nOperating System",
-      "fixedSkills": "C, C++, Java, Oracle, SQL Server, MS Office, HTML, Tally, Python, Operating Systems, Agile Methodology, Git/GitHub",
-      "customHtml": ""
-    },
-    {
       "id": "5b43b321-2f59-4a72-8ddf-9e482006dfbc",
       "createdAt": "2026-08-03T12:02:40.151Z",
       "userId": "a9b1d20f-cc95-497a-9db2-96b5d4d9dd28",
@@ -504,6 +397,323 @@
           "priority": "Low"
         }
       ]
+    },
+    {
+      "id": "41e1fdef-c850-4918-a52b-34af63651fd5",
+      "createdAt": "2026-08-04T04:35:57.725Z",
+      "userId": "eee93475-69d2-4823-a818-ac1a7cdea6af",
+      "fileName": "elsharesume.pdf",
+      "fileUrl": "/uploads/89524428-6b36-4ffc-9b35-1f711885763f.pdf",
+      "rawText": "",
+      "pages": 1,
+      "atsScore": 69,
+      "personalInfo": {
+        "name": "Parsed Resume",
+        "jobTitle": "",
+        "email": "",
+        "phone": "",
+        "city": "",
+        "linkedin": "",
+        "github": ""
+      },
+      "summary": "Resume summary extracted here...",
+      "education": "Education details extracted here...",
+      "experienceList": [
+        {
+          "company": "Resume Experience Section",
+          "role": "",
+          "period": "",
+          "bullets": ""
+        }
+      ],
+      "sectionScores": {
+        "structure": 90,
+        "experience": 80,
+        "education": 100,
+        "projects": 85,
+        "skills": 75
+      },
+      "grammar": {
+        "score": 94,
+        "readability": "A+",
+        "passiveSentences": 2
+      },
+      "formatting": [
+        {
+          "label": "ATS Friendly Layout",
+          "passed": true
+        },
+        {
+          "label": "Proper Headings",
+          "passed": true
+        },
+        {
+          "label": "Font Size",
+          "passed": true
+        },
+        {
+          "label": "Bullet Points",
+          "passed": true
+        },
+        {
+          "label": "White Space",
+          "passed": true
+        },
+        {
+          "label": "No Images Detected",
+          "passed": true
+        },
+        {
+          "label": "No Large Tables",
+          "passed": false
+        }
+      ],
+      "skillsFound": [
+        "Communication",
+        "Problem Solving",
+        "Project Management",
+        "Teamwork",
+        "Data Analysis"
+      ],
+      "missingSkills": [
+        "Cloud Architecture (AWS/GCP)",
+        "Unit Testing (Jest/Cypress)",
+        "CI/CD Pipelines",
+        "System Design",
+        "Microservices"
+      ],
+      "suggestions": [
+        {
+          "text": "Quantify your bullet points with measurable outcomes (e.g., \"Improved API response time by 35%\").",
+          "priority": "High"
+        },
+        {
+          "text": "Add a dedicated \"Technical Summary\" or \"Core Competencies\" section.",
+          "priority": "Medium"
+        },
+        {
+          "text": "Incorporate industry keywords such as CI/CD and System Architecture.",
+          "priority": "High"
+        },
+        {
+          "text": "Use stronger action verbs (e.g., spearheaded, architected) instead of \"worked on\".",
+          "priority": "Low"
+        }
+      ],
+      "fixedSummary": "Results-driven Software Engineer with expertise in system design, cloud architecture (AWS/GCP), and microservices. Proven track record of architecting scalable applications, streamlining CI/CD pipelines, and driving efficient cross-functional project management to deliver high-impact technical solutions.",
+      "customHtml": ""
+    },
+    {
+      "id": "a2efb5d4-98fe-4fb6-8910-fe13c9811985",
+      "createdAt": "2026-08-04T07:03:38.535Z",
+      "userId": "eee93475-69d2-4823-a818-ac1a7cdea6af",
+      "fileName": "Untitled Resume.pdf",
+      "fileUrl": "/uploads/3a0c31d1-0d4f-4be9-8a78-24c409d36696.pdf",
+      "rawText": "",
+      "pages": 1,
+      "atsScore": 69,
+      "personalInfo": {
+        "name": "Parsed Resume",
+        "jobTitle": "",
+        "email": "",
+        "phone": "",
+        "city": "",
+        "linkedin": "",
+        "github": ""
+      },
+      "summary": "Resume summary extracted here...",
+      "education": "Education details extracted here...",
+      "experienceList": [
+        {
+          "company": "Resume Experience Section",
+          "role": "",
+          "period": "",
+          "bullets": ""
+        }
+      ],
+      "sectionScores": {
+        "structure": 90,
+        "experience": 80,
+        "education": 100,
+        "projects": 85,
+        "skills": 75
+      },
+      "grammar": {
+        "score": 94,
+        "readability": "A+",
+        "passiveSentences": 2
+      },
+      "formatting": [
+        {
+          "label": "ATS Friendly Layout",
+          "passed": true
+        },
+        {
+          "label": "Proper Headings",
+          "passed": true
+        },
+        {
+          "label": "Font Size",
+          "passed": true
+        },
+        {
+          "label": "Bullet Points",
+          "passed": true
+        },
+        {
+          "label": "White Space",
+          "passed": true
+        },
+        {
+          "label": "No Images Detected",
+          "passed": true
+        },
+        {
+          "label": "No Large Tables",
+          "passed": false
+        }
+      ],
+      "skillsFound": [
+        "Communication",
+        "Problem Solving",
+        "Project Management",
+        "Teamwork",
+        "Data Analysis"
+      ],
+      "missingSkills": [
+        "Cloud Architecture (AWS/GCP)",
+        "Unit Testing (Jest/Cypress)",
+        "CI/CD Pipelines",
+        "System Design",
+        "Microservices"
+      ],
+      "suggestions": [
+        {
+          "text": "Quantify your bullet points with measurable outcomes (e.g., \"Improved API response time by 35%\").",
+          "priority": "High"
+        },
+        {
+          "text": "Add a dedicated \"Technical Summary\" or \"Core Competencies\" section.",
+          "priority": "Medium"
+        },
+        {
+          "text": "Incorporate industry keywords such as CI/CD and System Architecture.",
+          "priority": "High"
+        },
+        {
+          "text": "Use stronger action verbs (e.g., spearheaded, architected) instead of \"worked on\".",
+          "priority": "Low"
+        }
+      ],
+      "fixedSummary": "• Technical Summary: Project Management, Data Analysis, System Design, CI/CD Pipelines, Cloud Architecture (AWS/GCP)\n• Core Competencies: Cross-Functional Leadership, Process Optimization, Strategic Planning, Problem Solving\n• Accomplished professional adept at leveraging data-driven insights and modern technology stacks to deliver high-impact, scalable solutions.",
+      "customHtml": "",
+      "formattingCss": "\n/* Formatting Update Applied by AI */\n.a4-print-container h1, .a4-print-container h2, .a4-print-container h3 { line-height: 1.3 !important; letter-spacing: 0.5px !important; }\n.a4-print-container { font-size: 14.5px !important; }\n.a4-print-container ul { padding-left: 24px !important; }\n.a4-print-container li { margin-bottom: 6px !important; }",
+      "fixedProjects": "New Company (Software Engineer) - Student Management System\n• Optimized system performance using HTML, CSS, JavaScript, improving API response time by 35%\n• Spearheaded development of a scalable backend architecture\n• Reduced database query latency by 20% through efficient indexing"
+    },
+    {
+      "id": "345e13b3-305d-4353-a58f-e7e429859203",
+      "createdAt": "2026-08-04T08:32:29.486Z",
+      "userId": "eee93475-69d2-4823-a818-ac1a7cdea6af",
+      "fileName": "Untitled Resume.pdf",
+      "fileUrl": "/uploads/a892b516-dd55-4cf6-89e1-60a6864bb904.pdf",
+      "rawText": "",
+      "pages": 1,
+      "atsScore": 69,
+      "personalInfo": {
+        "name": "Parsed Resume",
+        "jobTitle": "",
+        "email": "",
+        "phone": "",
+        "city": "",
+        "linkedin": "",
+        "github": ""
+      },
+      "summary": "Resume summary extracted here...",
+      "education": "Education details extracted here...",
+      "experienceList": [
+        {
+          "company": "Resume Experience Section",
+          "role": "",
+          "period": "",
+          "bullets": ""
+        }
+      ],
+      "sectionScores": {
+        "structure": 90,
+        "experience": 80,
+        "education": 100,
+        "projects": 85,
+        "skills": 75
+      },
+      "grammar": {
+        "score": 94,
+        "readability": "A+",
+        "passiveSentences": 2
+      },
+      "formatting": [
+        {
+          "label": "ATS Friendly Layout",
+          "passed": true
+        },
+        {
+          "label": "Proper Headings",
+          "passed": true
+        },
+        {
+          "label": "Font Size",
+          "passed": true
+        },
+        {
+          "label": "Bullet Points",
+          "passed": true
+        },
+        {
+          "label": "White Space",
+          "passed": true
+        },
+        {
+          "label": "No Images Detected",
+          "passed": true
+        },
+        {
+          "label": "No Large Tables",
+          "passed": false
+        }
+      ],
+      "skillsFound": [
+        "Communication",
+        "Problem Solving",
+        "Project Management",
+        "Teamwork",
+        "Data Analysis"
+      ],
+      "missingSkills": [
+        "Cloud Architecture (AWS/GCP)",
+        "Unit Testing (Jest/Cypress)",
+        "CI/CD Pipelines",
+        "System Design",
+        "Microservices"
+      ],
+      "suggestions": [
+        {
+          "text": "Quantify your bullet points with measurable outcomes (e.g., \"Improved API response time by 35%\").",
+          "priority": "High"
+        },
+        {
+          "text": "Add a dedicated \"Technical Summary\" or \"Core Competencies\" section.",
+          "priority": "Medium"
+        },
+        {
+          "text": "Incorporate industry keywords such as CI/CD and System Architecture.",
+          "priority": "High"
+        },
+        {
+          "text": "Use stronger action verbs (e.g., spearheaded, architected) instead of \"worked on\".",
+          "priority": "Low"
+        }
+      ],
+      "fixedProjects": "WORK EXPERIENCE\n\nSoftware Engineer | Tech Solutions Inc.\n• Architected and deployed scalable Microservices on AWS, reducing system response times by 35% and supporting 100k+ daily active users.\n• Spearheaded automated CI/CD pipelines, decreasing deployment cycle time by 45% and eliminating manual release errors.\n• Implemented rigorous Unit Testing strategies using Jest and Cypress, elevating code coverage from 60% to 92% across core application repositories.\n• Led System Design refactoring initiatives to optimize database querying, lowering server operational costs by 20%.\n\nPROJECT EXPERIENCE\n\nScalable Enterprise Cloud Infrastructure\n• Designed high-availability Cloud Architecture using AWS resources, ensuring 99.99% uptime for critical microservice endpoints.\n• Built end-to-end CI/CD workflows and unit testing suites, improving team developer velocity and code reliability.",
+      "customHtml": ""
     }
   ]
 }

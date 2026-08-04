@@ -13,7 +13,7 @@ import StudioWorkspace from '../components/studio/StudioWorkspace.jsx';
 import TemplateGallery from '../components/TemplateGallery.jsx';
 import TemplateSelectionModal from '../components/TemplateSelectionModal.jsx';
 import BeforeAfterGraphic from '../components/BeforeAfterGraphic.jsx';
-import { Award, Zap, Lightbulb, History, Target, FileText, MessageSquare, Download, Sparkles, PlusCircle, Search, Bot, Layers, ArrowRight, CheckCircle2, DollarSign, UploadCloud, LayoutGrid, FileSearch, Wand2 } from 'lucide-react';
+import { Award, Zap, Lightbulb, History, Target, FileText, MessageSquare, Download, Sparkles, PlusCircle, Search, Bot, Layers, ArrowRight, CheckCircle2, DollarSign, UploadCloud, LayoutGrid, FileSearch, Wand2, BookOpen } from 'lucide-react';
 
 export default function Dashboard({ onOpenAuth, viewMode, setViewMode, onOpenTemplateModal, currentAnalysis, setCurrentAnalysis, onTemplateSelect, setSavedResumes, selectedTemplateId, setSelectedTemplateId }) {
   const { isAuthenticated } = useAuth();
@@ -26,6 +26,16 @@ export default function Dashboard({ onOpenAuth, viewMode, setViewMode, onOpenTem
   const [isJobMatcherOpen, setIsJobMatcherOpen] = useState(false);
   const [isCoverLetterOpen, setIsCoverLetterOpen] = useState(false);
   const [isInterviewPrepOpen, setIsInterviewPrepOpen] = useState(false);
+  const [openFaqIndex, setOpenFaqIndex] = useState(null);
+
+  const landingFaqs = [
+    { question: 'What is Free AI Resume Analyzer?', answer: 'It is a free tool that uses AI to analyze your resume, optimize it for ATS systems, and help you land more interviews effortlessly.' },
+    { question: 'Is it really free?', answer: 'Yes! We offer a completely free suite of tools including resume building, cover letter generation, and keyword gap analysis.' },
+    { question: 'How does the ATS Scanner work?', answer: 'It reads your resume like a robot recruiter would, identifying missing keywords and formatting errors before you apply.' },
+    { question: 'Can I export my resume as a PDF?', answer: 'Absolutely. You can download your polished resume in professional PDF format in just one click.' },
+    { question: 'Is my data secure?', answer: 'Your privacy is our top priority. We do not sell your personal data or resume content to third parties.' },
+    { question: 'Do I need an account to get started?', answer: 'You can analyze a resume without an account, but creating a free account lets you save your resumes and track your applications.' }
+  ];
 
   const handleAnalysisComplete = (data) => {
     const newRes = { ...data, id: data.id || 'upload-' + Date.now() };
@@ -153,33 +163,33 @@ export default function Dashboard({ onOpenAuth, viewMode, setViewMode, onOpenTem
       </div>
 
       {/* Simple Steps Section */}
-      <div style={{ maxWidth: '1000px', margin: '0 auto 80px', padding: '0 20px', textAlign: 'center', backgroundColor: '#ffffff', borderRadius: '30px', paddingBottom: '80px', paddingTop: '60px', border: '1px solid var(--border-color)', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
-        <h2 style={{ fontSize: '2.5rem', fontWeight: 800, color: '#1a1a1a', marginBottom: '16px' }}>
+      <div style={{ maxWidth: '1000px', margin: '0 auto 80px', padding: '0 20px', textAlign: 'center', backgroundColor: 'var(--bg-card)', borderRadius: '30px', paddingBottom: '80px', paddingTop: '60px', border: '1px solid var(--border-color)', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
+        <h2 style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '16px' }}>
           Build your <span style={{ color: '#00A3FF' }}>resume</span><br/>in simple steps
         </h2>
-        <p style={{ fontSize: '1.1rem', color: '#666', marginBottom: '60px', maxWidth: '700px', margin: '0 auto 80px', lineHeight: 1.6 }}>
+        <p style={{ fontSize: '1.1rem', color: 'var(--text-muted)', marginBottom: '60px', maxWidth: '700px', margin: '0 auto 80px', lineHeight: 1.6 }}>
           Choose a template, add your details, and download a polished, ATS-friendly resume ready to apply with.
         </p>
 
         <div style={{ position: 'relative', maxWidth: '800px', margin: '0 auto', textAlign: 'left' }}>
           {/* Vertical Line */}
-          <div style={{ position: 'absolute', left: '50%', top: '20px', bottom: '20px', width: '2px', backgroundColor: '#e2e8f0', transform: 'translateX(-50%)' }}></div>
+          <div style={{ position: 'absolute', left: '50%', top: '20px', bottom: '20px', width: '2px', backgroundColor: 'var(--border-color)', transform: 'translateX(-50%)' }}></div>
 
           {/* Step 1 */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '80px', position: 'relative' }}>
             {/* Graphic (Left) */}
             <div style={{ width: '45%', display: 'flex', justifyContent: 'flex-end', paddingRight: '50px' }}>
-              <div style={{ padding: '24px', backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', display: 'flex', gap: '16px', alignItems: 'center', position: 'relative' }}>
+              <div style={{ padding: '24px', backgroundColor: 'var(--bg-dark)', border: '1px solid var(--border-color)', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', display: 'flex', gap: '16px', alignItems: 'center', position: 'relative' }}>
                 <div style={{ position: 'absolute', left: '-20px', width: '48px', height: '48px', borderRadius: '12px', backgroundColor: '#00A3FF', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 20px rgba(0,163,255,0.3)' }}>
                   <PlusCircle size={24} color="#fff" />
                 </div>
                 <div style={{ padding: '0 15px' }}>
-                   <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#666', marginBottom: '10px' }}>Your Resume</div>
-                   <div style={{ width: '50px', height: '4px', backgroundColor: '#cbd5e1', marginBottom: '8px', borderRadius: '2px' }}></div>
-                   <div style={{ width: '90px', height: '4px', backgroundColor: '#cbd5e1', marginBottom: '8px', borderRadius: '2px' }}></div>
-                   <div style={{ width: '70px', height: '4px', backgroundColor: '#cbd5e1', marginBottom: '8px', borderRadius: '2px' }}></div>
-                   <div style={{ width: '100px', height: '4px', backgroundColor: '#cbd5e1', marginBottom: '8px', borderRadius: '2px' }}></div>
-                   <div style={{ width: '60px', height: '4px', backgroundColor: '#cbd5e1', borderRadius: '2px' }}></div>
+                   <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-muted)', marginBottom: '10px' }}>Your Resume</div>
+                   <div style={{ width: '50px', height: '4px', backgroundColor: 'var(--border-color)', marginBottom: '8px', borderRadius: '2px' }}></div>
+                   <div style={{ width: '90px', height: '4px', backgroundColor: 'var(--border-color)', marginBottom: '8px', borderRadius: '2px' }}></div>
+                   <div style={{ width: '70px', height: '4px', backgroundColor: 'var(--border-color)', marginBottom: '8px', borderRadius: '2px' }}></div>
+                   <div style={{ width: '100px', height: '4px', backgroundColor: 'var(--border-color)', marginBottom: '8px', borderRadius: '2px' }}></div>
+                   <div style={{ width: '60px', height: '4px', backgroundColor: 'var(--border-color)', borderRadius: '2px' }}></div>
                 </div>
                 <div style={{ position: 'absolute', right: '-20px', width: '48px', height: '48px', borderRadius: '12px', backgroundColor: '#00A3FF', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 20px rgba(0,163,255,0.3)' }}>
                   <UploadCloud size={24} color="#fff" />
@@ -188,14 +198,14 @@ export default function Dashboard({ onOpenAuth, viewMode, setViewMode, onOpenTem
             </div>
             
             {/* Number */}
-            <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#00A3FF', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', position: 'absolute', left: '50%', transform: 'translateX(-50%)', zIndex: 2, border: '4px solid #fff', boxShadow: '0 0 0 4px #fff' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#00A3FF', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', position: 'absolute', left: '50%', transform: 'translateX(-50%)', zIndex: 2, border: '4px solid var(--bg-card)', boxShadow: '0 0 0 4px var(--bg-card)' }}>
               1
             </div>
 
             {/* Text (Right) */}
             <div style={{ width: '45%', paddingLeft: '50px' }}>
-              <h3 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#1a1a1a', marginBottom: '12px' }}>Create or import resume</h3>
-              <p style={{ color: '#666', lineHeight: 1.6, fontSize: '0.95rem', margin: 0 }}>Start from scratch or upload your existing resume to quickly continue where you left off.</p>
+              <h3 style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '12px' }}>Create or import resume</h3>
+              <p style={{ color: 'var(--text-muted)', lineHeight: 1.6, fontSize: '0.95rem', margin: 0 }}>Start from scratch or upload your existing resume to quickly continue where you left off.</p>
             </div>
           </div>
 
@@ -203,23 +213,23 @@ export default function Dashboard({ onOpenAuth, viewMode, setViewMode, onOpenTem
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '80px', position: 'relative' }}>
             {/* Text (Left) */}
             <div style={{ width: '45%', paddingRight: '50px', textAlign: 'right' }}>
-              <h3 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#1a1a1a', marginBottom: '12px' }}>AI Parsing & Data Extraction</h3>
-              <p style={{ color: '#666', lineHeight: 1.6, fontSize: '0.95rem', margin: 0 }}>Our smart engine seamlessly extracts your work experience, education, and skills from your uploaded document.</p>
+              <h3 style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '12px' }}>AI Parsing & Data Extraction</h3>
+              <p style={{ color: 'var(--text-muted)', lineHeight: 1.6, fontSize: '0.95rem', margin: 0 }}>Our smart engine seamlessly extracts your work experience, education, and skills from your uploaded document.</p>
             </div>
             
             {/* Number */}
-            <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#00A3FF', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', position: 'absolute', left: '50%', transform: 'translateX(-50%)', zIndex: 2, border: '4px solid #fff', boxShadow: '0 0 0 4px #fff' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#00A3FF', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', position: 'absolute', left: '50%', transform: 'translateX(-50%)', zIndex: 2, border: '4px solid var(--bg-card)', boxShadow: '0 0 0 4px var(--bg-card)' }}>
               2
             </div>
 
             {/* Graphic (Right) */}
             <div style={{ width: '45%', display: 'flex', justifyContent: 'flex-start', paddingLeft: '50px' }}>
-              <div style={{ padding: '24px 32px', backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', display: 'flex', gap: '20px', alignItems: 'center' }}>
+              <div style={{ padding: '24px 32px', backgroundColor: 'var(--bg-dark)', border: '1px solid var(--border-color)', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', display: 'flex', gap: '20px', alignItems: 'center' }}>
                 <Bot size={48} color="#00A3FF" />
                 <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '10px' }}>
                   <div style={{ width: '80px', height: '6px', backgroundColor: '#00A3FF', borderRadius: '4px' }}></div>
-                  <div style={{ width: '120px', height: '6px', backgroundColor: '#e2e8f0', borderRadius: '4px' }}></div>
-                  <div style={{ width: '90px', height: '6px', backgroundColor: '#e2e8f0', borderRadius: '4px' }}></div>
+                  <div style={{ width: '120px', height: '6px', backgroundColor: 'var(--border-color)', borderRadius: '4px' }}></div>
+                  <div style={{ width: '90px', height: '6px', backgroundColor: 'var(--border-color)', borderRadius: '4px' }}></div>
                 </div>
               </div>
             </div>
@@ -229,25 +239,25 @@ export default function Dashboard({ onOpenAuth, viewMode, setViewMode, onOpenTem
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '80px', position: 'relative' }}>
             {/* Graphic (Left) */}
             <div style={{ width: '45%', display: 'flex', justifyContent: 'flex-end', paddingRight: '50px' }}>
-              <div style={{ padding: '24px 32px', backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', display: 'flex', gap: '20px', alignItems: 'center' }}>
+              <div style={{ padding: '24px 32px', backgroundColor: 'var(--bg-dark)', border: '1px solid var(--border-color)', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', display: 'flex', gap: '20px', alignItems: 'center' }}>
                 <FileSearch size={48} color="#00A3FF" />
                 <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '10px' }}>
-                  <div style={{ width: '100px', height: '6px', backgroundColor: '#e2e8f0', borderRadius: '4px' }}></div>
+                  <div style={{ width: '100px', height: '6px', backgroundColor: 'var(--border-color)', borderRadius: '4px' }}></div>
                   <div style={{ width: '60px', height: '6px', backgroundColor: '#ef4444', borderRadius: '4px' }}></div>
-                  <div style={{ width: '110px', height: '6px', backgroundColor: '#e2e8f0', borderRadius: '4px' }}></div>
+                  <div style={{ width: '110px', height: '6px', backgroundColor: 'var(--border-color)', borderRadius: '4px' }}></div>
                 </div>
               </div>
             </div>
             
             {/* Number */}
-            <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#00A3FF', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', position: 'absolute', left: '50%', transform: 'translateX(-50%)', zIndex: 2, border: '4px solid #fff', boxShadow: '0 0 0 4px #fff' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#00A3FF', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', position: 'absolute', left: '50%', transform: 'translateX(-50%)', zIndex: 2, border: '4px solid var(--bg-card)', boxShadow: '0 0 0 4px var(--bg-card)' }}>
               3
             </div>
 
             {/* Text (Right) */}
             <div style={{ width: '45%', paddingLeft: '50px' }}>
-              <h3 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#1a1a1a', marginBottom: '12px' }}>ATS Keyword Gap Analysis</h3>
-              <p style={{ color: '#666', lineHeight: 1.6, fontSize: '0.95rem', margin: 0 }}>We scan your resume against industry standards and job descriptions to identify critical missing keywords.</p>
+              <h3 style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '12px' }}>ATS Keyword Gap Analysis</h3>
+              <p style={{ color: 'var(--text-muted)', lineHeight: 1.6, fontSize: '0.95rem', margin: 0 }}>We scan your resume against industry standards and job descriptions to identify critical missing keywords.</p>
             </div>
           </div>
 
@@ -255,18 +265,18 @@ export default function Dashboard({ onOpenAuth, viewMode, setViewMode, onOpenTem
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '80px', position: 'relative' }}>
             {/* Text (Left) */}
             <div style={{ width: '45%', paddingRight: '50px', textAlign: 'right' }}>
-              <h3 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#1a1a1a', marginBottom: '12px' }}>Real-time Content Optimization</h3>
-              <p style={{ color: '#666', lineHeight: 1.6, fontSize: '0.95rem', margin: 0 }}>Get AI-powered suggestions to rewrite your bullet points for maximum impact and readability.</p>
+              <h3 style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '12px' }}>Real-time Content Optimization</h3>
+              <p style={{ color: 'var(--text-muted)', lineHeight: 1.6, fontSize: '0.95rem', margin: 0 }}>Get AI-powered suggestions to rewrite your bullet points for maximum impact and readability.</p>
             </div>
             
             {/* Number */}
-            <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#00A3FF', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', position: 'absolute', left: '50%', transform: 'translateX(-50%)', zIndex: 2, border: '4px solid #fff', boxShadow: '0 0 0 4px #fff' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#00A3FF', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', position: 'absolute', left: '50%', transform: 'translateX(-50%)', zIndex: 2, border: '4px solid var(--bg-card)', boxShadow: '0 0 0 4px var(--bg-card)' }}>
               4
             </div>
 
             {/* Graphic (Right) */}
             <div style={{ width: '45%', display: 'flex', justifyContent: 'flex-start', paddingLeft: '50px' }}>
-              <div style={{ padding: '24px 32px', backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', display: 'flex', gap: '20px', alignItems: 'center' }}>
+              <div style={{ padding: '24px 32px', backgroundColor: 'var(--bg-dark)', border: '1px solid var(--border-color)', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', display: 'flex', gap: '20px', alignItems: 'center' }}>
                 <Wand2 size={48} color="#00A3FF" />
                 <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '10px' }}>
                   <div style={{ width: '90px', height: '6px', backgroundColor: '#10b981', borderRadius: '4px' }}></div>
@@ -281,22 +291,22 @@ export default function Dashboard({ onOpenAuth, viewMode, setViewMode, onOpenTem
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
             {/* Graphic (Left) */}
             <div style={{ width: '45%', display: 'flex', justifyContent: 'flex-end', paddingRight: '50px' }}>
-              <div style={{ padding: '24px 32px', backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', display: 'flex', gap: '24px', alignItems: 'center' }}>
+              <div style={{ padding: '24px 32px', backgroundColor: 'var(--bg-dark)', border: '1px solid var(--border-color)', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', display: 'flex', gap: '24px', alignItems: 'center' }}>
                 <LayoutGrid size={48} color="#00A3FF" strokeWidth={1.5} />
-                <div style={{ width: '1px', height: '40px', backgroundColor: '#e2e8f0' }}></div>
+                <div style={{ width: '1px', height: '40px', backgroundColor: 'var(--border-color)' }}></div>
                 <Download size={36} color="#10b981" />
               </div>
             </div>
             
             {/* Number */}
-            <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#00A3FF', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', position: 'absolute', left: '50%', transform: 'translateX(-50%)', zIndex: 2, border: '4px solid #fff', boxShadow: '0 0 0 4px #fff' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#00A3FF', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', position: 'absolute', left: '50%', transform: 'translateX(-50%)', zIndex: 2, border: '4px solid var(--bg-card)', boxShadow: '0 0 0 4px var(--bg-card)' }}>
               5
             </div>
 
             {/* Text (Right) */}
             <div style={{ width: '45%', paddingLeft: '50px' }}>
-              <h3 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#1a1a1a', marginBottom: '12px' }}>Choose Template & Download</h3>
-              <p style={{ color: '#666', lineHeight: 1.6, fontSize: '0.95rem', margin: 0 }}>Select from our premium ATS-friendly templates, see live previews, and download your polished resume instantly.</p>
+              <h3 style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '12px' }}>Choose Template & Download</h3>
+              <p style={{ color: 'var(--text-muted)', lineHeight: 1.6, fontSize: '0.95rem', margin: 0 }}>Select from our premium ATS-friendly templates, see live previews, and download your polished resume instantly.</p>
             </div>
           </div>
         </div>
@@ -533,6 +543,60 @@ export default function Dashboard({ onOpenAuth, viewMode, setViewMode, onOpenTem
           <button onClick={() => setIsJobMatcherOpen(true)} className="btn btn-secondary" style={{ marginTop: '20px', width: '100%', justifyContent: 'center' }}>
             <span>Track Application</span>
           </button>
+        </div>
+      </div>
+
+      {/* Resources and FAQs */}
+      <div style={{ maxWidth: '1000px', margin: '100px auto', padding: '0 20px' }}>
+        <div className="responsive-grid responsive-grid-2-1" style={{ alignItems: 'start' }}>
+          
+          {/* FAQs */}
+          <div style={{ flex: 1 }}>
+            <h2 style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '24px' }}>Frequently Asked Questions</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {landingFaqs.map((faq, idx) => (
+                <div key={idx} style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '12px', overflow: 'hidden' }}>
+                  <div 
+                    onClick={() => setOpenFaqIndex(openFaqIndex === idx ? null : idx)}
+                    style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', backgroundColor: 'var(--bg-dark)' }}
+                  >
+                    <span style={{ fontWeight: 600, color: 'var(--text-main)', fontSize: '1.05rem' }}>{faq.question}</span>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '1.5rem', lineHeight: 1 }}>{openFaqIndex === idx ? '−' : '+'}</span>
+                  </div>
+                  {openFaqIndex === idx && (
+                    <div style={{ padding: '20px', color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.6, borderTop: '1px solid var(--border-color)' }}>
+                      {faq.answer}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Resources */}
+          <div style={{ width: '100%' }}>
+            <h2 style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '24px' }}>Free Resources</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ padding: '24px', backgroundColor: 'var(--bg-card)', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(0, 242, 254, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+                  <BookOpen size={24} color="var(--accent-cyan)" />
+                </div>
+                <h3 style={{ fontSize: '1.2rem', color: 'var(--text-main)', marginBottom: '8px' }}>Resume Writing Guide</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '16px' }}>Learn how to write a winning resume from scratch.</p>
+                <a href="#" style={{ color: 'var(--accent-cyan)', fontWeight: 600, fontSize: '0.9rem' }}>Read Guide &rarr;</a>
+              </div>
+              
+              <div style={{ padding: '24px', backgroundColor: 'var(--bg-card)', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(159, 85, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+                  <FileText size={24} color="var(--accent-purple)" />
+                </div>
+                <h3 style={{ fontSize: '1.2rem', color: 'var(--text-main)', marginBottom: '8px' }}>Cover Letter Templates</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '16px' }}>Download free cover letter templates for any industry.</p>
+                <a href="#" style={{ color: 'var(--accent-cyan)', fontWeight: 600, fontSize: '0.9rem' }}>View Templates &rarr;</a>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 

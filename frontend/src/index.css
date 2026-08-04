@@ -613,3 +613,73 @@ a:hover {
   border: 1px solid rgba(16, 185, 129, 0.3);
   transform: rotate(5deg);
 }
+
+/* ========================================================= */
+/* Responsive Utilities */
+/* ========================================================= */
+
+.sidebar-container {
+  width: 260px;
+  transition: transform 0.3s ease;
+  z-index: 50;
+}
+
+.main-content {
+  margin-left: 260px;
+  transition: margin-left 0.3s ease;
+}
+
+.responsive-grid {
+  display: grid;
+  gap: 32px;
+}
+.responsive-grid-2-1 {
+  grid-template-columns: 2fr 1fr;
+}
+
+/* Job Search specific */
+.job-search-layout {
+  display: flex;
+  height: calc(100vh - 80px);
+}
+.job-search-list {
+  width: 450px;
+}
+.job-search-details {
+  flex: 1;
+}
+
+@media (max-width: 900px) {
+  /* Sidebar */
+  .sidebar-container {
+    position: fixed;
+    height: 100vh;
+    transform: translateX(-100%);
+  }
+  .sidebar-container.open {
+    transform: translateX(0);
+  }
+  .main-content {
+    margin-left: 0;
+  }
+  
+  /* Grids */
+  .responsive-grid,
+  .responsive-grid-2-1 {
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* Job Search Layout */
+  .job-search-layout {
+    flex-direction: column;
+    height: auto;
+  }
+  .job-search-list {
+    width: 100% !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--border-color);
+  }
+  .job-search-details {
+    width: 100% !important;
+  }
+}

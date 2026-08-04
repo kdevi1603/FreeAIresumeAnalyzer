@@ -50,9 +50,7 @@ export async function extractTextFromFile(filePath, originalname) {
       .replace(/\n{3,}/g, '\n\n')
       .trim();
 
-    if (cleanedText.length < 50) {
-      throw new Error("Could not extract text from the PDF. If this is a scanned resume or an image-based PDF, please upload it as an image (JPG/PNG) or upload a standard text-based PDF or Word document.");
-    }
+    // Removed strict length check to prevent blocking image-based or short PDFs
 
     return {
       text: cleanedText,

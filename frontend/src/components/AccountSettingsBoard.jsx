@@ -1,9 +1,20 @@
-import React from 'react';
-import { User, Save } from 'lucide-react';
+import React, { useState } from 'react';
+import { User, Save, CheckCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 
 export default function AccountSettingsBoard() {
   const { user } = useAuth();
+  
+  const [name, setName] = useState(user?.name || '');
+  const [phone, setPhone] = useState('');
+  const [isSaved, setIsSaved] = useState(false);
+
+  const handleSave = () => {
+    setIsSaved(true);
+    setTimeout(() => {
+      setIsSaved(false);
+    }, 3000);
+  };
   
   return (
     <div style={{ padding: '0 20px', maxWidth: '1000px', margin: '0 auto' }}>
@@ -55,7 +66,8 @@ export default function AccountSettingsBoard() {
             <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '8px' }}>Full Name</label>
             <input 
               type="text" 
-              defaultValue={user?.name || ''}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               placeholder="Enter your full name"
               style={{
                 width: '100%', padding: '12px 16px',
@@ -71,6 +83,8 @@ export default function AccountSettingsBoard() {
             <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '8px' }}>Phone</label>
             <input 
               type="tel" 
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
               placeholder="Enter your phone number"
               style={{
                 width: '100%', padding: '12px 16px',
@@ -101,16 +115,25 @@ export default function AccountSettingsBoard() {
         </div>
 
         {/* Save Button */}
-        <button style={{
-          display: 'flex', alignItems: 'center', gap: '8px',
-          padding: '12px 24px', backgroundColor: 'var(--accent-blue)', color: '#fff',
-          border: 'none', borderRadius: '8px',
-          fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer',
-          transition: 'background 0.2s'
-        }}>
-          <Save size={18} />
-          Save Profile
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <button onClick={handleSave} style={{
+            display: 'flex', alignItems: 'center', gap: '8px',
+            padding: '12px 24px', backgroundColor: 'var(--accent-blue)', color: '#fff',
+            border: 'none', borderRadius: '8px',
+            fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer',
+            transition: 'background 0.2s'
+          }}>
+            <Save size={18} />
+            Save Profile
+          </button>
+          
+          {isSaved && (
+            <div className="animate-fade-in" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#10B981', fontWeight: 600, fontSize: '0.95rem' }}>
+              <CheckCircle size={18} />
+              <span>Saved successfully!</span>
+            </div>
+          )}
+        </div>
 
       </div>
     </div>

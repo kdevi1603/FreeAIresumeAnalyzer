@@ -66,63 +66,69 @@ export default function JobSearchBoard({ resumes = [], currentAnalysis }) {
     setSelectedResumeId(null);
   };
 
-  // Mocked Job Data for the Results View
-  const mockJobs = [
-    { 
-      id: 1, 
-      role: 'Senior Product Designer', 
-      company: 'TechNova', 
-      location: 'Remote (Canada / Global)', 
-      type: 'Full-time', 
-      salary: '$120,000 - $160,000',
-      match: '96%',
-      posted: '2 hours ago',
-      logo: 'T',
-      description: `TechNova is seeking a Senior Product Designer to lead the end-to-end design process for our core enterprise SaaS product. You will collaborate closely with engineering and product management to deliver intuitive, beautiful experiences.
+  // Dynamic Job Data based on search query
+  const getDynamicJobs = (query) => {
+    const baseTitle = query ? query.trim() : role;
+    const titleCap = baseTitle.charAt(0).toUpperCase() + baseTitle.slice(1);
+    
+    return [
+      { 
+        id: 1, 
+        role: `Senior ${titleCap} Role`, 
+        company: 'TechNova', 
+        location: 'Remote (Canada / Global)', 
+        type: 'Full-time', 
+        salary: '$120,000 - $160,000',
+        match: '96%',
+        posted: '2 hours ago',
+        logo: 'T',
+        description: `TechNova is seeking a Senior candidate for our ${titleCap} role to lead the end-to-end process for our core enterprise SaaS product. You will collaborate closely with engineering and product management to deliver intuitive, beautiful experiences.
 
 **Key Responsibilities:**
-- Lead the design of complex workflows and enterprise dashboards.
-- Conduct user research and usability testing.
-- Maintain and evolve our design system.
-- Mentor junior designers.
+- Lead complex workflows and projects.
+- Conduct research and testing related to ${titleCap}.
+- Maintain and evolve our systems.
+- Mentor junior team members.
 
 **Requirements:**
-- 5+ years of product design experience (SaaS preferred).
-- Expert in Figma and modern prototyping tools.
+- Relevant degree or experience in ${titleCap}.
+- 5+ years of industry experience.
 - Strong portfolio showcasing complex problem solving.`,
-      howToApply: `Please submit your application through our portal and ensure you include a link to your portfolio. We do not require a cover letter, but please ensure your resume highlights your SaaS experience.`,
-      link: '#'
-    },
-    { 
-      id: 2, 
-      role: 'Product Designer', 
-      company: 'PixelForge Studios', 
-      location: 'Toronto, ON (Hybrid)', 
-      type: 'Contract', 
-      salary: '$80 - $100 / hr',
-      match: '89%',
-      posted: '1 day ago',
-      logo: 'P',
-      description: `PixelForge is looking for a versatile Product Designer to help us overhaul our mobile app experience. This is a 6-month contract with the possibility of extension.`,
-      howToApply: `Send your resume and portfolio directly to careers@pixelforge.io.`,
-      link: '#'
-    },
-    { 
-      id: 3, 
-      role: 'Lead UX Researcher & Designer', 
-      company: 'DataFlow Inc.', 
-      location: 'Remote (US)', 
-      type: 'Full-time', 
-      salary: '$140,000 - $180,000',
-      match: '82%',
-      posted: '3 days ago',
-      logo: 'D',
-      description: `DataFlow needs a Lead UX Researcher to establish our research practices from the ground up while staying hands-on with design.`,
-      howToApply: `Apply via our Workable page. Applicants must be eligible to work in the United States.`,
-      link: '#'
-    }
-  ];
+        howToApply: `Please submit your application through our portal and ensure you include a link to your portfolio. We do not require a cover letter, but please ensure your resume highlights your ${titleCap} degree and experience.`,
+        link: 'https://www.linkedin.com/jobs/'
+      },
+      { 
+        id: 2, 
+        role: `${titleCap} Specialist`, 
+        company: 'PixelForge Studios', 
+        location: 'Toronto, ON (Hybrid)', 
+        type: 'Contract', 
+        salary: '$80 - $100 / hr',
+        match: '89%',
+        posted: '1 day ago',
+        logo: 'P',
+        description: `PixelForge is looking for a versatile ${titleCap} Specialist to help us overhaul our experience. This is a 6-month contract with the possibility of extension.`,
+        howToApply: `Send your resume and portfolio directly to careers@pixelforge.io. Make sure to mention your ${titleCap} background in the subject line.`,
+        link: 'https://www.indeed.com/'
+      },
+      { 
+        id: 3, 
+        role: `Entry Level ${titleCap}`, 
+        company: 'DataFlow Inc.', 
+        location: 'Remote (US)', 
+        type: 'Full-time', 
+        salary: '$80,000 - $110,000',
+        match: '82%',
+        posted: '3 days ago',
+        logo: 'D',
+        description: `DataFlow needs an Entry Level ${titleCap} to establish our practices from the ground up while staying hands-on with the team.`,
+        howToApply: `Apply via our Workable page. Applicants must be eligible to work in the United States and hold a valid degree in ${titleCap} or related fields.`,
+        link: 'https://www.glassdoor.com/Job/'
+      }
+    ];
+  };
 
+  const mockJobs = getDynamicJobs(searchQuery);
   const selectedJob = mockJobs.find(j => j.id === selectedJobId) || mockJobs[0];
 
   return (
@@ -234,10 +240,10 @@ export default function JobSearchBoard({ resumes = [], currentAnalysis }) {
 
       {/* Search Results State */}
       {hasSearched && (
-        <div style={{ display: 'flex', height: 'calc(100vh - 80px)', backgroundColor: 'var(--bg-dark)' }}>
+        <div className="job-search-layout" style={{ backgroundColor: 'var(--bg-dark)' }}>
           
           {/* Left Panel: Job List */}
-          <div style={{ width: '450px', borderRight: '1px solid var(--border-color)', backgroundColor: 'var(--bg-card)', display: 'flex', flexDirection: 'column' }}>
+          <div className="job-search-list" style={{ borderRight: '1px solid var(--border-color)', backgroundColor: 'var(--bg-card)', display: 'flex', flexDirection: 'column' }}>
             
             {/* Small Search Bar inside Results */}
             <div style={{ padding: '24px', borderBottom: '1px solid var(--border-color)' }}>
@@ -304,7 +310,7 @@ export default function JobSearchBoard({ resumes = [], currentAnalysis }) {
           </div>
 
           {/* Right Panel: Job Details */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '32px' }}>
+          <div className="job-search-details" style={{ overflowY: 'auto', padding: '32px' }}>
             {!isSearching && selectedJob && (
               <div style={{ maxWidth: '800px', margin: '0 auto', backgroundColor: 'var(--bg-card)', borderRadius: '24px', border: '1px solid var(--border-color)', overflow: 'hidden' }}>
                 
