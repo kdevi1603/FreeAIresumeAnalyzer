@@ -147,7 +147,7 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(128,128,128,0.1)', padding: '4px 10px', borderRadius: '30px', border: '1px solid var(--border-color)' }}>
             <button onClick={handleZoomOut} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }} title="Zoom Out"><ZoomOut size={16} /></button>
-            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#fff', minWidth: '40px', textAlign: 'center' }}>{zoom}%</span>
+            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main, #000)', minWidth: '40px', textAlign: 'center' }}>{zoom}%</span>
             <button onClick={handleZoomIn} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }} title="Zoom In"><ZoomIn size={16} /></button>
             <button onClick={handleResetZoom} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }} title="Reset Zoom"><RotateCcw size={14} /></button>
             <button onClick={handleFullscreen} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', marginLeft: '4px', borderLeft: '1px solid rgba(255,255,255,0.1)', paddingLeft: '8px' }} title="Fullscreen"><Maximize size={14} /></button>

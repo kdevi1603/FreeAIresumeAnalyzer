@@ -406,11 +406,11 @@
       "fileUrl": "/uploads/4f1aff97-965c-4cc7-89ac-1d9b90a4f666.pdf",
       "rawText": "",
       "pages": 1,
-      "atsScore": 89,
+      "atsScore": 100,
       "personalInfo": {
-        "name": "Parsed Resume",
+        "name": "K.DEVAKI",
         "jobTitle": "",
-        "email": "",
+        "email": "thulasidevi9843@gmail.com",
         "phone": "",
         "city": "",
         "linkedin": "",
@@ -418,7 +418,7 @@
         "github": "",
         "profilePicture": null
       },
-      "summary": "Resume summary extracted here...",
+      "summary": "• Results-driven technical professional with expertise in Project Management, Data Analysis, and scalable system design.\n• Proven track record of collaborating across cross-functional teams to deliver high-quality technical initiatives and optimize operational workflows.\n• Skilled in leveraging continuous integration pipelines and modern cloud architectures to drive business efficiency and organizational growth.",
       "education": "Education details extracted here...",
       "experienceList": [
         {
@@ -504,7 +504,7 @@
       ],
       "fixedSkills": "• Technical Skills: System Design, Microservices, Cloud Architecture (AWS/GCP), CI/CD Pipelines, Unit Testing (Jest/Cypress), Data Analysis, Project Management\n• Tools & Technologies: Git, Docker, Kubernetes, Jira, Postman\n• Core Competencies: Problem Solving, Teamwork, Communication",
       "customHtml": "",
-      "fixedSummary": "Results-driven and detail-oriented professional with expertise in Project Management, Data Analysis, and complex problem-solving. Proven track record of executing strategic technical initiatives, collaborating across cross-functional teams, and delivering high-quality, scalable solutions. Passionate about leveraging modern system architectures and continuous integration practices to drive organizational success.",
+      "fixedSummary": "• Results-driven technical professional with expertise in Project Management, Data Analysis, and scalable system design.\n• Proven track record of collaborating across cross-functional teams to deliver high-quality technical initiatives and optimize operational workflows.\n• Skilled in leveraging continuous integration pipelines and modern cloud architectures to drive business efficiency and organizational growth.",
       "fixedProjects": "Resume Experience Section () — "
     }
   ]
