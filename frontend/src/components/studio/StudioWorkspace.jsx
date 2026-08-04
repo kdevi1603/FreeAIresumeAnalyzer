@@ -616,25 +616,30 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
             )}
             
             {(activeResume?.fileUrl && previewMode === 'original') ? (
-              <div style={{
-                flex: 1,
-                width: '100%',
-                minHeight: '800px',
-                borderRadius: '12px',
-                overflow: 'hidden',
-                boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
-                border: '1px solid var(--border-color, #e2e8f0)',
-                background: '#fff'
-              }}>
-                <iframe
-                  src={activeResume.fileUrl + (activeResume.fileUrl.toLowerCase().endsWith('.pdf') ? '#view=FitH&toolbar=0&navpanes=0' : '')}
-                  style={{ width: '100%', height: '100%', minHeight: '800px', border: 'none' }}
-                  title="Uploaded Resume Preview"
-                />
+              <div style={{ display: 'flex', justifyContent: 'center', flex: 1 }}>
+                <div style={{
+                  flex: 1,
+                  width: '100%',
+                  maxWidth: '800px',
+                  minHeight: '800px',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
+                  border: '1px solid var(--border-color, #e2e8f0)',
+                  background: '#fff'
+                }}>
+                  <iframe
+                    src={activeResume.fileUrl + (activeResume.fileUrl.toLowerCase().endsWith('.pdf') ? '#view=FitH&toolbar=0&navpanes=0' : '')}
+                    style={{ width: '100%', height: '100%', minHeight: '800px', border: 'none' }}
+                    title="Uploaded Resume Preview"
+                  />
+                </div>
               </div>
             ) : (
-              <div style={{ flex: 1, minHeight: '800px', background: '#fff', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.1)' }}>
-                <LiveResumePreview resumeData={activeResume} templateStyle={selectedTemplate} accentColor={accentColor} />
+              <div style={{ display: 'flex', justifyContent: 'center', flex: 1 }}>
+                <div style={{ flex: 1, maxWidth: '800px', display: 'flex', justifyContent: 'center', minHeight: '800px', background: '#fff', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.1)' }}>
+                  <LiveResumePreview resumeData={activeResume} templateStyle={selectedTemplate} accentColor={accentColor} />
+                </div>
               </div>
             )}
           </div>
@@ -707,25 +712,30 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
                 )}
                 
                 {(activeResume?.fileUrl && previewMode === 'original') ? (
-                  <div style={{
-                    flex: 1,
-                    width: '100%',
-                    minHeight: '800px',
-                    borderRadius: '12px',
-                    overflow: 'hidden',
-                    boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
-                    border: '1px solid var(--border-color, #e2e8f0)',
-                    background: '#fff'
-                  }}>
-                    <iframe
-                      src={activeResume.fileUrl + (activeResume.fileUrl.toLowerCase().endsWith('.pdf') ? '#view=FitH&toolbar=0&navpanes=0' : '')}
-                      style={{ width: '100%', height: '100%', minHeight: '800px', border: 'none' }}
-                      title="Uploaded Resume Preview"
-                    />
+                  <div style={{ display: 'flex', justifyContent: 'center', flex: 1 }}>
+                    <div style={{
+                      flex: 1,
+                      width: '100%',
+                      maxWidth: '800px',
+                      minHeight: '800px',
+                      borderRadius: '12px',
+                      overflow: 'hidden',
+                      boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
+                      border: '1px solid var(--border-color, #e2e8f0)',
+                      background: '#fff'
+                    }}>
+                      <iframe
+                        src={activeResume.fileUrl + (activeResume.fileUrl.toLowerCase().endsWith('.pdf') ? '#view=FitH&toolbar=0&navpanes=0' : '')}
+                        style={{ width: '100%', height: '100%', minHeight: '800px', border: 'none' }}
+                        title="Uploaded Resume Preview"
+                      />
+                    </div>
                   </div>
                 ) : (
-                  <div style={{ flex: 1, minHeight: '800px', background: '#fff', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.1)' }}>
-                    <LiveResumePreview resumeData={activeResume} templateStyle={selectedTemplate} accentColor={accentColor} />
+                  <div style={{ display: 'flex', justifyContent: 'center', flex: 1 }}>
+                    <div style={{ flex: 1, maxWidth: '800px', display: 'flex', justifyContent: 'center', minHeight: '800px', background: '#fff', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.1)' }}>
+                      <LiveResumePreview resumeData={activeResume} templateStyle={selectedTemplate} accentColor={accentColor} />
+                    </div>
                   </div>
                 )}
               </div>
