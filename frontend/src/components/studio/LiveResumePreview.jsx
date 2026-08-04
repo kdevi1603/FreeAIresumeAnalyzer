@@ -26,22 +26,6 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
 
   const containerRef = useRef(null);
   const resumeContentRef = useRef(null);
-  const innerContentRef = useRef(null);
-  const [contentScale, setContentScale] = useState(1);
-
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (innerContentRef.current) {
-        const scrollHeight = innerContentRef.current.scrollHeight;
-        if (scrollHeight > 842) {
-          setContentScale(810 / scrollHeight);
-        } else {
-          setContentScale(1);
-        }
-      }
-    }, 150);
-    return () => clearTimeout(timeoutId);
-  }, [resumeData, templateStyle, customHtml]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -90,12 +74,13 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
     const originalTransform = element.style.transform;
     element.style.transform = 'scale(1)';
     
+    const contentHeight = Math.max(842, element.scrollHeight);
     const opt = {
       margin:       0,
       filename:     `${(resumeData?.fileName || 'resume').replace(/\.pdf$/i, '')}.pdf`,
       image:        { type: 'jpeg', quality: 0.98 },
       html2canvas:  { scale: 2, useCORS: true },
-      jsPDF:        { unit: 'px', format: [595, 842], orientation: 'portrait' }
+      jsPDF:        { unit: 'px', format: [595, contentHeight], orientation: 'portrait' }
     };
     
     html2pdf().set(opt).from(element).save().then(() => {
@@ -243,8 +228,8 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
         ) : (
         <div ref={resumeContentRef} className="a4-print-container" style={{
           transform: `scale(${zoom / 100})`, transformOrigin: 'top center', transition: 'transform 0.2s ease',
-          width: '595px', height: '842px', overflow: 'hidden', backgroundColor: '#ffffff', color: '#1a1a1a',
-          padding: '0',
+          width: '595px', minHeight: '842px', backgroundColor: '#ffffff', color: '#1a1a1a',
+          padding: (templateStyle === 'sidebar' || templateStyle === 'executive') ? '0' : '48px 40px',
           boxShadow: '0 20px 60px rgba(0,0,0,0.6)', borderRadius: '4px',
           fontFamily: ['academic', 'corporate', 'serif'].includes(templateStyle) ? "'Times New Roman', serif"
             : ['minimalist', 'software'].includes(templateStyle) ? "'Courier New', monospace"
@@ -261,12 +246,6 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
             }
         }}>
           
-          <div ref={innerContentRef} style={{ 
-            transform: `scale(${contentScale})`, 
-            transformOrigin: 'top center', 
-            width: '100%', 
-            padding: (templateStyle === 'sidebar' || templateStyle === 'executive') ? '0' : '48px 40px' 
-          }}>
           <style>{resumeData?.formattingCss || ''}</style>
           
           {/* 1. Modern Professional (formerly modern) */}
@@ -322,8 +301,7 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
                 <div style={{ fontSize: '12px', color: '#475569' }}>{email} • {phone} • {linkedin}</div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                {/* Custom order: Education, Skills, Projects, Objective */}
-                {[ sections[2], sections[3], sections[1], sections[0] ].map((sec, idx) => sec && (
+                {sections.map((sec, idx) => sec && (
                   <div key={idx}>
                     <h3 style={{ fontSize: '14px', fontWeight: 800, color: '#111', background: '#f1f5f9', padding: '4px 8px', borderRadius: '4px', textTransform: 'uppercase' }}>{sec.title}</h3>
                     <div style={{ fontSize: '12px', lineHeight: 1.6, color: '#334155', whiteSpace: 'pre-line', padding: '4px 8px' }}>{sec.content}</div>
@@ -403,23 +381,13 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
                   <span>{email}</span><span>{phone}</span><span>{linkedin}</span>
                 </div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                  {[sections[0], sections[2], sections[4]].map((sec, idx) => sec && (
-                    <div key={idx} style={{ background: '#f8fafc', padding: '16px', borderRadius: '16px' }}>
-                      <h3 style={{ fontSize: '14px', fontWeight: 800, color: accentColor, textTransform: 'uppercase', marginBottom: '8px' }}>{sec.title}</h3>
-                      <div style={{ fontSize: '12px', lineHeight: 1.6, color: '#334155', whiteSpace: 'pre-line' }}>{sec.content}</div>
-                    </div>
-                  ))}
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                  {[sections[1], sections[3]].map((sec, idx) => sec && (
-                    <div key={idx} style={{ background: '#f8fafc', padding: '16px', borderRadius: '16px', border: `1px solid ${accentColor}30` }}>
-                      <h3 style={{ fontSize: '14px', fontWeight: 800, color: accentColor, textTransform: 'uppercase', marginBottom: '8px' }}>{sec.title}</h3>
-                      <div style={{ fontSize: '12px', lineHeight: 1.6, color: '#334155', whiteSpace: 'pre-line' }}>{sec.content}</div>
-                    </div>
-                  ))}
-                </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                {sections.map((sec, idx) => sec && (
+                  <div key={idx} style={{ background: '#f8fafc', padding: '16px', borderRadius: '16px', border: idx % 2 !== 0 ? `1px solid ${accentColor}30` : 'none' }}>
+                    <h3 style={{ fontSize: '14px', fontWeight: 800, color: accentColor, textTransform: 'uppercase', marginBottom: '8px' }}>{sec.title}</h3>
+                    <div style={{ fontSize: '12px', lineHeight: 1.6, color: '#334155', whiteSpace: 'pre-line' }}>{sec.content}</div>
+                  </div>
+                ))}
               </div>
             </>
           )}
@@ -524,8 +492,6 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
               </div>
             </div>
           )}
-
-          </div>
 
           <div style={{ position: 'absolute', bottom: '15px', left: '40px', right: '40px', fontSize: '10px', color: '#94a3b8', borderTop: '1px solid #f1f5f9', paddingTop: '8px', display: 'flex', justifyContent: 'space-between' }}>
             <span>Generated by AI Resume Analyzer</span>
