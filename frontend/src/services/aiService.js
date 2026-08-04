@@ -144,7 +144,11 @@ const mockSimulateChat = async (message, resumeContext, chatHistory = []) => {
 
   if (lowerMsg.includes('summary') || lowerMsg.includes('objective')) {
     return {
-      reply: `Your executive summary is the first thing an ATS algorithm scans! I recommend keeping it under 4 lines and explicitly mentioning your target role, years of experience, and your #1 proudest achievement.\n\nHere is a draft I created for you:\n*"Innovative Full Stack Developer with 5+ years building cloud-native web applications. Proven track record of scaling user architectures and mentoring junior developers to increase sprint velocity by 25%."*\n\nIf you type **"Fix with AI"** or just say **"fix it"**, I can automatically update that for you in the editor!`
+      reply: `Your executive summary is the first thing an ATS algorithm scans! I recommend keeping it under 4 lines and explicitly mentioning your target role, years of experience, and your #1 proudest achievement.\n\nHere is a draft I created for you:\n*"Innovative Full Stack Developer with 5+ years building cloud-native web applications.\nProven track record of scaling user architectures and mentoring junior developers.\nConsistently increased sprint velocity by 25% through clean code practices."*\n\nI have generated the button below so you can automatically update it!`,
+      proposedFix: {
+        section: 'summary',
+        content: "Innovative Full Stack Developer with 5+ years building cloud-native web applications. Proven track record of scaling user architectures and mentoring junior developers. Consistently increased sprint velocity by 25% through clean code practices."
+      }
     };
   }
 

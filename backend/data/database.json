@@ -406,7 +406,7 @@
       "fileUrl": "/uploads/4f1aff97-965c-4cc7-89ac-1d9b90a4f666.pdf",
       "rawText": "",
       "pages": 1,
-      "atsScore": 85,
+      "atsScore": 89,
       "personalInfo": {
         "name": "Parsed Resume",
         "jobTitle": "",
@@ -504,7 +504,7 @@
       ],
       "fixedSkills": "• Technical Skills: System Design, Microservices, Cloud Architecture (AWS/GCP), CI/CD Pipelines, Unit Testing (Jest/Cypress), Data Analysis, Project Management\n• Tools & Technologies: Git, Docker, Kubernetes, Jira, Postman\n• Core Competencies: Problem Solving, Teamwork, Communication",
       "customHtml": "",
-      "fixedSummary": "Resume summary extracted here...",
+      "fixedSummary": "Results-driven and detail-oriented professional with expertise in Project Management, Data Analysis, and complex problem-solving. Proven track record of executing strategic technical initiatives, collaborating across cross-functional teams, and delivering high-quality, scalable solutions. Passionate about leveraging modern system architectures and continuous integration practices to drive organizational success.",
       "fixedProjects": "Resume Experience Section () — "
     }
   ]
