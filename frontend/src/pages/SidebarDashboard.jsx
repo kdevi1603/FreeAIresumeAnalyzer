@@ -28,20 +28,6 @@ export default function SidebarDashboard({ onCreateNew, onEditResume, onDeleteRe
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--bg-dark)', margin: 0, padding: 0 }}>
-      {/* Mobile Menu Toggle Button */}
-      <button 
-        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        style={{ 
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          position: 'fixed', top: '16px', left: '16px', zIndex: 100, 
-          background: 'var(--accent-blue)', color: 'white', border: 'none', 
-          borderRadius: '8px', padding: '8px', cursor: 'pointer',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
-        }}
-        className="mobile-menu-btn"
-      >
-        {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-      </button>
 
       {/* Sidebar */}
       <div 
