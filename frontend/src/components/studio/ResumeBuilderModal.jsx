@@ -14,6 +14,7 @@ export default function ResumeBuilderModal({
   if (!isOpen) return null;
 
   const [activeTab, setActiveTab] = useState('templates'); // 'templates' | 'personal' | 'summary' | 'experience' | 'skills'
+  const [hoveredTemplate, setHoveredTemplate] = useState(null);
 
   const cleanSummary = (text, pInfo) => {
     if (!text) return '';
@@ -88,28 +89,89 @@ export default function ResumeBuilderModal({
 
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // Template options
-  const templates = [
-    { id: 'original', name: 'Original PDF', desc: 'Your original uploaded resume without changes.', icon: '📄' },
-    { id: 'modern', name: 'Modern Professional', desc: 'Clean two-column layout. Best for IT, Software, Business.', icon: '🏢' },
-    { id: 'minimalist', name: 'Minimal ATS', desc: 'Single-column design. Maximum ATS compatibility.', icon: '⚡' },
-    { id: 'fresher', name: 'Fresher / Student', desc: 'Focus on education, skills, and projects. Suitable for fresh graduates.', icon: '🎓' },
-    { id: 'software', name: 'Software Engineer', desc: 'Highlights technical skills. Includes GitHub, portfolio, certifications.', icon: '💻' },
-    { id: 'executive', name: 'Executive', desc: 'Professional design. Emphasizes work experience and leadership.', icon: '💼' },
-    { id: 'creative', name: 'Creative', desc: 'Modern colors and icons. Suitable for UI/UX, Graphic Design.', icon: '🎨' },
-    { id: 'corporate', name: 'Corporate', desc: 'Formal business style. HR and management roles.', icon: '🏛️' },
-    { id: 'academic', name: 'Academic', desc: 'For teachers, researchers. Includes publications and certifications.', icon: '📖' },
-    { id: 'onepage', name: 'One-Page ATS', desc: 'Compact layout. Perfect for candidates with 0–5 years of experience.', icon: '📄' },
-    { id: 'elegant', name: 'Elegant', desc: 'Premium-looking design. Simple and ATS compatible.', icon: '👑' }
+  const allTemplates = [
+    {
+      id: 'original',
+      name: '0. Original PDF',
+      description: 'Your original uploaded resume without AI formatting.',
+      image: '/mockups/minimal.png?v=2',
+      displayTags: ['Original Layout']
+    },
+    {
+      id: 'modern',
+      name: '1. Modern Professional',
+      badge: 'Default',
+      description: 'Two-column layout with sidebar',
+      image: '/mockups/modern.png?v=2',
+      displayTags: ['Two Column', 'With Photo', 'ATS Friendly']
+    },
+    {
+      id: 'minimalist',
+      name: '2. Minimal ATS',
+      description: 'Single column ATS-friendly design',
+      image: '/mockups/minimal.png?v=2',
+      displayTags: ['Single Column', 'ATS Friendly']
+    },
+    {
+      id: 'software',
+      name: '3. Software Engineer',
+      description: 'Technical layout for developers',
+      image: '/mockups/modern.png?v=2',
+      displayTags: ['Two Column', 'With Photo', 'ATS Friendly']
+    },
+    {
+      id: 'fresher',
+      name: '4. Student / Fresher',
+      description: 'Perfect for students & freshers',
+      image: '/mockups/creative.png?v=2',
+      displayTags: ['Two Column', 'With Photo']
+    },
+    {
+      id: 'executive',
+      name: '5. Executive',
+      description: 'For senior professionals & leaders',
+      image: '/mockups/modern.png?v=2',
+      displayTags: ['Two Column', 'With Photo']
+    },
+    {
+      id: 'corporate',
+      name: '6. Corporate',
+      description: 'Professional corporate layout',
+      image: '/mockups/minimal.png?v=2',
+      displayTags: ['Two Column', 'With Photo', 'ATS Friendly']
+    },
+    {
+      id: 'academic',
+      name: '7. Academic CV',
+      description: 'For academics & researchers',
+      image: '/mockups/minimal.png?v=2',
+      displayTags: ['Single Column', 'ATS Friendly']
+    },
+    {
+      id: 'creative',
+      name: '8. Creative',
+      description: 'Creative design with visual elements',
+      image: '/mockups/creative.png?v=2',
+      displayTags: ['Two Column', 'With Photo']
+    },
+    {
+      id: 'onepage',
+      name: '9. Business Analyst',
+      description: 'Data-driven professional layout',
+      image: '/mockups/modern.png?v=2',
+      displayTags: ['Two Column', 'ATS Friendly']
+    },
+    {
+      id: 'elegant',
+      name: '10. Clean Professional',
+      description: 'Simple & clean single column',
+      image: '/mockups/minimal.png?v=2',
+      displayTags: ['Single Column', 'ATS Friendly']
+    }
   ];
 
   // Color options
   const colors = [
-    { name: 'Royal Blue', value: '#2563EB', bg: 'bg-blue-600' },
-    { name: 'Cyan Tech', value: '#06B6D4', bg: 'bg-cyan-500' },
-    { name: 'Emerald Green', value: '#10B981', bg: 'bg-emerald-500' },
-    { name: 'Purple Purple', value: '#8B5CF6', bg: 'bg-purple-500' },
-    { name: 'Ruby Red', value: '#E11D48', bg: 'bg-rose-600' },
     { name: 'Obsidian Dark', value: '#1E293B', bg: 'bg-slate-800' }
   ];
 
@@ -322,33 +384,65 @@ export default function ResumeBuilderModal({
                   <p style={{ fontSize: '0.85rem', color: '#64748b', margin: 0 }}>All templates are 100% free, ATS parser compliant, and mobile responsive.</p>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
-                  {templates.map(tmpl => (
-                    <div
-                      key={tmpl.id}
-                      onClick={() => onSelectTemplate(tmpl.id)}
-                      style={{
-                        padding: '18px',
-                        borderRadius: '16px',
-                        background: selectedTemplate === tmpl.id ? '#e0f2fe' : '#f8fafc',
-                        border: selectedTemplate === tmpl.id ? '2px solid #2563eb' : '1px solid #e2e8f0',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease',
-                        position: 'relative'
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <span style={{ fontSize: '1.8rem' }}>{tmpl.icon}</span>
-                        {selectedTemplate === tmpl.id && (
-                          <span style={{ background: '#2563eb', color: '#fff', padding: '2px 8px', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 800 }}>
-                            ✓ ACTIVE
-                          </span>
-                        )}
+                <div className="grid grid-cols-2" style={{ gap: '20px' }}>
+                  {allTemplates.map(tmpl => {
+                    const isSelected = selectedTemplate === tmpl.id;
+                    const isHovered = hoveredTemplate === tmpl.id;
+                    
+                    return (
+                      <div
+                        key={tmpl.id}
+                        onMouseEnter={() => setHoveredTemplate(tmpl.id)}
+                        onMouseLeave={() => setHoveredTemplate(null)}
+                        style={{
+                          display: 'flex', flexDirection: 'column', background: '#fff',
+                          borderRadius: '16px', overflow: 'hidden', padding: '16px',
+                          border: isSelected ? '2px solid #2563eb' : '1px solid #e2e8f0',
+                          boxShadow: isSelected ? '0 10px 25px -5px rgba(37,99,235,0.2)' : (isHovered ? '0 10px 25px -5px rgba(0,0,0,0.05)' : 'none'),
+                          cursor: 'pointer', transition: 'all 0.3s ease',
+                          transform: isHovered && !isSelected ? 'translateY(-3px)' : 'none'
+                        }}
+                      >
+                        {/* Preview Image Area */}
+                        <div style={{ border: '1px solid #f1f5f9', borderRadius: '12px', marginBottom: '16px', background: '#f8fafc', height: '240px', position: 'relative', overflow: 'hidden', display: 'flex', justifyContent: 'center' }}>
+                           <img src={tmpl.image} alt={tmpl.name} style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'top' }} />
+                           {/* Hover / Active Overlay */}
+                           {(isHovered || isSelected) && (
+                             <div style={{ position: 'absolute', inset: 0, background: isSelected ? 'transparent' : 'rgba(255,255,255,0.5)', backdropFilter: isSelected ? 'none' : 'blur(1px)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', zIndex: 10 }}>
+                               <button 
+                                 onClick={() => onSelectTemplate(tmpl.id)}
+                                 style={{ background: isSelected ? '#10B981' : '#2563EB', color: '#fff', border: 'none', padding: '10px 24px', borderRadius: '12px', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', gap: '8px' }}
+                               >
+                                 {isSelected ? <><Check size={16} /> ACTIVE TEMPLATE</> : 'Use Template'}
+                               </button>
+                             </div>
+                           )}
+                        </div>
+                        
+                        {/* Info Area */}
+                        <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                            <h4 style={{ color: '#0f172a', margin: 0, fontSize: '1.05rem', fontWeight: 800 }}>{tmpl.name}</h4>
+                            {tmpl.badge && (
+                              <span style={{ background: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe', fontSize: '0.65rem', fontWeight: 800, padding: '2px 8px', borderRadius: '20px' }}>
+                                {tmpl.badge}
+                              </span>
+                            )}
+                          </div>
+                          <p style={{ color: '#64748b', fontSize: '0.85rem', margin: '0 0 16px 0', lineHeight: 1.4 }}>{tmpl.description}</p>
+                          
+                          {/* Tags */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginTop: 'auto' }}>
+                            {tmpl.displayTags?.map(tag => (
+                              <span key={tag} style={{ fontSize: '0.7rem', fontWeight: 700, color: '#2563eb', background: '#f8fafc', border: '1px solid #e2e8f0', padding: '2px 8px', borderRadius: '6px' }}>
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
                       </div>
-                      <h4 style={{ color: '#0f172a', margin: '0 0 6px 0', fontSize: '1.05rem', fontWeight: 700 }}>{tmpl.name}</h4>
-                      <p style={{ color: '#475569', fontSize: '0.8rem', margin: 0, lineHeight: 1.4 }}>{tmpl.desc}</p>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 <div style={{ marginTop: '16px' }}>
@@ -594,7 +688,7 @@ export default function ResumeBuilderModal({
           background: '#f8fafc'
         }}>
           <div style={{ fontSize: '0.85rem', color: '#64748b' }}>
-            Selected: <strong style={{ color: '#0f172a' }}>{templates.find(t => t.id === selectedTemplate)?.name}</strong> ({accentColor})
+            Selected: <strong style={{ color: '#0f172a' }}>{allTemplates.find(t => t.id === selectedTemplate)?.name}</strong> ({accentColor})
           </div>
           <div style={{ display: 'flex', gap: '12px' }}>
             <button onClick={onClose} className="btn" style={{ background: '#fff', color: '#0f172a', border: '1px solid #cbd5e1', padding: '10px 20px' }}>Cancel</button>

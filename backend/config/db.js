@@ -21,7 +21,8 @@ export async function initDB() {
     } catch {
       const initialData = {
         users: [],
-        resumes: []
+        resumes: [],
+        messages: []
       };
       await fs.writeFile(DB_FILE, JSON.stringify(initialData, null, 2), 'utf8');
       console.log('📦 Initialized local JSON database storage.');
@@ -35,9 +36,11 @@ export async function initDB() {
 async function readDB() {
   try {
     const data = await fs.readFile(DB_FILE, 'utf8');
-    return JSON.parse(data);
+    const parsed = JSON.parse(data);
+    if (!parsed.messages) parsed.messages = [];
+    return parsed;
   } catch (error) {
-    return { users: [], resumes: [] };
+    return { users: [], resumes: [], messages: [] };
   }
 }
 
@@ -116,6 +119,23 @@ export const db = {
         return data.resumes[index];
       }
       return null;
+    }
+  },
+  messages: {
+    async create(messageData) {
+      const data = await readDB();
+      const newMessage = {
+        id: uuidv4(),
+        createdAt: new Date().toISOString(),
+        ...messageData
+      };
+      data.messages.push(newMessage);
+      await writeDB(data);
+      return newMessage;
+    },
+    async find(query = {}) {
+      const data = await readDB();
+      return data.messages.filter(m => matchQuery(m, query)).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     }
   }
 };

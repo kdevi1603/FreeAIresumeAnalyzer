@@ -188,13 +188,13 @@ export default function HelpBoard({ setActiveTab }) {
               <PlayCircle color="var(--accent-purple)" /> Video Tutorials
             </h2>
             <div className="responsive-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
-              <div style={videoPlaceholderStyle} onClick={() => setActiveVideoUrl('https://www.youtube.com/embed/Tt08KmFfIYQ')}>
-                <PlayCircle size={40} color="#fff" style={{ opacity: 0.8 }} />
-                <span style={{ color: '#fff', fontWeight: 600, marginTop: '8px', zIndex: 1 }}>How to Optimize your Resume</span>
+              <div style={{...videoPlaceholderStyle, backgroundImage: "linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('https://img.youtube.com/vi/si_vT7kd2o0/hqdefault.jpg')", backgroundSize: 'cover', backgroundPosition: 'center'}} onClick={() => setActiveVideoUrl('https://www.youtube.com/embed/si_vT7kd2o0')}>
+                <PlayCircle size={48} color="#fff" style={{ opacity: 0.9, filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.3))' }} />
+                <span style={{ color: '#fff', fontWeight: 600, marginTop: '12px', zIndex: 1, textAlign: 'center', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>How to use Free AI Resume Analyzer</span>
               </div>
-              <div style={videoPlaceholderStyle} onClick={() => setActiveVideoUrl('https://www.youtube.com/embed/mxOli8laZos')}>
-                <PlayCircle size={40} color="#fff" style={{ opacity: 0.8 }} />
-                <span style={{ color: '#fff', fontWeight: 600, marginTop: '8px', zIndex: 1 }}>Using the AI Cover Letter Gen</span>
+              <div style={{...videoPlaceholderStyle, backgroundImage: "linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('https://img.youtube.com/vi/RqyXDiA-Ers/hqdefault.jpg')", backgroundSize: 'cover', backgroundPosition: 'center'}} onClick={() => setActiveVideoUrl('https://www.youtube.com/embed/RqyXDiA-Ers')}>
+                <PlayCircle size={48} color="#fff" style={{ opacity: 0.9, filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.3))' }} />
+                <span style={{ color: '#fff', fontWeight: 600, marginTop: '12px', zIndex: 1, textAlign: 'center', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>How to create a resume</span>
               </div>
             </div>
           </div>
@@ -291,8 +291,8 @@ export default function HelpBoard({ setActiveTab }) {
       {activeVideoUrl && (
         <div style={modalOverlayStyle} onClick={() => setActiveVideoUrl(null)}>
           <div style={{...modalContentStyle, width: '800px', height: '500px', padding: 0, overflow: 'hidden'}} onClick={(e) => e.stopPropagation()}>
-            <div style={{ position: 'absolute', top: '-40px', right: 0 }}>
-              <button onClick={() => setActiveVideoUrl(null)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}><X size={24} /></button>
+            <div style={{ position: 'absolute', top: '12px', right: '12px', zIndex: 10 }}>
+              <button onClick={() => setActiveVideoUrl(null)} style={{ background: 'rgba(0,0,0,0.7)', borderRadius: '50%', padding: '6px', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)', transition: 'background 0.2s' }} onMouseOver={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.9)'} onMouseOut={(e) => e.currentTarget.style.background = 'rgba(0,0,0,0.7)'}><X size={20} /></button>
             </div>
             <iframe 
               width="100%" 

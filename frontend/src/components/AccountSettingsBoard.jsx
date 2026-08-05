@@ -6,7 +6,9 @@ export default function AccountSettingsBoard() {
   const { user } = useAuth();
   
   const [name, setName] = useState(user?.name || '');
+  const [email, setEmail] = useState(user?.email || '');
   const [phone, setPhone] = useState('');
+  const [createdAt, setCreatedAt] = useState(user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : new Date().toLocaleDateString());
   const [isSaved, setIsSaved] = useState(false);
 
   const handleSave = () => {
@@ -48,17 +50,16 @@ export default function AccountSettingsBoard() {
             <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '8px' }}>Email</label>
             <input 
               type="email" 
-              value={user?.email || ''}
-              readOnly
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
               style={{
                 width: '100%', padding: '12px 16px',
-                backgroundColor: 'var(--bg-dark)', border: '1px solid var(--border-color)',
-                borderRadius: '8px', fontSize: '0.95rem', color: 'var(--text-muted)',
-                outline: 'none', boxSizing: 'border-box',
-                cursor: 'not-allowed'
+                backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)',
+                borderRadius: '8px', fontSize: '0.95rem', color: 'var(--text-main)',
+                outline: 'none', boxSizing: 'border-box'
               }}
             />
-            <span style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '8px' }}>Email cannot be changed</span>
           </div>
 
           {/* Full Name */}
@@ -100,14 +101,14 @@ export default function AccountSettingsBoard() {
             <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '8px' }}>Account Created</label>
             <input 
               type="text" 
-              value={user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : new Date().toLocaleDateString()}
-              readOnly
+              value={createdAt}
+              onChange={(e) => setCreatedAt(e.target.value)}
+              placeholder="Account created date"
               style={{
                 width: '100%', padding: '12px 16px',
-                backgroundColor: 'var(--bg-dark)', border: '1px solid var(--border-color)',
-                borderRadius: '8px', fontSize: '0.95rem', color: 'var(--text-muted)',
-                outline: 'none', boxSizing: 'border-box',
-                cursor: 'not-allowed'
+                backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)',
+                borderRadius: '8px', fontSize: '0.95rem', color: 'var(--text-main)',
+                outline: 'none', boxSizing: 'border-box'
               }}
             />
           </div>

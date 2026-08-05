@@ -348,8 +348,7 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
             boxShadow: '0 4px 15px rgba(0, 242, 254, 0.4)'
           }}
         >
-          <Palette size={18} />
-          <span>🛠️ Resume Builder & 10 Free Templates</span>
+          <span>Resume Builder & 10 Free Templates</span>
         </button>
       </div>
 
@@ -638,7 +637,13 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
             ) : (
               <div style={{ display: 'flex', justifyContent: 'center', flex: 1 }}>
                 <div style={{ flex: 1, maxWidth: '800px', display: 'flex', justifyContent: 'center', minHeight: '800px', background: '#fff', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.1)' }}>
-                  <LiveResumePreview resumeData={activeResume} templateStyle={selectedTemplate} accentColor={accentColor} />
+                  <LiveResumePreview 
+                    resumeData={activeResume} 
+                    templateStyle={selectedTemplate} 
+                    accentColor={accentColor} 
+                    onManualEdit={(html) => setActiveResume(prev => ({ ...prev, customHtml: html }))}
+                    onAcceptChanges={() => onUpdateResume && onUpdateResume(activeResume)}
+                  />
                 </div>
               </div>
             )}
@@ -734,7 +739,13 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
                 ) : (
                   <div style={{ display: 'flex', justifyContent: 'center', flex: 1 }}>
                     <div style={{ flex: 1, maxWidth: '800px', display: 'flex', justifyContent: 'center', minHeight: '800px', background: '#fff', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.1)' }}>
-                      <LiveResumePreview resumeData={activeResume} templateStyle={selectedTemplate} accentColor={accentColor} />
+                      <LiveResumePreview 
+                        resumeData={activeResume} 
+                        templateStyle={selectedTemplate} 
+                        accentColor={accentColor}
+                        onManualEdit={(html) => setActiveResume(prev => ({ ...prev, customHtml: html }))}
+                        onAcceptChanges={() => onUpdateResume && onUpdateResume(activeResume)}
+                      />
                     </div>
                   </div>
                 )}

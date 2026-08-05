@@ -5,22 +5,41 @@ export default function ContactModal({ isOpen, onClose }) {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [localError, setLocalError] = useState('');
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setLocalError('');
     setIsSubmitting(true);
-    // Simulate sending
-    setTimeout(() => {
+    
+    try {
+      const res = await fetch('http://localhost:5000/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Failed to send message.');
+      }
+      
       setIsSubmitting(false);
       setSubmitted(true);
+      
       setTimeout(() => {
         setSubmitted(false);
         setFormData({ name: '', email: '', message: '' });
         onClose();
       }, 3000);
-    }, 1500);
+      
+    } catch (err) {
+      setIsSubmitting(false);
+      setLocalError(err.message);
+    }
   };
 
   return (
@@ -48,27 +67,32 @@ export default function ContactModal({ isOpen, onClose }) {
         <div style={{ padding: '32px', overflowY: 'auto' }}>
           {/* Social Links Grid */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginBottom: '32px' }}>
-            <a href="mailto:your.email@gmail.com" target="_blank" rel="noreferrer" style={{ textDecoration: 'none', background: 'rgba(255,255,255,0.03)', padding: '16px 12px', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', transition: 'all 0.2s' }}>
+            <a href="mailto:thulasidevi9843@gmail.com" style={{ textDecoration: 'none', background: 'var(--bg-input)', padding: '16px 12px', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', transition: 'all 0.2s' }}>
               <Mail size={24} color="#00F2FE" />
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Email</span>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-main)' }}>Email</span>
             </a>
-            <a href="https://github.com/your-profile" target="_blank" rel="noreferrer" style={{ textDecoration: 'none', background: 'rgba(255,255,255,0.03)', padding: '16px 12px', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', transition: 'all 0.2s' }}>
+            <a href="https://github.com/login" target="_blank" rel="noreferrer" style={{ textDecoration: 'none', background: 'var(--bg-input)', padding: '16px 12px', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', transition: 'all 0.2s' }}>
               <Github size={24} color="var(--text-main)" />
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>GitHub</span>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-main)' }}>GitHub</span>
             </a>
-            <a href="https://linkedin.com/in/your-profile" target="_blank" rel="noreferrer" style={{ textDecoration: 'none', background: 'rgba(255,255,255,0.03)', padding: '16px 12px', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', transition: 'all 0.2s' }}>
+            <a href="https://www.linkedin.com/login" target="_blank" rel="noreferrer" style={{ textDecoration: 'none', background: 'var(--bg-input)', padding: '16px 12px', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', transition: 'all 0.2s' }}>
               <Linkedin size={24} color="#0A66C2" />
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>LinkedIn</span>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-main)' }}>LinkedIn</span>
             </a>
           </div>
 
           <div style={{ textAlign: 'center', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{ height: '1px', flex: 1, background: 'var(--border-color)' }} />
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '2px' }}>Or Message Us</span>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-main)', textTransform: 'uppercase', letterSpacing: '2px' }}>Or Message Us</span>
             <div style={{ height: '1px', flex: 1, background: 'var(--border-color)' }} />
           </div>
 
           {/* Form */}
+          {localError && (
+            <div style={{ color: '#EF4444', background: 'rgba(239, 68, 68, 0.1)', padding: '12px', borderRadius: '8px', marginBottom: '16px', fontSize: '0.9rem', textAlign: 'center' }}>
+              {localError}
+            </div>
+          )}
           {submitted ? (
             <div style={{ textAlign: 'center', padding: '40px 20px' }}>
               <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
@@ -80,15 +104,15 @@ export default function ContactModal({ isOpen, onClose }) {
           ) : (
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '6px' }}>Name</label>
+                <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-main)', marginBottom: '6px' }}>Name</label>
                 <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="form-input" style={{ width: '100%', marginBottom: '6px' }} />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '6px' }}>Email</label>
+                <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-main)', marginBottom: '6px' }}>Email</label>
                 <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="form-input" style={{ width: '100%', marginBottom: '6px' }} />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '6px' }}>Message</label>
+                <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-main)', marginBottom: '6px' }}>Message</label>
                 <textarea required rows="4" value={formData.message} onChange={e => setFormData({...formData, message: e.target.value})} className="form-input" style={{ width: '100%', resize: 'none', marginBottom: '6px' }} />
               </div>
               <button disabled={isSubmitting} type="submit" className="btn btn-primary" style={{ width: '100%', padding: '14px', borderRadius: '12px', marginTop: '8px', justifyContent: 'center' }}>

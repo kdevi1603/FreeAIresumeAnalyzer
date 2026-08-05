@@ -45,10 +45,7 @@ export default function SidebarDashboard({ onCreateNew, onEditResume, onDeleteRe
           onClick={onBackToLanding}
           style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginTop: '40px' }}
         >
-          <div style={{ width: '32px', height: '32px', backgroundColor: 'var(--bg-dark)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border-color)' }}>
-            <div style={{ width: '16px', height: '16px', border: '2px solid var(--accent-cyan)', borderRadius: '4px' }} />
-          </div>
-          <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
+          <span style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--text-main)', letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
             AI Resume Analyzer
           </span>
           <button style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>

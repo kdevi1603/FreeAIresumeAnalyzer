@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Sparkles, Check } from 'lucide-react';
 
-const TEMPLATES = [
+export const TEMPLATES = [
   {
     id: 'modern',
     name: '1. Modern Professional',
@@ -94,32 +94,33 @@ export default function TemplateGallery({ onSelectTemplate, onBack }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '40px' }}>
         <button
           onClick={onBack}
-          className="bg-white/5 text-gray-300 border-white/10 hover:bg-white/10 hover:text-white transition-all shadow-[0_0_15px_rgba(0,0,0,0.2)] flex items-center gap-2"
-          style={{ padding: '10px 20px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}
+          className="transition-all flex items-center gap-2 cursor-pointer"
+          style={{ 
+            padding: '10px 20px', 
+            borderRadius: '12px', 
+            background: 'rgba(0, 242, 254, 0.1)', 
+            color: 'var(--accent-cyan)', 
+            border: '1px solid rgba(0, 242, 254, 0.3)',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
+          }}
+          onMouseOver={(e) => e.currentTarget.style.background = 'rgba(0, 242, 254, 0.2)'}
+          onMouseOut={(e) => e.currentTarget.style.background = 'rgba(0, 242, 254, 0.1)'}
         >
           <ArrowLeft size={20} />
           <span className="font-medium">Back</span>
         </button>
         <div>
-          <h2 style={{ fontSize: '2.2rem', fontWeight: 800, margin: '0 0 6px 0', display: 'flex', alignItems: 'center', gap: '12px', color: '#fff', letterSpacing: '-0.02em' }}>
+          <h2 style={{ fontSize: '2.2rem', fontWeight: 800, margin: '0 0 6px 0', display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
             <Sparkles size={28} className="text-cyan-400 drop-shadow-[0_0_10px_rgba(0,242,254,0.5)]" />
             Recommended Free Resume Templates
           </h2>
-          <p style={{ color: '#9ca3af', margin: 0, fontSize: '1.05rem' }}>
+          <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '1.05rem' }}>
             Select a starting template to launch the AI Resume Analyzer Studio. You can change this later.
           </p>
         </div>
       </div>
 
-      {/* Grid */}
-      <div
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-          gap: '32px'
-        }}
-      >
+      <div className="grid grid-cols-3" style={{ gap: '32px' }}>
         {TEMPLATES.map(template => {
           const isHovered = hoveredTemplate === template.id;
           return (

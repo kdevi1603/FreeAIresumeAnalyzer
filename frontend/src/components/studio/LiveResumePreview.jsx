@@ -74,13 +74,12 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
     const originalTransform = element.style.transform;
     element.style.transform = 'scale(1)';
     
-    const contentHeight = Math.max(707, element.scrollHeight);
     const opt = {
       margin:       0,
       filename:     `${(resumeData?.fileName || 'resume').replace(/\.pdf$/i, '')}.pdf`,
       image:        { type: 'jpeg', quality: 0.98 },
       html2canvas:  { scale: 2, useCORS: true },
-      jsPDF:        { unit: 'px', format: [500, contentHeight], orientation: 'portrait' }
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
     
     html2pdf().set(opt).from(element).save().then(() => {
@@ -117,16 +116,69 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
   const profilePicture = resumeData?.personalInfo?.profilePicture || null;
   const score = resumeData?.atsScore || 0;
 
-  const summaryText = resumeData?.fixedSummary || resumeData?.summary || '';
-  const projectsText = resumeData?.fixedProjects || (resumeData?.experienceList?.map(exp => `${exp.company} - ${exp.role}\n${exp.bullets}`).join('\n\n')) || '';
-  const skillsText = resumeData?.fixedSkills || resumeData?.skillsFound?.map(s => s.skill).join(', ') || '';
+  const summaryText = (showDiff && resumeData?.fixedSummary) ? resumeData.fixedSummary : (resumeData?.summary || '');
+  const projectsText = (showDiff && resumeData?.fixedProjects) ? resumeData.fixedProjects : (resumeData?.experienceList?.map(exp => `${exp.company} - ${exp.role}\n${exp.bullets}`).join('\n\n') || '');
+  const skillsText = (showDiff && resumeData?.fixedSkills) ? resumeData.fixedSkills : (resumeData?.skillsFound?.map(s => s.skill).join(', ') || '');
   const educationText = resumeData?.education || '';
 
+  const getContrastColor = (hexcolor) => {
+    if (!hexcolor) return '#ffffff';
+    let hex = hexcolor.replace('#', '');
+    if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+    if (hex.length !== 6) return '#ffffff';
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+    return yiq >= 128 ? '#0f172a' : '#ffffff';
+  };
+
+  const formatText = (text) => {
+    if (!text) return null;
+    const rawLines = text.split(/\r?\n/);
+    const mergedLines = [];
+    
+    for (let line of rawLines) {
+      const trimmed = line.trim();
+      if (!trimmed) {
+        mergedLines.push('');
+        continue;
+      }
+      
+      const isNewItem = /^([*\-•·➢>]|\d+\.)\s*/.test(trimmed);
+      
+      if (isNewItem || mergedLines.length === 0 || mergedLines[mergedLines.length - 1] === '') {
+        mergedLines.push(trimmed);
+      } else {
+        mergedLines[mergedLines.length - 1] += ' ' + trimmed;
+      }
+    }
+    
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        {mergedLines.map((line, i) => {
+          if (!line) return <div key={i} style={{ height: '8px' }} />;
+          
+          const bulletMatch = line.match(/^([*\-•·➢>])\s*(.*)/);
+          if (bulletMatch) {
+            return (
+              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                <span style={{ flexShrink: 0, width: '12px', textAlign: 'center', fontSize: '14px', lineHeight: '1.4' }}>•</span>
+                <span style={{ flex: 1, textAlign: 'left' }}>{bulletMatch[2]}</span>
+              </div>
+            );
+          }
+          return <div key={i} style={{ textAlign: 'left' }}>{line}</div>;
+        })}
+      </div>
+    );
+  };
+
   const sections = [
-    { title: 'Executive Summary', content: summaryText, isModified: !!resumeData?.fixedSummary },
-    { title: 'Work & Project Experience', content: projectsText, isModified: !!resumeData?.fixedProjects },
-    { title: 'Education & Academic Details', content: educationText },
-    { title: 'Technical Skills & Tools', content: skillsText, isModified: !!resumeData?.fixedSkills },
+    { title: 'Executive Summary', content: formatText(summaryText), isModified: !!resumeData?.fixedSummary },
+    { title: 'Work & Project Experience', content: formatText(projectsText), isModified: !!resumeData?.fixedProjects },
+    { title: 'Education & Academic Details', content: formatText(educationText) },
+    { title: 'Technical Skills & Tools', content: formatText(skillsText), isModified: !!resumeData?.fixedSkills },
     { title: 'Languages', content: 'Tamil (Native), English (Professional Working Proficiency)' }
   ];
 
@@ -135,28 +187,28 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', padding: '12px 20px', background: 'var(--bg-card-hover)', borderBottom: '1px solid var(--border-color)', zIndex: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
           <button onClick={handleAcceptAll} disabled={changesAccepted} style={{ padding: '6px 14px', fontSize: '0.8rem', borderRadius: '8px', background: changesAccepted ? 'rgba(16, 185, 129, 0.2)' : '#10B981', color: '#fff', border: 'none', fontWeight: 700, cursor: 'pointer' }}>
-            <Check size={14} /> <span>{changesAccepted ? '✓ Changes Accepted' : '✓ Accept Changes'}</span>
+            <span>{changesAccepted ? 'Changes Accepted' : 'Accept Changes'}</span>
           </button>
           <button onClick={() => setShowDiff(!showDiff)} style={{ padding: '6px 14px', fontSize: '0.8rem', borderRadius: '8px', background: showDiff ? '#2563EB' : 'rgba(37, 99, 235, 0.2)', color: '#fff', border: 'none', cursor: 'pointer' }}>
-            <Eye size={14} /> <span>{showDiff ? 'Hide Changes' : 'Show Changes'}</span>
+            <span>{showDiff ? 'Hide Changes' : 'Show Changes'}</span>
           </button>
           <span style={{ fontSize: '0.75rem', background: 'rgba(255,255,255,0.08)', padding: '4px 10px', borderRadius: '12px', color: '#22d3ee', fontWeight: 700 }}>
             Template: {templateStyle.toUpperCase()}
           </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(128,128,128,0.1)', padding: '4px 10px', borderRadius: '30px', border: '1px solid var(--border-color)' }}>
-            <button onClick={handleZoomOut} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }} title="Zoom Out"><ZoomOut size={16} /></button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(128,128,128,0.1)', padding: '4px 10px', borderRadius: '30px', border: '1px solid var(--border-color)' }}>
+            <button onClick={handleZoomOut} style={{ background: 'none', border: 'none', color: 'var(--text-main)', cursor: 'pointer' }} title="Zoom Out"><ZoomOut size={16} /></button>
             <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main, #000)', minWidth: '40px', textAlign: 'center' }}>{zoom}%</span>
-            <button onClick={handleZoomIn} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }} title="Zoom In"><ZoomIn size={16} /></button>
-            <button onClick={handleResetZoom} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }} title="Reset Zoom"><RotateCcw size={14} /></button>
-            <button onClick={handleFullscreen} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', marginLeft: '4px', borderLeft: '1px solid rgba(255,255,255,0.1)', paddingLeft: '8px' }} title="Fullscreen"><Maximize size={14} /></button>
+            <button onClick={handleZoomIn} style={{ background: 'none', border: 'none', color: 'var(--text-main)', cursor: 'pointer' }} title="Zoom In"><ZoomIn size={16} /></button>
+            <button onClick={handleResetZoom} style={{ background: 'none', border: 'none', color: 'var(--text-main)', cursor: 'pointer' }} title="Reset Zoom"><RotateCcw size={14} /></button>
+            <button onClick={handleFullscreen} style={{ background: 'none', border: 'none', color: 'var(--text-main)', cursor: 'pointer', marginLeft: '4px', borderLeft: '1px solid var(--border-color)', paddingLeft: '8px' }} title="Fullscreen"><Maximize size={14} /></button>
           </div>
           <button id="hidden-direct-download-btn" onClick={executeDownload} style={{ padding: '8px 16px', fontSize: '0.85rem', background: '#2563EB', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'none' }}>
             Direct Download
           </button>
           <button onClick={handleDownloadPDF} style={{ padding: '8px 16px', fontSize: '0.85rem', background: '#2563EB', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>
-            <Download size={16} /> <span>Download PDF</span>
+            <span>Download PDF</span>
           </button>
         </div>
       </div>
@@ -172,7 +224,7 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
           <h2 style={{ fontSize: '2rem', marginBottom: '8px', color: 'var(--text-main)' }}>Export Your Resume</h2>
           <p style={{ color: 'var(--text-muted)', marginBottom: '32px' }}>Choose how you want to export your optimized resume.</p>
           
-          <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <div style={{ display: 'flex', gap: '32px', flexWrap: 'wrap', justifyContent: 'center' }}>
             <button onClick={executeDownload} className="btn" style={{
               background: 'linear-gradient(135deg, #00F2FE 0%, #4FACFE 100%)',
               color: '#000', padding: '16px 32px', borderRadius: '16px', fontSize: '1.1rem', fontWeight: 700,
@@ -210,14 +262,17 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
             className="a4-print-container"
             style={{
               transform: `scale(${zoom / 100})`, transformOrigin: 'top center', transition: 'transform 0.2s ease',
-              width: '500px', minHeight: '707px', backgroundColor: '#ffffff', color: '#1a1a1a',
-              padding: '48px 40px',
+              width: '794px', minHeight: '1123px', backgroundColor: '#ffffff', color: '#1a1a1a',
+              padding: '56px 56px',
               boxShadow: '0 20px 60px rgba(0,0,0,0.6)', borderRadius: '4px',
               fontFamily: "'Inter', sans-serif",
-              position: 'relative'
+              position: 'relative',
+              textAlign: 'left'
             }}
             contentEditable={true}
             suppressContentEditableWarning={true}
+            spellCheck={true}
+            title="Right-click on red underlined words for spelling suggestions"
             onBlur={(e) => {
               const html = e.currentTarget.innerHTML;
               setCustomHtml(html);
@@ -228,8 +283,8 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
         ) : (
         <div ref={resumeContentRef} className="a4-print-container" style={{
           transform: `scale(${zoom / 100})`, transformOrigin: 'top center', transition: 'transform 0.2s ease',
-          width: '500px', minHeight: '707px', backgroundColor: '#ffffff', color: '#1a1a1a',
-          padding: (templateStyle === 'sidebar' || templateStyle === 'executive') ? '0' : '48px 40px',
+          width: '794px', minHeight: '1123px', backgroundColor: '#ffffff', color: '#1a1a1a',
+          padding: (templateStyle === 'sidebar' || templateStyle === 'executive') ? '0' : '56px 56px',
           boxShadow: '0 20px 60px rgba(0,0,0,0.6)', borderRadius: '4px',
           fontFamily: ['academic', 'corporate', 'serif'].includes(templateStyle) ? "'Times New Roman', serif"
             : ['minimalist', 'software'].includes(templateStyle) ? "'Courier New', monospace"
@@ -238,6 +293,8 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
         }}
         contentEditable={templateStyle !== 'original'}
         suppressContentEditableWarning={true}
+        spellCheck={true}
+        title="Right-click on red underlined words for spelling suggestions"
         onBlur={(e) => {
             if (templateStyle !== 'original') {
                 const html = e.currentTarget.innerHTML;
@@ -258,11 +315,11 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
                 </div>
                 {profilePicture && <img src={profilePicture} style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }} />}
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
                 {sections.map((sec, idx) => (
                   <div key={idx}>
-                    <h3 style={{ fontSize: '14px', fontWeight: 700, color: accentColor, borderBottom: '1px solid #e2e8f0', paddingBottom: '4px', textTransform: 'uppercase' }}>{sec.title}</h3>
-                    <div style={{ fontSize: '12px', lineHeight: 1.6, color: '#334155', whiteSpace: 'pre-line' }}>{sec.content}</div>
+                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: accentColor, borderBottom: '1px solid #e2e8f0', paddingBottom: '4px', textTransform: 'uppercase' }}>{sec.title}</h3>
+                    <div style={{ fontSize: '12px', lineHeight: 1.8, color: '#334155', whiteSpace: 'pre-line', textAlign: 'justify' }}>{sec.content}</div>
                   </div>
                 ))}
               </div>
@@ -279,13 +336,13 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
                 </div>
                 {profilePicture && <img src={profilePicture} style={{ width: '64px', height: '64px', objectFit: 'cover', border: `2px solid ${accentColor}` }} />}
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
                 {sections.map((sec, idx) => (
                   <div key={idx}>
-                    <h3 style={{ fontSize: '13px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px', textTransform: 'uppercase' }}>
+                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', textTransform: 'uppercase' }}>
                       <span style={{ width: '8px', height: '8px', background: accentColor }} /> {sec.title}
                     </h3>
-                    <div style={{ fontSize: '12px', paddingLeft: '16px', whiteSpace: 'pre-line' }}>{sec.content}</div>
+                    <div style={{ fontSize: '12px', lineHeight: 1.8, paddingLeft: '16px', whiteSpace: 'pre-line', textAlign: 'justify' }}>{sec.content}</div>
                   </div>
                 ))}
               </div>
@@ -300,11 +357,11 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
                 <h1 style={{ fontSize: '28px', fontWeight: 700, color: accentColor, margin: '0 0 5px 0' }}>{candidateName}</h1>
                 <div style={{ fontSize: '12px', color: '#475569' }}>{email} • {phone} • {linkedin}</div>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
                 {sections.map((sec, idx) => sec && (
                   <div key={idx}>
-                    <h3 style={{ fontSize: '14px', fontWeight: 800, color: '#111', background: '#f1f5f9', padding: '4px 8px', borderRadius: '4px', textTransform: 'uppercase' }}>{sec.title}</h3>
-                    <div style={{ fontSize: '12px', lineHeight: 1.6, color: '#334155', whiteSpace: 'pre-line', padding: '4px 8px' }}>{sec.content}</div>
+                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#111', background: '#f1f5f9', padding: '4px 8px', borderRadius: '4px', textTransform: 'uppercase' }}>{sec.title}</h3>
+                    <div style={{ fontSize: '12px', lineHeight: 1.8, color: '#334155', whiteSpace: 'pre-line', padding: '4px 8px', textAlign: 'justify' }}>{sec.content}</div>
                   </div>
                 ))}
               </div>
@@ -327,11 +384,11 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
                   <span>{github} | {linkedin}</span>
                 </div>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
                 {sections.map((sec, idx) => (
                   <div key={idx}>
-                    <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#0f172a', textTransform: 'uppercase', display: 'inline-block', borderBottom: `2px solid ${accentColor}`, paddingBottom: '2px', marginBottom: '8px' }}>{'//'} {sec.title}</h3>
-                    <div style={{ fontSize: '12px', lineHeight: 1.6, color: '#334155', whiteSpace: 'pre-line' }}>{sec.content}</div>
+                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#0f172a', textTransform: 'uppercase', display: 'inline-block', borderBottom: `2px solid ${accentColor}`, paddingBottom: '2px', marginBottom: '8px' }}>{'//'} {sec.title}</h3>
+                    <div style={{ fontSize: '12px', lineHeight: 1.8, color: '#334155', whiteSpace: 'pre-line' }}>{sec.content}</div>
                   </div>
                 ))}
               </div>
@@ -343,20 +400,20 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
             <div>
               <div style={{ background: '#0f172a', color: '#fff', padding: '40px 40px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <h1 style={{ fontSize: '32px', fontWeight: 400, margin: '0 0 10px 0', letterSpacing: '2px' }}>{candidateName.toUpperCase()}</h1>
+                  <h1 style={{ fontSize: '32px', fontWeight: 400, margin: '0 0 10px 0', letterSpacing: '2px', color: '#fff' }}>{candidateName.toUpperCase()}</h1>
                   <div style={{ fontSize: '12px', color: '#94a3b8', display: 'flex', gap: '16px' }}>
                     <span>{email}</span><span>{phone}</span><span>{linkedin}</span>
                   </div>
                 </div>
                 {profilePicture && <img src={profilePicture} style={{ width: '80px', height: '80px', objectFit: 'cover', border: '2px solid #fff' }} />}
               </div>
-              <div style={{ padding: '30px 40px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <div style={{ padding: '30px 40px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
                 {sections.map((sec, idx) => (
-                  <div key={idx} style={{ display: 'flex', gap: '24px' }}>
+                  <div key={idx} style={{ display: 'flex', gap: '32px' }}>
                     <div style={{ width: '140px', flexShrink: 0 }}>
-                      <h3 style={{ fontSize: '12px', fontWeight: 700, color: accentColor, textTransform: 'uppercase', textAlign: 'right' }}>{sec.title}</h3>
+                      <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: accentColor, textTransform: 'uppercase', textAlign: 'right' }}>{sec.title}</h3>
                     </div>
-                    <div style={{ fontSize: '12px', lineHeight: 1.6, color: '#334155', whiteSpace: 'pre-line', flex: 1, borderLeft: '1px solid #e2e8f0', paddingLeft: '24px' }}>
+                    <div style={{ fontSize: '12px', lineHeight: 1.8, color: '#334155', whiteSpace: 'pre-line', flex: 1, borderLeft: '1px solid #e2e8f0', paddingLeft: '24px', textAlign: 'justify' }}>
                       {sec.content}
                     </div>
                   </div>
@@ -372,7 +429,7 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
                 {profilePicture ? (
                   <img src={profilePicture} style={{ width: '80px', height: '80px', borderRadius: '40px', objectFit: 'cover', margin: '0 auto 16px', border: `3px solid ${accentColor}` }} />
                 ) : (
-                  <div style={{ width: '80px', height: '80px', borderRadius: '40px', background: accentColor, color: '#fff', fontSize: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontWeight: 800 }}>
+                  <div style={{ width: '80px', height: '80px', borderRadius: '40px', background: accentColor, color: getContrastColor(accentColor), fontSize: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontWeight: 800 }}>
                     {candidateName.charAt(0)}
                   </div>
                 )}
@@ -381,11 +438,11 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
                   <span>{email}</span><span>{phone}</span><span>{linkedin}</span>
                 </div>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
                 {sections.map((sec, idx) => sec && (
                   <div key={idx} style={{ background: '#f8fafc', padding: '16px', borderRadius: '16px', border: idx % 2 !== 0 ? `1px solid ${accentColor}30` : 'none' }}>
-                    <h3 style={{ fontSize: '14px', fontWeight: 800, color: accentColor, textTransform: 'uppercase', marginBottom: '8px' }}>{sec.title}</h3>
-                    <div style={{ fontSize: '12px', lineHeight: 1.6, color: '#334155', whiteSpace: 'pre-line' }}>{sec.content}</div>
+                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: accentColor, textTransform: 'uppercase', marginBottom: '8px' }}>{sec.title}</h3>
+                    <div style={{ fontSize: '12px', lineHeight: 1.8, color: '#334155', whiteSpace: 'pre-line' }}>{sec.content}</div>
                   </div>
                 ))}
               </div>
@@ -406,11 +463,11 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
                   {profilePicture && <img src={profilePicture} style={{ width: '60px', height: '75px', objectFit: 'cover', border: '1px solid #1e293b' }} />}
                 </div>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
                 {sections.map((sec, idx) => (
                   <div key={idx}>
-                    <h3 style={{ fontSize: '13px', fontWeight: 700, color: '#fff', background: '#1e293b', padding: '4px 8px', textTransform: 'uppercase', marginBottom: '8px' }}>{sec.title}</h3>
-                    <div style={{ fontSize: '12px', lineHeight: 1.6, color: '#111', whiteSpace: 'pre-line', padding: '0 8px' }}>{sec.content}</div>
+                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff', background: '#1e293b', padding: '4px 8px', textTransform: 'uppercase', marginBottom: '8px' }}>{sec.title}</h3>
+                    <div style={{ fontSize: '12px', lineHeight: 1.8, color: '#111', whiteSpace: 'pre-line', padding: '0 8px', textAlign: 'justify' }}>{sec.content}</div>
                   </div>
                 ))}
               </div>
@@ -423,10 +480,10 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
               {profilePicture && <img src={profilePicture} style={{ width: '70px', height: '70px', borderRadius: '50%', objectFit: 'cover', marginBottom: '12px', display: 'inline-block', border: '2px solid #000' }} />}
               <h1 style={{ fontSize: '28px', fontWeight: 700, borderBottom: '1px solid #000', paddingBottom: '10px' }}>{candidateName.toUpperCase()}</h1>
               <div style={{ fontSize: '12px', color: '#333', marginTop: '8px' }}>{email} • {phone} • {city}</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '24px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginTop: '24px' }}>
                 {sections.map((sec, idx) => (
                   <div key={idx}>
-                    <h3 style={{ fontSize: '13px', textTransform: 'uppercase', marginBottom: '5px', fontWeight: 700 }}>{sec.title}</h3>
+                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '5px', fontWeight: 700 }}>{sec.title}</h3>
                     <div style={{ fontSize: '12px', textAlign: 'justify', whiteSpace: 'pre-line' }}>{sec.content}</div>
                   </div>
                 ))}
@@ -447,8 +504,8 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {sections.map((sec, idx) => (
                   <div key={idx}>
-                    <h3 style={{ fontSize: '12px', fontWeight: 800, color: accentColor, textTransform: 'uppercase', borderBottom: '1px solid #ccc', margin: '0 0 4px 0' }}>{sec.title}</h3>
-                    <div style={{ fontSize: '11px', lineHeight: 1.4, color: '#222', whiteSpace: 'pre-line' }}>{sec.content}</div>
+                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: accentColor, textTransform: 'uppercase', borderBottom: '1px solid #ccc', margin: '0 0 4px 0' }}>{sec.title}</h3>
+                    <div style={{ fontSize: '12px', lineHeight: 1.4, color: '#222', whiteSpace: 'pre-line', textAlign: 'justify' }}>{sec.content}</div>
                   </div>
                 ))}
               </div>
@@ -464,11 +521,11 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
                 <div style={{ width: '40px', height: '2px', background: accentColor, margin: '0 auto 12px' }} />
                 <div style={{ fontSize: '11px', color: '#666', letterSpacing: '1px' }}>{email} • {phone} • {city}</div>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
                 {sections.map((sec, idx) => (
                   <div key={idx} style={{ textAlign: 'center' }}>
-                    <h3 style={{ fontSize: '13px', fontWeight: 600, color: accentColor, textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '12px' }}>{sec.title}</h3>
-                    <div style={{ fontSize: '12px', lineHeight: 1.8, color: '#444', whiteSpace: 'pre-line', textAlign: 'left' }}>{sec.content}</div>
+                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: accentColor, textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '12px' }}>{sec.title}</h3>
+                    <div style={{ fontSize: '12px', lineHeight: 1.8, color: '#444', whiteSpace: 'pre-line', textAlign: 'justify' }}>{sec.content}</div>
                   </div>
                 ))}
               </div>
@@ -478,15 +535,15 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
           {/* Legacy sidebar alias for any previously selected sidebar template */}
           {templateStyle === 'sidebar' && (
             <div style={{ display: 'grid', gridTemplateColumns: '190px 1fr', minHeight: '842px' }}>
-              <div style={{ background: accentColor, color: '#fff', padding: '36px 20px' }}>
+              <div style={{ background: accentColor, color: getContrastColor(accentColor), padding: '36px 20px' }}>
                 <h2 style={{ fontSize: '18px' }}>{candidateName}</h2>
                 <div style={{ fontSize: '10px', marginTop: '20px' }}>{email}<br/>{phone}</div>
               </div>
               <div style={{ padding: '36px 30px' }}>
                 {sections.map((sec, idx) => (
                   <div key={idx} style={{ marginBottom: '20px' }}>
-                    <h3 style={{ fontSize: '12px', color: accentColor, textTransform: 'uppercase' }}>{sec.title}</h3>
-                    <p style={{ fontSize: '12px', whiteSpace: 'pre-line' }}>{sec.content}</p>
+                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: accentColor, textTransform: 'uppercase' }}>{sec.title}</h3>
+                    <p style={{ fontSize: '12px', whiteSpace: 'pre-line', textAlign: 'justify' }}>{sec.content}</p>
                   </div>
                 ))}
               </div>

@@ -409,23 +409,23 @@
       "atsScore": 100,
       "personalInfo": {
         "name": "K.DEVAKI",
-        "jobTitle": "",
+        "jobTitle": "Software Developer",
         "email": "thulasidevi9843@gmail.com",
-        "phone": "",
-        "city": "",
+        "phone": "9345071788",
+        "city": "Kodaikanal,India",
         "linkedin": "",
         "portfolio": "",
-        "github": "",
+        "github": "github.com/kdevi1603",
         "profilePicture": null
       },
       "summary": "• Results-driven technical professional with expertise in Project Management, Data Analysis, and scalable system design.\n• Proven track record of collaborating across cross-functional teams to deliver high-quality technical initiatives and optimize operational workflows.\n• Skilled in leveraging continuous integration pipelines and modern cloud architectures to drive business efficiency and organizational growth.",
-      "education": "Education details extracted here...",
+      "education": "MCA - MOther Teresa Women's University,Kodaikanal. - 80%",
       "experienceList": [
         {
           "company": "Resume Experience Section",
           "role": "",
           "period": "",
-          "bullets": ""
+          "bullets": "Student Management System to using  HTML,CSS,Javascript."
         }
       ],
       "sectionScores": {
@@ -502,10 +502,20 @@
           "priority": "Low"
         }
       ],
-      "fixedSkills": "• Technical Skills: System Design, Microservices, Cloud Architecture (AWS/GCP), CI/CD Pipelines, Unit Testing (Jest/Cypress), Data Analysis, Project Management\n• Tools & Technologies: Git, Docker, Kubernetes, Jira, Postman\n• Core Competencies: Problem Solving, Teamwork, Communication",
+      "fixedSkills": "• Technical Skills: HTML/CSS, JavaScript, System Design, Microservices, Cloud Architecture (AWS/GCP), CI/CD Pipelines, Unit Testing (Jest)\n• Tools & Frameworks: Git, Docker, Kubernetes, Postman, Jira\n• Core Competencies: Data Analysis, Project Management, Problem Solving, Communication",
       "customHtml": "",
       "fixedSummary": "• Results-driven technical professional with expertise in Project Management, Data Analysis, and scalable system design.\n• Proven track record of collaborating across cross-functional teams to deliver high-quality technical initiatives and optimize operational workflows.\n• Skilled in leveraging continuous integration pipelines and modern cloud architectures to drive business efficiency and organizational growth.",
-      "fixedProjects": "Resume Experience Section () — "
+      "fixedProjects": "Resume Experience Section () — Student Management System to using  HTML,CSS,Javascript."
+    }
+  ],
+  "messages": [
+    {
+      "id": "323f197a-edce-4055-a1e7-59b1350183b7",
+      "createdAt": "2026-08-05T10:11:21.357Z",
+      "name": "Devi",
+      "email": "thulasidevi9843@gmail.com",
+      "message": "hi",
+      "status": "unread"
     }
   ]
 }

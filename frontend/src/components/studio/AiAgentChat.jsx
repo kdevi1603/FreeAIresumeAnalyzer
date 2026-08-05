@@ -3,7 +3,23 @@ import { Send, Bot, Paperclip, Smile, Sparkles } from 'lucide-react';
 
 export default function AiAgentChat({ resumeData, chatMessages, onSendMessage, isTyping, autoFixMessage, onApplyFix }) {
   const [input, setInput] = useState('');
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const messagesEndRef = useRef(null);
+  const fileInputRef = useRef(null);
+
+  const emojis = ['😀', '😂', '🥺', '😎', '👍', '🔥', '🚀', '✨', '💡', '✅'];
+
+  const handleEmojiClick = (emoji) => {
+    setInput(prev => prev + emoji);
+    setShowEmojiPicker(false);
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setInput(prev => prev + (prev ? ' ' : '') + `[Attached: ${file.name}]`);
+    }
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -193,11 +209,31 @@ export default function AiAgentChat({ resumeData, chatMessages, onSendMessage, i
       </div>
 
       {/* Input Box */}
+      <div style={{ position: 'relative' }}>
+        {showEmojiPicker && (
+          <div style={{
+            position: 'absolute', bottom: '0px', left: '20px', marginBottom: '10px',
+            background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px',
+            padding: '8px', display: 'flex', gap: '4px', flexWrap: 'wrap', width: '220px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)', zIndex: 10
+          }}>
+            {emojis.map(emoji => (
+              <span key={emoji} onClick={() => handleEmojiClick(emoji)} style={{
+                cursor: 'pointer', fontSize: '1.2rem', padding: '4px', borderRadius: '4px',
+                transition: 'background 0.2s'
+              }} onMouseOver={e => e.target.style.background = 'var(--bg-dark)'} onMouseOut={e => e.target.style.background = 'transparent'}>
+                {emoji}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
       <form onSubmit={handleSend} style={{
         padding: '16px 20px', background: 'var(--bg-card)', borderTop: '1px solid var(--border-color)', display: 'flex', gap: '12px', alignItems: 'center'
       }}>
-        <Smile size={20} color="var(--text-muted)" style={{ cursor: 'pointer' }} />
-        <Paperclip size={20} color="var(--text-muted)" style={{ cursor: 'pointer' }} />
+        <Smile size={20} color="var(--text-muted)" style={{ cursor: 'pointer' }} onClick={() => setShowEmojiPicker(!showEmojiPicker)} />
+        <Paperclip size={20} color="var(--text-muted)" style={{ cursor: 'pointer' }} onClick={() => fileInputRef.current?.click()} />
+        <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileChange} />
         <input
           type="text"
           placeholder="Enter your message..."
