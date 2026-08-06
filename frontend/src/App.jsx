@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from './components/Navbar.jsx';
 import AuthModal from './components/AuthModal.jsx';
 import ContactModal from './components/ContactModal.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import SidebarDashboard from './pages/SidebarDashboard.jsx';
+import AdminPanel from './pages/AdminPanel.jsx';
 import Footer from './components/Footer.jsx';
 import TemplateSelectionModal from './components/TemplateSelectionModal.jsx';
 import CoverLetterStudio from './components/studio/CoverLetterStudio.jsx';
@@ -13,7 +14,18 @@ import { Sparkles, Shield, Heart, Github } from 'lucide-react';
 export default function App() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isContactOpen, setIsContactOpen] = useState(false);
-  const [viewMode, setViewMode] = useState('landing');
+  const [viewMode, setViewMode] = useState(() => {
+    if (window.location.pathname === '/admin') return 'admin';
+    return 'landing';
+  });
+
+  useEffect(() => {
+    if (viewMode === 'admin') {
+      window.history.pushState({}, '', '/admin');
+    } else if (viewMode === 'landing' || viewMode === 'sidebar_dashboard') {
+      window.history.pushState({}, '', '/');
+    }
+  }, [viewMode]);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [isCreateResumeModalOpen, setIsCreateResumeModalOpen] = useState(false);
   const [currentAnalysis, setCurrentAnalysis] = useState(null);
@@ -47,6 +59,10 @@ export default function App() {
     setSelectedTemplateId(templateId);
     setViewMode('studio');
   };
+
+  if (viewMode === 'admin') {
+    return <AdminPanel onLogout={() => setViewMode('landing')} onBackToLanding={() => setViewMode('sidebar_dashboard')} />;
+  }
 
   if (viewMode === 'sidebar_dashboard') {
     return (

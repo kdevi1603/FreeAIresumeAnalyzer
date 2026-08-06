@@ -101,72 +101,82 @@ export default function ResumeBuilderModal({
       id: 'modern',
       name: '1. Modern Professional',
       badge: 'Default',
-      description: 'Two-column layout with sidebar',
+      description: 'Two-column layout, left sidebar with photo',
       image: '/mockups/modern.png?v=2',
-      displayTags: ['Two Column', 'With Photo', 'ATS Friendly']
+      tags: ['Two column', 'With photo', 'ATS'],
+      displayTags: ['Two-column layout', 'Left sidebar with photo', 'Best for IT, Software, Business', 'ATS Friendly']
     },
     {
       id: 'minimalist',
       name: '2. Minimal ATS',
-      description: 'Single column ATS-friendly design',
+      description: 'Single-column layout, maximum ATS compatibility',
       image: '/mockups/minimal.png?v=2',
-      displayTags: ['Single Column', 'ATS Friendly']
+      tags: ['Single column', 'ATS'],
+      displayTags: ['Single-column layout', 'Maximum ATS compatibility', 'No graphics', 'Best for online job applications']
     },
     {
       id: 'software',
       name: '3. Software Engineer',
-      description: 'Technical layout for developers',
-      image: '/mockups/modern.png?v=2',
-      displayTags: ['Two Column', 'With Photo', 'ATS Friendly']
+      description: 'Technical skills section, projects highlighted',
+      image: '/mockups/software.png?v=2',
+      tags: ['Two column', 'With photo', 'ATS'],
+      displayTags: ['Technical skills section', 'Projects highlighted', 'GitHub & portfolio links', 'Best for developers']
     },
     {
       id: 'fresher',
       name: '4. Student / Fresher',
-      description: 'Perfect for students & freshers',
-      image: '/mockups/creative.png?v=2',
-      displayTags: ['Two Column', 'With Photo']
+      description: 'Education first, projects & internships',
+      image: '/mockups/fresher.png?v=2',
+      tags: ['Two column', 'With photo'],
+      displayTags: ['Education first', 'Projects & internships', 'Certifications', 'Best for fresh graduates']
     },
     {
       id: 'executive',
       name: '5. Executive',
-      description: 'For senior professionals & leaders',
-      image: '/mockups/modern.png?v=2',
-      displayTags: ['Two Column', 'With Photo']
+      description: 'Professional summary, leadership achievements',
+      image: '/mockups/executive.png?v=2',
+      tags: ['Two column', 'With photo'],
+      displayTags: ['Professional summary', 'Leadership achievements', 'Work experience focus', 'Best for managers']
     },
     {
       id: 'corporate',
       name: '6. Corporate',
-      description: 'Professional corporate layout',
-      image: '/mockups/minimal.png?v=2',
-      displayTags: ['Two Column', 'With Photo', 'ATS Friendly']
+      description: 'Clean corporate style, balanced sections',
+      image: '/mockups/corporate.png?v=2',
+      tags: ['Two column', 'With photo', 'ATS'],
+      displayTags: ['Clean corporate style', 'Balanced sections', 'Business professionals', 'ATS Friendly']
     },
     {
       id: 'academic',
       name: '7. Academic CV',
-      description: 'For academics & researchers',
-      image: '/mockups/minimal.png?v=2',
-      displayTags: ['Single Column', 'ATS Friendly']
+      description: 'Education, research, publications',
+      image: '/mockups/academic.png?v=2',
+      tags: ['Single column', 'ATS'],
+      displayTags: ['Education', 'Research', 'Publications', 'Teaching experience', 'Best for higher studies']
     },
     {
       id: 'creative',
       name: '8. Creative',
-      description: 'Creative design with visual elements',
+      description: 'Modern colors, stylish typography',
       image: '/mockups/creative.png?v=2',
-      displayTags: ['Two Column', 'With Photo']
+      tags: ['Two column', 'With photo'],
+      displayTags: ['Modern colors', 'Stylish typography', 'Portfolio links', 'Best for designers']
     },
     {
       id: 'onepage',
       name: '9. Business Analyst',
-      description: 'Data-driven professional layout',
-      image: '/mockups/modern.png?v=2',
-      displayTags: ['Two Column', 'ATS Friendly']
+      description: 'Business skills, data analysis, certifications',
+      image: '/mockups/business.png?v=2',
+      tags: ['Two column', 'ATS'],
+      displayTags: ['Business skills', 'Data analysis', 'Certifications', 'Projects', 'Professional appearance']
     },
     {
       id: 'elegant',
-      name: '10. Clean Professional',
-      description: 'Simple & clean single column',
-      image: '/mockups/minimal.png?v=2',
-      displayTags: ['Single Column', 'ATS Friendly']
+      name: '10. Simple Elegant',
+      description: 'Minimal modern design, excellent readability',
+      image: '/mockups/elegant.png?v=2',
+      tags: ['Single column', 'ATS'],
+      displayTags: ['Minimal modern design', 'Excellent readability', 'Suitable for any profession', 'ATS Friendly']
     }
   ];
 

@@ -22,7 +22,10 @@ export async function initDB() {
       const initialData = {
         users: [],
         resumes: [],
-        messages: []
+        messages: [],
+        settings: {},
+        templates: [],
+        skills: []
       };
       await fs.writeFile(DB_FILE, JSON.stringify(initialData, null, 2), 'utf8');
       console.log('📦 Initialized local JSON database storage.');
@@ -38,9 +41,12 @@ async function readDB() {
     const data = await fs.readFile(DB_FILE, 'utf8');
     const parsed = JSON.parse(data);
     if (!parsed.messages) parsed.messages = [];
+    if (!parsed.settings) parsed.settings = {};
+    if (!parsed.templates) parsed.templates = [];
+    if (!parsed.skills) parsed.skills = [];
     return parsed;
   } catch (error) {
-    return { users: [], resumes: [], messages: [] };
+    return { users: [], resumes: [], messages: [], settings: {}, templates: [], skills: [] };
   }
 }
 
@@ -76,6 +82,30 @@ export const db = {
       data.users.push(newUser);
       await writeDB(data);
       return newUser;
+    },
+    async find(query = {}) {
+      const data = await readDB();
+      return data.users.filter(u => matchQuery(u, query)).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    },
+    async update(id, updatedData) {
+      const data = await readDB();
+      const index = data.users.findIndex(u => u.id === id);
+      if (index !== -1) {
+        data.users[index] = { ...data.users[index], ...updatedData };
+        await writeDB(data);
+        return data.users[index];
+      }
+      return null;
+    },
+    async deleteOne(query) {
+      const data = await readDB();
+      const initialLen = data.users.length;
+      data.users = data.users.filter(u => !matchQuery(u, query));
+      if (data.users.length !== initialLen) {
+        await writeDB(data);
+        return { deletedCount: initialLen - data.users.length };
+      }
+      return { deletedCount: 0 };
     }
   },
   resumes: {
@@ -136,6 +166,94 @@ export const db = {
     async find(query = {}) {
       const data = await readDB();
       return data.messages.filter(m => matchQuery(m, query)).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    },
+    async deleteOne(query) {
+      const data = await readDB();
+      const initialLen = data.messages.length;
+      data.messages = data.messages.filter(m => !matchQuery(m, query));
+      if (data.messages.length !== initialLen) {
+        await writeDB(data);
+        return { deletedCount: initialLen - data.messages.length };
+      }
+      return { deletedCount: 0 };
+    }
+  },
+  settings: {
+    async get() {
+      const data = await readDB();
+      return data.settings || {};
+    },
+    async update(updatedData) {
+      const data = await readDB();
+      data.settings = { ...data.settings, ...updatedData };
+      await writeDB(data);
+      return data.settings;
+    }
+  },
+  templates: {
+    async find(query = {}) {
+      const data = await readDB();
+      return data.templates.filter(t => matchQuery(t, query)).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    },
+    async create(templateData) {
+      const data = await readDB();
+      const newTemplate = { id: uuidv4(), createdAt: new Date().toISOString(), ...templateData };
+      data.templates.push(newTemplate);
+      await writeDB(data);
+      return newTemplate;
+    },
+    async update(id, updatedData) {
+      const data = await readDB();
+      const index = data.templates.findIndex(t => t.id === id);
+      if (index !== -1) {
+        data.templates[index] = { ...data.templates[index], ...updatedData };
+        await writeDB(data);
+        return data.templates[index];
+      }
+      return null;
+    },
+    async deleteOne(query) {
+      const data = await readDB();
+      const initialLen = data.templates.length;
+      data.templates = data.templates.filter(t => !matchQuery(t, query));
+      if (data.templates.length !== initialLen) {
+        await writeDB(data);
+        return { deletedCount: initialLen - data.templates.length };
+      }
+      return { deletedCount: 0 };
+    }
+  },
+  skills: {
+    async find(query = {}) {
+      const data = await readDB();
+      return data.skills.filter(s => matchQuery(s, query)).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    },
+    async create(skillData) {
+      const data = await readDB();
+      const newSkill = { id: uuidv4(), createdAt: new Date().toISOString(), ...skillData };
+      data.skills.push(newSkill);
+      await writeDB(data);
+      return newSkill;
+    },
+    async update(id, updatedData) {
+      const data = await readDB();
+      const index = data.skills.findIndex(s => s.id === id);
+      if (index !== -1) {
+        data.skills[index] = { ...data.skills[index], ...updatedData };
+        await writeDB(data);
+        return data.skills[index];
+      }
+      return null;
+    },
+    async deleteOne(query) {
+      const data = await readDB();
+      const initialLen = data.skills.length;
+      data.skills = data.skills.filter(s => !matchQuery(s, query));
+      if (data.skills.length !== initialLen) {
+        await writeDB(data);
+        return { deletedCount: initialLen - data.skills.length };
+      }
+      return { deletedCount: 0 };
     }
   }
 };

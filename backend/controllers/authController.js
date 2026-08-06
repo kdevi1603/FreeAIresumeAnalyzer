@@ -58,6 +58,7 @@ export async function loginUser(req, res) {
       id: user.id,
       name: user.name,
       email: user.email,
+      role: user.role,
       token: generateToken(user.id)
     });
   } catch (error) {
@@ -71,5 +72,42 @@ export async function getMe(req, res) {
     return res.json(req.user);
   } catch (error) {
     return res.status(500).json({ message: 'Server error retrieving user profile.' });
+  }
+}
+
+export async function setupAdmin(req, res) {
+  try {
+    const { name, email, password, adminSecret } = req.body;
+    
+    // Optional: Protect this with a secret in production, for now just check if any admin exists
+    const admins = await db.users.find({ role: 'admin' });
+    if (admins.length > 0) {
+      return res.status(403).json({ message: 'Admin already setup.' });
+    }
+
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: 'Please provide name, email, and password.' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const user = await db.users.create({
+      name,
+      email: email.toLowerCase(),
+      password: hashedPassword,
+      role: 'admin'
+    });
+
+    return res.status(201).json({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      token: generateToken(user.id)
+    });
+  } catch (error) {
+    console.error('Setup Admin Error:', error);
+    return res.status(500).json({ message: 'Server error during admin setup.' });
   }
 }

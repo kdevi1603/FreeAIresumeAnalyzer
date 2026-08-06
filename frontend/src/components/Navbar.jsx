@@ -32,18 +32,7 @@ export default function Navbar({ onOpenAuth, viewMode, setViewMode, onOpenContac
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={() => setViewMode('landing')}>
-          <div style={{
-            width: '42px',
-            height: '42px',
-            borderRadius: '12px',
-            background: 'var(--gradient-main)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 0 20px rgba(0, 242, 254, 0.4)'
-          }}>
-            <Sparkles size={24} color={isLightMode ? "#fff" : "#000"} />
-          </div>
+          <img src="/logo.png" alt="Logo" style={{ width: '42px', height: '42px', borderRadius: '12px', objectFit: 'cover', boxShadow: '0 0 20px rgba(0, 242, 254, 0.4)' }} />
           <div>
             <span style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.03em', background: 'var(--gradient-main)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               AI Resume Analyzer
@@ -131,14 +120,16 @@ export default function Navbar({ onOpenAuth, viewMode, setViewMode, onOpenContac
           </div>
           
           {isAuthenticated ? (
-            <button onClick={() => {
-              logout();
-              setViewMode('landing');
-              setIsMobileMenuOpen(false);
-            }} className="btn btn-secondary" style={{ width: '100%', justifyContent: 'center' }}>
-              <LogOut size={16} />
-              <span>Logout ({user?.name})</span>
-            </button>
+            <>
+              <button onClick={() => {
+                logout();
+                setViewMode('landing');
+                setIsMobileMenuOpen(false);
+              }} className="btn btn-secondary" style={{ width: '100%', justifyContent: 'center' }}>
+                <LogOut size={16} />
+                <span>Logout ({user?.name})</span>
+              </button>
+            </>
           ) : (
             <button onClick={onOpenAuth} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
               <User size={18} />

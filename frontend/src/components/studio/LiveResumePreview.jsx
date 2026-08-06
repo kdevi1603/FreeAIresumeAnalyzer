@@ -119,7 +119,7 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
   const summaryText = (showDiff && resumeData?.fixedSummary) ? resumeData.fixedSummary : (resumeData?.summary || '');
   const projectsText = (showDiff && resumeData?.fixedProjects) ? resumeData.fixedProjects : (resumeData?.experienceList?.map(exp => `${exp.company} - ${exp.role}\n${exp.bullets}`).join('\n\n') || '');
   const skillsText = (showDiff && resumeData?.fixedSkills) ? resumeData.fixedSkills : (resumeData?.skillsFound?.map(s => s.skill).join(', ') || '');
-  const educationText = resumeData?.education || '';
+  const educationText = (showDiff && resumeData?.fixedEducation) ? resumeData.fixedEducation : (resumeData?.education || '');
 
   const getContrastColor = (hexcolor) => {
     if (!hexcolor) return '#ffffff';
@@ -177,7 +177,7 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
   const sections = [
     { title: 'Executive Summary', content: formatText(summaryText), isModified: !!resumeData?.fixedSummary },
     { title: 'Work & Project Experience', content: formatText(projectsText), isModified: !!resumeData?.fixedProjects },
-    { title: 'Education & Academic Details', content: formatText(educationText) },
+    { title: 'Education & Academic Details', content: formatText(educationText), isModified: !!resumeData?.fixedEducation },
     { title: 'Technical Skills & Tools', content: formatText(skillsText), isModified: !!resumeData?.fixedSkills },
     { title: 'Languages', content: 'Tamil (Native), English (Professional Working Proficiency)' }
   ];

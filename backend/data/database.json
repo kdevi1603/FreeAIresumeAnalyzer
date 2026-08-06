@@ -12,14 +12,17 @@
       "createdAt": "2026-07-27T04:50:58.780Z",
       "name": "alex",
       "email": "alex@gmail.com",
-      "password": "$2a$10$MzqRCmSMWSg9ibcPGEqFjOoSp7GrcPNl7tK1BQCyW6AuxJoMo4EMm"
+      "password": "$2a$10$MzqRCmSMWSg9ibcPGEqFjOoSp7GrcPNl7tK1BQCyW6AuxJoMo4EMm",
+      "role": "admin",
+      "isBlocked": false
     },
     {
       "id": "eee93475-69d2-4823-a818-ac1a7cdea6af",
       "createdAt": "2026-07-28T05:20:13.675Z",
       "name": "Elsha",
       "email": "elsha@gmail.com",
-      "password": "$2a$10$F/tA3hlLnDOkqIXubfBUJ.q/iWTVTYmvnRoqTMJrw9rJlnDst5TOa"
+      "password": "$2a$10$F/tA3hlLnDOkqIXubfBUJ.q/iWTVTYmvnRoqTMJrw9rJlnDst5TOa",
+      "role": "admin"
     },
     {
       "id": "f2b80fdc-a27e-49b3-94fd-2523baa2bed3",
@@ -399,33 +402,33 @@
       ]
     },
     {
-      "id": "bcd2f239-db0d-4183-b26b-7f290289ffd1",
-      "createdAt": "2026-08-04T10:17:23.388Z",
+      "id": "a8202d1c-e521-4ea1-a16e-cf7ede2e617e",
+      "createdAt": "2026-08-06T04:38:16.747Z",
       "userId": "eee93475-69d2-4823-a818-ac1a7cdea6af",
-      "fileName": "Nisha Resume.pdf",
-      "fileUrl": "/uploads/4f1aff97-965c-4cc7-89ac-1d9b90a4f666.pdf",
-      "rawText": "",
-      "pages": 1,
+      "fileName": "Devaki Resume.pdf",
+      "fileUrl": "/uploads/42374655-923a-4f7c-bfff-ea61ab23a2b2.pdf",
+      "rawText": "• Master of Computer Applications (MCA) – Mother Teresa Women's University, Kodaikanal (2023) | Aggregate: 80%\n• Bachelor of Computer Applications (BCA) – Arulmigu Palaniyandavar Arts College for Women, Palani (2021) | Aggregate: 69%\n• Higher Secondary Certificate (HSC) – Government Higher Secondary School, Dindigul (2014) | Score: 81%\n• Secondary School Leaving Certificate (SSLC) – Government Higher Secondary School, Dindigul (2016) | Score: 88%",
+      "pages": 2,
       "atsScore": 100,
       "personalInfo": {
         "name": "K.DEVAKI",
-        "jobTitle": "Software Developer",
+        "jobTitle": "",
         "email": "thulasidevi9843@gmail.com",
-        "phone": "9345071788",
+        "phone": "",
         "city": "Kodaikanal,India",
         "linkedin": "",
         "portfolio": "",
         "github": "github.com/kdevi1603",
         "profilePicture": null
       },
-      "summary": "• Results-driven technical professional with expertise in Project Management, Data Analysis, and scalable system design.\n• Proven track record of collaborating across cross-functional teams to deliver high-quality technical initiatives and optimize operational workflows.\n• Skilled in leveraging continuous integration pipelines and modern cloud architectures to drive business efficiency and organizational growth.",
-      "education": "MCA - MOther Teresa Women's University,Kodaikanal. - 80%",
+      "summary": " To seeking a position to utilise my skills and abilities in an organisation that offers security and professional growth while being resourceful, innovative and flexible.",
+      "education": "MCA-Mother Teresa Women's University,Kodaikanal.\n2023 — 80%\nBCA-Arulmigu Palaniyandavar Arts College For Women,Palani.\n2021 — 69%\nHSC-Government Higher Secondary School, Dindigul.\n2014 — 81%\nSSLC-Government Higher Secondary School, Dindigul.\n2016 — 88%\n",
       "experienceList": [
         {
-          "company": "Resume Experience Section",
+          "company": "Bank Transaction",
           "role": "",
           "period": "",
-          "bullets": "Student Management System to using  HTML,CSS,Javascript."
+          "bullets": "Description : To apply and update Bank Transaction in this Project which is developed by VB.Net with SQL SERVER 2005."
         }
       ],
       "sectionScores": {
@@ -502,10 +505,10 @@
           "priority": "Low"
         }
       ],
-      "fixedSkills": "• Technical Skills: HTML/CSS, JavaScript, System Design, Microservices, Cloud Architecture (AWS/GCP), CI/CD Pipelines, Unit Testing (Jest)\n• Tools & Frameworks: Git, Docker, Kubernetes, Postman, Jira\n• Core Competencies: Data Analysis, Project Management, Problem Solving, Communication",
       "customHtml": "",
-      "fixedSummary": "• Results-driven technical professional with expertise in Project Management, Data Analysis, and scalable system design.\n• Proven track record of collaborating across cross-functional teams to deliver high-quality technical initiatives and optimize operational workflows.\n• Skilled in leveraging continuous integration pipelines and modern cloud architectures to drive business efficiency and organizational growth.",
-      "fixedProjects": "Resume Experience Section () — Student Management System to using  HTML,CSS,Javascript."
+      "fixedSummary": "Detail-oriented MCA graduate proficient in Java, Python, SQL Server, and Web Development. Seeking an entry-level software engineering role to leverage strong problem-solving skills, technical expertise, and passion for building efficient software solutions in a dynamic organization.",
+      "fixedProjects": "Bank Transaction Management System | VB.NET, SQL Server 2005\n• Designed and developed a desktop banking application using VB.NET and SQL Server 2005 to automate daily transaction workflows.\n• Engineered database schemas and optimized SQL queries to execute balance updates, deposits, and withdrawals with high accuracy.\n• Implemented user authentication and data validation rules to ensure high security and transactional data integrity.",
+      "fixedSkills": "• Programming Languages: C, C++, Java, Python\n• Databases: SQL Server, Oracle\n• Web & Tools: HTML, Git, GitHub, MS Office, Tally\n• Core Competencies: Problem Solving, Data Analysis, Teamwork, Communication, Software Development"
     }
   ],
   "messages": [
@@ -517,5 +520,141 @@
       "message": "hi",
       "status": "unread"
     }
-  ]
+  ],
+  "templates": [
+    {
+      "id": "modern",
+      "createdAt": "2026-08-06T12:00:00.000Z",
+      "name": "1. Modern Professional",
+      "description": "Two-column layout, left sidebar with photo",
+      "tags": [
+        "Two-column layout",
+        "Left sidebar with photo",
+        "Best for IT, Software, Business",
+        "ATS Friendly"
+      ],
+      "isPremium": false
+    },
+    {
+      "id": "minimalist",
+      "createdAt": "2026-08-06T12:00:00.000Z",
+      "name": "2. Minimal ATS",
+      "description": "Single-column layout, maximum ATS compatibility",
+      "tags": [
+        "Single-column layout",
+        "Maximum ATS compatibility",
+        "No graphics",
+        "Best for online job applications"
+      ],
+      "isPremium": false
+    },
+    {
+      "id": "software",
+      "createdAt": "2026-08-06T12:00:00.000Z",
+      "name": "3. Software Engineer",
+      "description": "Technical skills section, projects highlighted",
+      "tags": [
+        "Technical skills section",
+        "Projects highlighted",
+        "GitHub & portfolio links",
+        "Best for developers"
+      ],
+      "isPremium": false
+    },
+    {
+      "id": "fresher",
+      "createdAt": "2026-08-06T12:00:00.000Z",
+      "name": "4. Student / Fresher",
+      "description": "Education first, projects & internships",
+      "tags": [
+        "Education first",
+        "Projects & internships",
+        "Certifications",
+        "Best for fresh graduates"
+      ],
+      "isPremium": false
+    },
+    {
+      "id": "executive",
+      "createdAt": "2026-08-06T12:00:00.000Z",
+      "name": "5. Executive",
+      "description": "Professional summary, leadership achievements",
+      "tags": [
+        "Professional summary",
+        "Leadership achievements",
+        "Work experience focus",
+        "Best for managers"
+      ],
+      "isPremium": false
+    },
+    {
+      "id": "corporate",
+      "createdAt": "2026-08-06T12:00:00.000Z",
+      "name": "6. Corporate",
+      "description": "Clean corporate style, balanced sections",
+      "tags": [
+        "Clean corporate style",
+        "Balanced sections",
+        "Business professionals",
+        "ATS Friendly"
+      ],
+      "isPremium": false
+    },
+    {
+      "id": "academic",
+      "createdAt": "2026-08-06T12:00:00.000Z",
+      "name": "7. Academic CV",
+      "description": "Education, research, publications",
+      "tags": [
+        "Education",
+        "Research",
+        "Publications",
+        "Teaching experience",
+        "Best for higher studies"
+      ],
+      "isPremium": false
+    },
+    {
+      "id": "creative",
+      "createdAt": "2026-08-06T12:00:00.000Z",
+      "name": "8. Creative",
+      "description": "Modern colors, stylish typography",
+      "tags": [
+        "Modern colors",
+        "Stylish typography",
+        "Portfolio links",
+        "Best for designers"
+      ],
+      "isPremium": false
+    },
+    {
+      "id": "onepage",
+      "createdAt": "2026-08-06T12:00:00.000Z",
+      "name": "9. Business Analyst",
+      "description": "Business skills, data analysis, certifications",
+      "tags": [
+        "Business skills",
+        "Data analysis",
+        "Certifications",
+        "Projects",
+        "Professional appearance"
+      ],
+      "isPremium": false
+    },
+    {
+      "id": "elegant",
+      "createdAt": "2026-08-06T12:00:00.000Z",
+      "name": "10. Simple Elegant",
+      "description": "Minimal modern design, excellent readability",
+      "tags": [
+        "Minimal modern design",
+        "Excellent readability",
+        "Suitable for any profession",
+        "ATS Friendly"
+      ],
+      "isPremium": false
+    }
+  ],
+  "skills": [],
+  "settings": {}
 }

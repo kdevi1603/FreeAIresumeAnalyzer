@@ -152,6 +152,8 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
             updated.fixedSkills = res.proposedFix.content;
           } else if (sec.includes('summary')) {
             updated.fixedSummary = res.proposedFix.content;
+          } else if (sec.includes('education')) {
+            updated.fixedEducation = res.proposedFix.content;
           } else {
             updated.rawText = res.proposedFix.content;
           }
@@ -671,6 +673,8 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
                       updated.fixedSkills = content;
                     } else if (sec.includes('summary')) {
                       updated.fixedSummary = content;
+                    } else if (sec.includes('education')) {
+                      updated.fixedEducation = content;
                     } else if (sec.includes('format') || sec.includes('heading') || sec.includes('font') || sec.includes('bullet') || sec.includes('space')) {
                       updated.formattingCss = (updated.formattingCss || '') + '\n' + content;
                     } else {
