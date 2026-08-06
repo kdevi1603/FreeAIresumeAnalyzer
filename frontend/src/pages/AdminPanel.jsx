@@ -142,7 +142,7 @@ export default function AdminPanel({ onLogout, onBackToLanding }) {
         <div className={`admin-sidebar ${isMobileMenuOpen ? 'open' : ''}`}>
           <div style={{ padding: '0 24px', marginBottom: '32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <img src="/logo.png" alt="Logo" style={{ width: '32px', height: '32px', borderRadius: '8px', objectFit: 'cover' }} />
+              <img src="/admin-logo.jpg" alt="Logo" style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover' }} />
               <span style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-main)' }}>Admin Panel</span>
             </div>
             {/* Close button for mobile inside sidebar */}

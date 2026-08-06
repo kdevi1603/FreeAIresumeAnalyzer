@@ -25,7 +25,9 @@ export async function initDB() {
         messages: [],
         settings: {},
         templates: [],
-        skills: []
+        skills: [],
+        certifications: [],
+        languages: []
       };
       await fs.writeFile(DB_FILE, JSON.stringify(initialData, null, 2), 'utf8');
       console.log('📦 Initialized local JSON database storage.');
@@ -44,9 +46,11 @@ async function readDB() {
     if (!parsed.settings) parsed.settings = {};
     if (!parsed.templates) parsed.templates = [];
     if (!parsed.skills) parsed.skills = [];
+    if (!parsed.certifications) parsed.certifications = [];
+    if (!parsed.languages) parsed.languages = [];
     return parsed;
   } catch (error) {
-    return { users: [], resumes: [], messages: [], settings: {}, templates: [], skills: [] };
+    return { users: [], resumes: [], messages: [], settings: {}, templates: [], skills: [], certifications: [], languages: [] };
   }
 }
 
@@ -252,6 +256,72 @@ export const db = {
       if (data.skills.length !== initialLen) {
         await writeDB(data);
         return { deletedCount: initialLen - data.skills.length };
+      }
+      return { deletedCount: 0 };
+    }
+  },
+  certifications: {
+    async find(query = {}) {
+      const data = await readDB();
+      return data.certifications.filter(c => matchQuery(c, query)).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    },
+    async create(certData) {
+      const data = await readDB();
+      const newCert = { id: uuidv4(), createdAt: new Date().toISOString(), ...certData };
+      data.certifications.push(newCert);
+      await writeDB(data);
+      return newCert;
+    },
+    async update(id, updatedData) {
+      const data = await readDB();
+      const index = data.certifications.findIndex(c => c.id === id);
+      if (index !== -1) {
+        data.certifications[index] = { ...data.certifications[index], ...updatedData };
+        await writeDB(data);
+        return data.certifications[index];
+      }
+      return null;
+    },
+    async deleteOne(query) {
+      const data = await readDB();
+      const initialLen = data.certifications.length;
+      data.certifications = data.certifications.filter(c => !matchQuery(c, query));
+      if (data.certifications.length !== initialLen) {
+        await writeDB(data);
+        return { deletedCount: initialLen - data.certifications.length };
+      }
+      return { deletedCount: 0 };
+    }
+  },
+  languages: {
+    async find(query = {}) {
+      const data = await readDB();
+      return data.languages.filter(l => matchQuery(l, query)).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    },
+    async create(langData) {
+      const data = await readDB();
+      const newLang = { id: uuidv4(), createdAt: new Date().toISOString(), ...langData };
+      data.languages.push(newLang);
+      await writeDB(data);
+      return newLang;
+    },
+    async update(id, updatedData) {
+      const data = await readDB();
+      const index = data.languages.findIndex(l => l.id === id);
+      if (index !== -1) {
+        data.languages[index] = { ...data.languages[index], ...updatedData };
+        await writeDB(data);
+        return data.languages[index];
+      }
+      return null;
+    },
+    async deleteOne(query) {
+      const data = await readDB();
+      const initialLen = data.languages.length;
+      data.languages = data.languages.filter(l => !matchQuery(l, query));
+      if (data.languages.length !== initialLen) {
+        await writeDB(data);
+        return { deletedCount: initialLen - data.languages.length };
       }
       return { deletedCount: 0 };
     }

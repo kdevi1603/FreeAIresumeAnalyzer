@@ -13,7 +13,16 @@ import {
   deleteTemplate,
   getSkills,
   addSkill,
+  updateSkill,
   deleteSkill,
+  getCertifications,
+  addCertification,
+  updateCertification,
+  deleteCertification,
+  getLanguages,
+  addLanguage,
+  updateLanguage,
+  deleteLanguage,
   getSettings,
   updateSettings,
   getSupportMessages,
@@ -46,7 +55,20 @@ router.delete('/templates/:id', deleteTemplate);
 // Skills
 router.get('/skills', getSkills);
 router.post('/skills', addSkill);
+router.put('/skills/:id', updateSkill);
 router.delete('/skills/:id', deleteSkill);
+
+// Certifications
+router.get('/certifications', getCertifications);
+router.post('/certifications', addCertification);
+router.put('/certifications/:id', updateCertification);
+router.delete('/certifications/:id', deleteCertification);
+
+// Languages
+router.get('/languages', getLanguages);
+router.post('/languages', addLanguage);
+router.put('/languages/:id', updateLanguage);
+router.delete('/languages/:id', deleteLanguage);
 
 // Settings
 router.get('/settings', getSettings);

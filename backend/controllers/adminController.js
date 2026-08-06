@@ -139,6 +139,92 @@ export async function deleteSkill(req, res) {
   } catch (error) {
     res.status(500).json({ message: 'Error deleting skill' });
   }
+export async function updateSkill(req, res) {
+  try {
+    const { id } = req.params;
+    const skill = await db.skills.update(id, req.body);
+    res.json(skill);
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating skill' });
+  }
+}
+
+// --- Certifications ---
+export async function getCertifications(req, res) {
+  try {
+    const certs = await db.certifications.find();
+    res.json(certs);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching certifications' });
+  }
+}
+
+export async function addCertification(req, res) {
+  try {
+    const cert = await db.certifications.create(req.body);
+    res.status(201).json(cert);
+  } catch (error) {
+    res.status(500).json({ message: 'Error adding certification' });
+  }
+}
+
+export async function updateCertification(req, res) {
+  try {
+    const { id } = req.params;
+    const cert = await db.certifications.update(id, req.body);
+    res.json(cert);
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating certification' });
+  }
+}
+
+export async function deleteCertification(req, res) {
+  try {
+    const { id } = req.params;
+    await db.certifications.deleteOne({ id });
+    res.json({ message: 'Certification deleted' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting certification' });
+  }
+}
+
+// --- Languages ---
+export async function getLanguages(req, res) {
+  try {
+    const langs = await db.languages.find();
+    res.json(langs);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching languages' });
+  }
+}
+
+export async function addLanguage(req, res) {
+  try {
+    const lang = await db.languages.create(req.body);
+    res.status(201).json(lang);
+  } catch (error) {
+    res.status(500).json({ message: 'Error adding language' });
+  }
+}
+
+export async function updateLanguage(req, res) {
+  try {
+    const { id } = req.params;
+    const lang = await db.languages.update(id, req.body);
+    res.json(lang);
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating language' });
+  }
+}
+
+export async function deleteLanguage(req, res) {
+  try {
+    const { id } = req.params;
+    await db.languages.deleteOne({ id });
+    res.json({ message: 'Language deleted' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting language' });
+  }
 }
 
 // --- Settings ---
