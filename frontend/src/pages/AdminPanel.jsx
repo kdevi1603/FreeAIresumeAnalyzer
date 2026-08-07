@@ -45,7 +45,7 @@ export default function AdminPanel({ onLogout, onBackToLanding }) {
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'dashboard': return <AdminDashboard />;
+      case 'dashboard': return <AdminDashboard setActiveTab={setActiveTab} isLightMode={isLightMode} setIsLightMode={setIsLightMode} onBackToLanding={onBackToLanding} />;
       case 'users': return <AdminUsers />;
       case 'all_resumes': return <AdminAllResumes />;
       case 'resumes': return <AdminResumes />;
@@ -185,32 +185,6 @@ export default function AdminPanel({ onLogout, onBackToLanding }) {
           </nav>
 
           <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px', marginTop: 'auto' }}>
-            <button
-              onClick={() => setIsLightMode(!isLightMode)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '8px',
-                padding: '10px 16px', borderRadius: '8px',
-                background: 'transparent', color: 'var(--text-muted)',
-                border: '1px solid var(--border-color)', cursor: 'pointer',
-                width: '100%', justifyContent: 'center'
-              }}
-            >
-              {isLightMode ? <Moon size={16} /> : <Sun size={16} />}
-              {isLightMode ? 'Dark Mode' : 'Light Mode'}
-            </button>
-            <button
-              onClick={onBackToLanding}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '8px',
-                padding: '10px 16px', borderRadius: '8px',
-                background: 'transparent', color: 'var(--text-muted)',
-                border: '1px solid var(--border-color)', cursor: 'pointer',
-                width: '100%', justifyContent: 'center'
-              }}
-            >
-              <ChevronLeft size={16} />
-              Back to Site
-            </button>
             <button
               onClick={onLogout}
               style={{

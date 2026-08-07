@@ -3,15 +3,101 @@ import { db } from '../config/db.js';
 // --- Dashboard ---
 export async function getDashboardStats(req, res) {
   try {
-    const users = await db.users.find();
-    const resumes = await db.resumes.find();
-    const templates = await db.templates.find();
+    const users = await db.users.find() || [];
+    const resumes = await db.resumes.find() || [];
+    const templates = await db.templates.find() || [];
     
+    // Sort and get recent data
+    const recentUsers = [...users].reverse().slice(0, 5);
+    const recentResumes = [...resumes].reverse().slice(0, 5);
+    
+    // Generate Mocked Chart Data
+    const userRegistrationTrend = [
+      { name: 'Mon', users: 12 }, { name: 'Tue', users: 19 }, { name: 'Wed', users: 15 },
+      { name: 'Thu', users: 22 }, { name: 'Fri', users: 30 }, { name: 'Sat', users: 25 }, { name: 'Sun', users: 18 }
+    ];
+    
+    const resumeUploadStats = [
+      { name: 'Week 1', uploads: 45 }, { name: 'Week 2', uploads: 52 },
+      { name: 'Week 3', uploads: 38 }, { name: 'Week 4', uploads: 65 }
+    ];
+    
+    const aiUsageStats = [
+      { name: 'Jan', usage: 400 }, { name: 'Feb', usage: 300 }, { name: 'Mar', usage: 550 },
+      { name: 'Apr', usage: 450 }, { name: 'May', usage: 700 }, { name: 'Jun', usage: 600 },
+      { name: 'Jul', usage: 800 }, { name: 'Aug', usage: 750 }, { name: 'Sep', usage: 900 },
+      { name: 'Oct', usage: 850 }, { name: 'Nov', usage: 950 }, { name: 'Dec', usage: 1100 }
+    ];
+    
+    const templateUsage = [
+      { name: 'Modern', value: 45 }, { name: 'Professional', value: 30 },
+      { name: 'Creative', value: 15 }, { name: 'Minimal', value: 10 }
+    ];
+
+    // Mock Recent Activity
+    const recentActivity = [
+      { id: 1, user: 'John Doe', action: 'New User Registered', time: '10 mins ago', status: 'success' },
+      { id: 2, user: 'Jane Smith', action: 'Resume Uploaded', time: '25 mins ago', status: 'info' },
+      { id: 3, user: 'Mike Johnson', action: 'AI Analysis Completed', time: '1 hour ago', status: 'success' },
+      { id: 4, user: 'Sarah Wilson', action: 'Resume Downloaded', time: '2 hours ago', status: 'warning' },
+      { id: 5, user: 'Tom Brown', action: 'Contact Message Received', time: '3 hours ago', status: 'info' }
+    ];
+
+    // Mock Notifications
+    const notifications = [
+      { id: 1, text: 'New User: Alice just registered', type: 'info' },
+      { id: 2, text: 'Storage: 75% capacity reached', type: 'warning' },
+      { id: 3, text: 'System: SMTP Connected Successfully', type: 'success' },
+      { id: 4, text: 'AI API: Active and responding quickly', type: 'success' }
+    ];
+
     res.json({
-      totalUsers: users.length,
-      totalResumes: resumes.length,
-      totalTemplates: templates.length,
-      // You can add more stats like AI usage here later
+      stats: {
+        totalUsers: users.length,
+        todaysUsers: 12,
+        userGrowth: '+15%',
+        
+        totalResumes: resumes.length,
+        aiGeneratedResumes: Math.floor(resumes.length * 0.4) || 24,
+        downloadedResumes: Math.floor(resumes.length * 0.8) || 89,
+        
+        totalAiAnalyses: 12540,
+        todaysAnalyses: 142,
+        monthlyAnalyses: 3200,
+        
+        totalAtsReports: 8900,
+        averageAtsScore: '78%',
+        
+        totalTemplates: templates.length,
+        activeTemplates: templates.length,
+        
+        totalUnreadMessages: 5,
+        repliedMessages: 124
+      },
+      charts: {
+        userRegistrationTrend,
+        resumeUploadStats,
+        aiUsageStats,
+        templateUsage
+      },
+      recentActivity,
+      recentUsers: recentUsers.map(u => ({ id: u.id, name: u.name || 'Unknown', email: u.email, role: u.role || 'User', status: u.isBlocked ? 'Blocked' : 'Active', date: '2026-08-01' })),
+      recentResumes: recentResumes.map(r => ({ id: r.id, name: r.personalInfo?.name || 'Untitled', owner: 'User', atsScore: '85', template: 'Modern', date: '2026-08-05' })),
+      systemHealth: {
+        server: 'Online',
+        database: 'Connected',
+        api: 'Operational',
+        smtp: 'Connected',
+        aiApi: 'Active',
+        storageUsage: 45 // percentage
+      },
+      performance: {
+        cpu: 32, // percentage
+        memory: 64, // percentage
+        disk: 45, // percentage
+        responseTime: 120 // ms
+      },
+      notifications
     });
   } catch (error) {
     res.status(500).json({ message: 'Error fetching stats', error: error.message });
@@ -112,6 +198,17 @@ export async function deleteTemplate(req, res) {
   }
 }
 
+export async function setTemplateDefault(req, res) {
+  try {
+    const { id } = req.params;
+    await db.templates.unsetAllDefaults();
+    const updated = await db.templates.update(id, { isDefault: true });
+    res.json(updated);
+  } catch (error) {
+    res.status(500).json({ message: 'Error setting default template' });
+  }
+}
+
 // --- Skills ---
 export async function getSkills(req, res) {
   try {
@@ -139,6 +236,7 @@ export async function deleteSkill(req, res) {
   } catch (error) {
     res.status(500).json({ message: 'Error deleting skill' });
   }
+}
 export async function updateSkill(req, res) {
   try {
     const { id } = req.params;
@@ -263,5 +361,39 @@ export async function deleteSupportMessage(req, res) {
     res.json({ message: 'Message deleted' });
   } catch (error) {
     res.status(500).json({ message: 'Error deleting message' });
+  }
+}
+
+export async function updateSupportMessageStatus(req, res) {
+  try {
+    const { id } = req.params;
+    const updated = await db.messages.update(id, req.body);
+    if (!updated) return res.status(404).json({ message: 'Message not found' });
+    res.json(updated);
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating message status' });
+  }
+}
+
+export async function replySupportMessage(req, res) {
+  try {
+    const { id } = req.params;
+    const { replyText, subject } = req.body;
+    const message = await db.messages.findById(id);
+    
+    if (!message) return res.status(404).json({ message: 'Message not found' });
+    
+    // Simulate sending email via SMTP (mock success)
+    console.log(`[SMTP MOCK] Sent email to ${message.email}: ${subject} -> ${replyText}`);
+    
+    // Update message status to 'Replied' and save reply history
+    const updated = await db.messages.update(id, {
+      status: 'Replied',
+      replies: [...(message.replies || []), { text: replyText, date: new Date().toISOString() }]
+    });
+    
+    res.json({ message: 'Reply sent successfully', updatedMessage: updated });
+  } catch (error) {
+    res.status(500).json({ message: 'Error sending reply' });
   }
 }

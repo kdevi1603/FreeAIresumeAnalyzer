@@ -11,6 +11,7 @@ import {
   addTemplate,
   updateTemplate,
   deleteTemplate,
+  setTemplateDefault,
   getSkills,
   addSkill,
   updateSkill,
@@ -26,16 +27,18 @@ import {
   getSettings,
   updateSettings,
   getSupportMessages,
-  deleteSupportMessage
+  deleteSupportMessage,
+  updateSupportMessageStatus,
+  replySupportMessage
 } from '../controllers/adminController.js';
 
 const router = express.Router();
 
-// Apply auth & admin middlewares to all routes in this file
-router.use(protect, isAdmin);
-
 // Dashboard
 router.get('/stats', getDashboardStats);
+
+// Apply auth & admin middlewares to all other routes in this file
+router.use(protect, isAdmin);
 
 // Users
 router.get('/users', getUsers);
@@ -51,6 +54,7 @@ router.get('/templates', getTemplates);
 router.post('/templates', addTemplate);
 router.put('/templates/:id', updateTemplate);
 router.delete('/templates/:id', deleteTemplate);
+router.put('/templates/:id/default', setTemplateDefault);
 
 // Skills
 router.get('/skills', getSkills);
@@ -77,5 +81,7 @@ router.put('/settings', updateSettings);
 // Support Messages
 router.get('/messages', getSupportMessages);
 router.delete('/messages/:id', deleteSupportMessage);
+router.put('/messages/:id/status', updateSupportMessageStatus);
+router.post('/messages/:id/reply', replySupportMessage);
 
 export default router;

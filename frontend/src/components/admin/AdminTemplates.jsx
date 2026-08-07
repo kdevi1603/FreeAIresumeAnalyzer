@@ -1,222 +1,476 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, X, Save } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Plus, Edit2, Trash2, X, Save, Copy, Eye, Star, Upload, Download, 
+  Search, Filter, LayoutTemplate, Zap, FileText, CheckCircle, Image, Settings, Palette
+} from 'lucide-react';
 
 export default function AdminTemplates() {
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  // Modal state
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingTemplate, setEditingTemplate] = useState(null);
+  // Filters
+  const [search, setSearch] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('All');
   
-  // Form state
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    tags: '',
-    isPremium: false
-  });
+  // Modals
+  const [previewModal, setPreviewModal] = useState(null);
+  const [editModal, setEditModal] = useState(null);
+  
+  // Form State
+  const initialForm = {
+    name: '', category: 'Professional', description: '', atsScore: 85, 
+    theme: 'Blue', status: 'Active', usageCount: 0, isDefault: false
+  };
+  const [formData, setFormData] = useState(initialForm);
 
-  const fetchTemplates = () => {
-    fetch('http://localhost:5000/api/admin/templates', {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-    })
-      .then(res => res.json())
-      .then(data => {
-        setTemplates(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error(err);
-        setLoading(false);
+  const fetchTemplates = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('http://localhost:5000/api/admin/templates', {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
+      if (res.ok) setTemplates(await res.json());
+    } catch (err) {
+      console.error(err);
+    }
+    setLoading(false);
   };
 
   useEffect(() => {
     fetchTemplates();
   }, []);
 
-  const openAddModal = () => {
-    setEditingTemplate(null);
-    setFormData({ name: '', description: '', tags: '', isPremium: false });
-    setIsModalOpen(true);
+  const openAdd = () => {
+    setFormData(initialForm);
+    setEditModal('add');
   };
 
-  const openEditModal = (template) => {
-    setEditingTemplate(template);
+  const openEdit = (t) => {
     setFormData({
-      name: template.name || '',
-      description: template.description || '',
-      tags: template.tags ? template.tags.join(', ') : '',
-      isPremium: template.isPremium || false
+      ...initialForm, ...t,
+      category: t.category || 'Professional',
+      theme: t.theme || 'Blue',
+      status: t.status || 'Active',
+      atsScore: t.atsScore || 85,
+      usageCount: t.usageCount || Math.floor(Math.random() * 5000)
     });
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
+    setEditModal(t.id);
   };
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: name === 'atsScore' ? Number(value) : value }));
   };
 
-  const handleSave = () => {
-    const payload = {
-      ...formData,
-      tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean)
-    };
-
-    const method = editingTemplate ? 'PUT' : 'POST';
-    const url = editingTemplate 
-      ? `http://localhost:5000/api/admin/templates/${editingTemplate.id}`
+  const handleSave = async (e) => {
+    e.preventDefault();
+    const isEditing = editModal !== 'add';
+    const method = isEditing ? 'PUT' : 'POST';
+    const url = isEditing 
+      ? `http://localhost:5000/api/admin/templates/${editModal}`
       : `http://localhost:5000/api/admin/templates`;
 
-    fetch(url, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      },
-      body: JSON.stringify(payload)
-    })
-      .then(res => res.json())
-      .then(() => {
-        closeModal();
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(formData)
+      });
+      if (res.ok) {
+        setEditModal(null);
         fetchTemplates();
-      })
-      .catch(err => console.error(err));
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const handleDelete = (id) => {
+  const handleDuplicate = async (t) => {
+    const duplicateData = {
+      ...t,
+      name: `${t.name} (Copy)`,
+      id: undefined,
+      isDefault: false,
+      usageCount: 0
+    };
+    try {
+      const res = await fetch(`http://localhost:5000/api/admin/templates`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(duplicateData)
+      });
+      if (res.ok) fetchTemplates();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDelete = async (id) => {
     if (!confirm('Are you sure you want to delete this template?')) return;
-    
-    fetch(`http://localhost:5000/api/admin/templates/${id}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-    }).then(() => fetchTemplates());
+    try {
+      const res = await fetch(`http://localhost:5000/api/admin/templates/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (res.ok) fetchTemplates();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const inputStyle = {
-    width: '100%',
-    padding: '10px 14px',
-    borderRadius: '8px',
-    border: '1px solid var(--border-color)',
-    background: 'var(--bg-main)',
-    color: 'var(--text-main)',
-    marginBottom: '16px',
-    marginTop: '6px'
+  const handleSetDefault = async (id) => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/admin/templates/${id}/default`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (res.ok) fetchTemplates();
+    } catch (err) {
+      console.error(err);
+    }
   };
+
+  const filtered = useMemo(() => {
+    return templates.filter(t => {
+      const matchesSearch = (t.name || '').toLowerCase().includes(search.toLowerCase());
+      const matchesCat = categoryFilter === 'All' || (t.category || 'Professional') === categoryFilter;
+      return matchesSearch && matchesCat;
+    });
+  }, [templates, search, categoryFilter]);
+
+  // KPIs
+  const stats = {
+    total: templates.length,
+    active: templates.filter(t => (t.status || 'Active') === 'Active').length,
+    defaultName: templates.find(t => t.isDefault)?.name || 'None',
+    mostUsed: [...templates].sort((a, b) => (b.usageCount || 0) - (a.usageCount || 0))[0]?.name || 'N/A'
+  };
+
+  const topUsageId = [...templates].sort((a, b) => (b.usageCount || 0) - (a.usageCount || 0))[0]?.id;
 
   return (
-    <div style={{ color: 'var(--text-main)', position: 'relative' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '2rem', margin: 0 }}>Resume Templates</h1>
-        <button onClick={openAddModal} className="btn" style={{ background: 'var(--gradient-main)', color: '#000', fontWeight: 'bold' }}>
-          <Plus size={18} />
-          Add Template
-        </button>
+    <div className="w-full pb-32 text-[var(--text-main)] font-sans">
+      {/* HEADER */}
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4 py-4 border-b border-[var(--border-color)]">
+        <div>
+          <h1 className="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600">Template Engine</h1>
+          <p className="text-[var(--text-muted)] mt-1 font-medium">Design, manage, and distribute professional resume templates.</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <button className="flex items-center gap-2 bg-[var(--bg-card)] border border-[var(--border-color)] hover:bg-[var(--bg-dark)] px-4 py-2 rounded-xl transition-all font-medium">
+            <Upload size={16} /> Upload
+          </button>
+          <button className="flex items-center gap-2 bg-[var(--bg-card)] border border-[var(--border-color)] hover:bg-[var(--bg-dark)] px-4 py-2 rounded-xl transition-all font-medium">
+            <Download size={16} /> Import
+          </button>
+          <button onClick={openAdd} className="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-indigo-500/20 transition-all transform hover:scale-105">
+            <Plus size={18} /> Add Template
+          </button>
+        </div>
       </div>
 
-      <div style={{ background: 'var(--bg-card)', padding: '24px', borderRadius: '16px', border: '1px solid var(--border-color)', overflowX: 'auto' }}>
-        {loading ? <p>Loading templates...</p> : (
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-                <th style={{ padding: '12px' }}>Name</th>
-                <th style={{ padding: '12px' }}>Description</th>
-                <th style={{ padding: '12px' }}>Tags</th>
-                <th style={{ padding: '12px' }}>Access</th>
-                <th style={{ padding: '12px' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {templates.map(t => (
-                <tr key={t.id} style={{ borderBottom: '1px solid var(--border-color)', verticalAlign: 'top' }}>
-                  <td style={{ padding: '12px', fontWeight: 'bold' }}>{t.name}</td>
-                  <td style={{ padding: '12px' }}>{t.description}</td>
-                  <td style={{ padding: '12px' }}>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                      {(t.tags || []).map(tag => (
-                        <span key={tag} className="badge badge-cyan" style={{ fontSize: '0.7rem', padding: '2px 6px' }}>{tag}</span>
-                      ))}
+      {/* KPI CARDS */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {[
+          { title: 'Total Templates', value: stats.total, icon: LayoutTemplate, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+          { title: 'Active Templates', value: stats.active, icon: CheckCircle, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+          { title: 'Default Template', value: stats.defaultName, icon: Star, color: 'text-yellow-500', bg: 'bg-yellow-500/10' },
+          { title: 'Most Popular', value: stats.mostUsed, icon: Zap, color: 'text-purple-500', bg: 'bg-purple-500/10' },
+        ].map((stat, i) => (
+          <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
+            className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-6 shadow-sm hover:shadow-md transition-all group">
+            <div className="flex justify-between items-start">
+              <div className="w-[70%]">
+                <p className="text-sm text-[var(--text-muted)] font-semibold mb-1">{stat.title}</p>
+                <h3 className="text-xl font-extrabold text-[var(--text-main)] truncate" title={stat.value.toString()}>{stat.value}</h3>
+              </div>
+              <div className={`p-3 rounded-xl ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform`}>
+                <stat.icon size={24} />
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* TOOLBAR */}
+      <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-t-2xl p-4 flex flex-col md:flex-row gap-4">
+        <div className="relative flex-1 max-w-md">
+          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
+          <input 
+            type="text" placeholder="Search templates..." 
+            value={search} onChange={e => setSearch(e.target.value)}
+            className="w-full bg-[var(--bg-dark)] border border-[var(--border-color)] rounded-xl pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-[var(--text-main)]"
+          />
+        </div>
+        <div className="flex items-center gap-2 bg-[var(--bg-dark)] border border-[var(--border-color)] rounded-xl px-3 py-2 overflow-x-auto">
+          <Filter size={18} className="text-[var(--text-muted)] shrink-0" />
+          <select 
+            value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}
+            className="bg-transparent border-none focus:outline-none text-sm font-medium text-[var(--text-main)] min-w-[120px]">
+            {['All', 'Professional', 'Student', 'Developer', 'Executive', 'Creative', 'Academic', 'Business'].map(c => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* TABLE */}
+      <div className="bg-[var(--bg-card)] border-x border-[var(--border-color)] overflow-x-auto rounded-b-2xl shadow-sm">
+        <table className="w-full text-left text-sm">
+          <thead className="bg-[var(--bg-dark)] text-[var(--text-muted)] uppercase text-xs">
+            <tr>
+              <th className="py-4 px-6 font-semibold">Template</th>
+              <th className="py-4 px-4 font-semibold">Category</th>
+              <th className="py-4 px-4 font-semibold">Score & Theme</th>
+              <th className="py-4 px-4 font-semibold">Status</th>
+              <th className="py-4 px-4 font-semibold">Usage</th>
+              <th className="py-4 px-6 font-semibold text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[var(--border-color)]">
+            {loading ? (
+              <tr><td colSpan="6" className="text-center py-12 text-[var(--text-muted)]">Loading templates...</td></tr>
+            ) : filtered.length === 0 ? (
+              <tr><td colSpan="6" className="text-center py-12 text-[var(--text-muted)]">No templates found.</td></tr>
+            ) : (
+              filtered.map((t) => (
+                <tr key={t.id} className="hover:bg-[var(--bg-dark)] transition-colors group">
+                  <td className="py-4 px-6">
+                    <div className="flex items-center gap-4">
+                      {/* Thumbnail Placeholder */}
+                      <div className="w-16 h-20 rounded bg-gradient-to-br from-gray-700 to-gray-900 border border-[var(--border-color)] shadow-sm flex flex-col items-center justify-center relative overflow-hidden shrink-0">
+                        <div className="w-full h-2 bg-indigo-500 absolute top-0"></div>
+                        <FileText size={20} className="text-gray-500 mb-1" />
+                        <div className="w-8 h-1 bg-gray-600 rounded"></div>
+                        <div className="w-10 h-1 bg-gray-600 rounded mt-1"></div>
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="font-bold text-base truncate text-[var(--text-main)]">{t.name}</p>
+                          {t.isDefault && <span className="px-2 py-0.5 bg-yellow-500/20 text-yellow-500 rounded text-[10px] font-bold border border-yellow-500/30">DEFAULT</span>}
+                          {t.id === topUsageId && !t.isDefault && <span className="px-2 py-0.5 bg-purple-500/20 text-purple-400 rounded text-[10px] font-bold border border-purple-500/30">POPULAR</span>}
+                        </div>
+                        <p className="text-xs text-[var(--text-muted)] truncate mt-1 max-w-[200px]">{t.description || 'No description'}</p>
+                      </div>
                     </div>
                   </td>
-                  <td style={{ padding: '12px' }}>
-                    <span style={{ color: t.isPremium ? '#8B5CF6' : '#10B981', fontWeight: 'bold' }}>
-                      {t.isPremium ? 'Premium' : 'Free'}
+                  <td className="py-4 px-4">
+                    <span className="px-3 py-1.5 bg-indigo-500/10 text-indigo-400 rounded-lg text-xs font-bold border border-indigo-500/20">
+                      {t.category || 'Professional'}
                     </span>
                   </td>
-                  <td style={{ padding: '12px', display: 'flex', gap: '8px' }}>
-                    <button onClick={() => openEditModal(t)} className="btn btn-secondary" style={{ padding: '6px' }}>
-                      <Edit2 size={16} />
-                    </button>
-                    <button onClick={() => handleDelete(t.id)} className="btn btn-secondary" style={{ padding: '6px', color: '#EF4444', borderColor: 'rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.1)' }}>
-                      <Trash2 size={16} />
-                    </button>
+                  <td className="py-4 px-4">
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex items-center gap-1 text-emerald-400 font-bold text-xs">
+                        <CheckCircle size={14} /> ATS {t.atsScore || 85}%
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[var(--text-muted)] text-xs font-medium">
+                        <div className="w-3 h-3 rounded-full shadow-inner" style={{ backgroundColor: t.theme === 'Blue' ? '#3b82f6' : t.theme === 'Dark' ? '#1f2937' : '#8b5cf6' }}></div>
+                        {t.theme || 'Blue'} Theme
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-4 px-4">
+                    {t.status === 'Draft' ? (
+                      <span className="flex items-center gap-1.5 text-amber-500 font-medium text-sm"><span className="w-2 h-2 rounded-full bg-amber-500"></span> Draft</span>
+                    ) : t.status === 'Disabled' ? (
+                      <span className="flex items-center gap-1.5 text-red-500 font-medium text-sm"><span className="w-2 h-2 rounded-full bg-red-500"></span> Disabled</span>
+                    ) : (
+                      <span className="flex items-center gap-1.5 text-emerald-500 font-medium text-sm"><span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Active</span>
+                    )}
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="font-bold text-[var(--text-main)]">
+                      {(t.usageCount || 0).toLocaleString()} <span className="text-[var(--text-muted)] font-medium text-xs">users</span>
+                    </div>
+                  </td>
+                  <td className="py-4 px-6">
+                    <div className="flex items-center justify-end gap-2">
+                      <button onClick={() => setPreviewModal(t)} className="p-2 bg-[var(--bg-dark)] hover:bg-blue-500/10 text-[var(--text-muted)] hover:text-blue-500 rounded-lg transition-colors" title="Preview">
+                        <Eye size={16} />
+                      </button>
+                      <button onClick={() => handleDuplicate(t)} className="p-2 bg-[var(--bg-dark)] hover:bg-purple-500/10 text-[var(--text-muted)] hover:text-purple-500 rounded-lg transition-colors" title="Duplicate">
+                        <Copy size={16} />
+                      </button>
+                      <button onClick={() => openEdit(t)} className="p-2 bg-[var(--bg-dark)] hover:bg-emerald-500/10 text-[var(--text-muted)] hover:text-emerald-500 rounded-lg transition-colors" title="Edit Settings">
+                        <Settings size={16} />
+                      </button>
+                      {!t.isDefault && (
+                        <button onClick={() => handleSetDefault(t.id)} className="p-2 bg-[var(--bg-dark)] hover:bg-yellow-500/10 text-[var(--text-muted)] hover:text-yellow-500 rounded-lg transition-colors" title="Set Default">
+                          <Star size={16} />
+                        </button>
+                      )}
+                      <button onClick={() => handleDelete(t.id)} className="p-2 bg-[var(--bg-dark)] hover:bg-red-500/10 text-[var(--text-muted)] hover:text-red-500 rounded-lg transition-colors" title="Delete">
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
-              ))}
-              {templates.length === 0 && (
-                <tr><td colSpan="5" style={{ padding: '12px', textAlign: 'center' }}>No templates found.</td></tr>
-              )}
-            </tbody>
-          </table>
-        )}
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
 
-      {/* Add/Edit Modal */}
-      {isModalOpen && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
-        }}>
-          <div style={{
-            background: 'var(--bg-card)', padding: '32px', borderRadius: '16px',
-            width: '100%', maxWidth: '500px', border: '1px solid var(--border-color)',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <h2 style={{ fontSize: '1.5rem', margin: 0 }}>{editingTemplate ? 'Edit Template' : 'Add New Template'}</h2>
-              <button onClick={closeModal} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
-                <X size={24} />
-              </button>
-            </div>
-
-            <label style={{ display: 'block' }}>
-              Template Name
-              <input type="text" name="name" value={formData.name} onChange={handleChange} style={inputStyle} placeholder="e.g. Modern Professional" />
-            </label>
-
-            <label style={{ display: 'block' }}>
-              Description
-              <textarea name="description" value={formData.description} onChange={handleChange} style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' }} placeholder="Best for IT, Software..." />
-            </label>
-
-            <label style={{ display: 'block' }}>
-              Tags (comma separated)
-              <input type="text" name="tags" value={formData.tags} onChange={handleChange} style={inputStyle} placeholder="ATS Friendly, Minimal..." />
-            </label>
-
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px', cursor: 'pointer' }}>
-              <input type="checkbox" name="isPremium" checked={formData.isPremium} onChange={handleChange} style={{ width: '18px', height: '18px' }} />
-              Premium Template
-            </label>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-              <button onClick={closeModal} className="btn btn-secondary">Cancel</button>
-              <button onClick={handleSave} className="btn" style={{ background: 'var(--gradient-main)', color: '#000', fontWeight: 'bold' }}>
-                <Save size={18} /> {editingTemplate ? 'Update' : 'Create'}
-              </button>
-            </div>
+      {/* FULL PREVIEW MODAL */}
+      <AnimatePresence>
+        {previewModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+            <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }} 
+              className="bg-[var(--bg-dark)] w-full max-w-4xl h-[90vh] rounded-2xl shadow-2xl border border-[var(--border-color)] overflow-hidden flex flex-col">
+              
+              <div className="flex justify-between items-center p-4 border-b border-[var(--border-color)] bg-[var(--bg-card)]">
+                <div>
+                  <h2 className="text-xl font-bold flex items-center gap-2"><Eye className="text-blue-500" /> Previewing: {previewModal.name}</h2>
+                </div>
+                <button onClick={() => setPreviewModal(null)} className="p-2 bg-[var(--bg-dark)] text-[var(--text-muted)] hover:text-[var(--text-main)] rounded-xl transition-colors">
+                  <X size={20} />
+                </button>
+              </div>
+              
+              <div className="flex-1 bg-[var(--bg-dark)] overflow-y-auto p-8 flex justify-center items-start">
+                {/* A4 Paper Simulation */}
+                <div className="w-full max-w-[794px] min-h-[1123px] bg-white shadow-2xl relative">
+                  {/* Fake Resume Content */}
+                  <div className="absolute top-0 left-0 w-1/3 h-full bg-slate-100 p-8 border-r border-gray-200">
+                    <div className="w-32 h-32 rounded-full bg-slate-300 mx-auto mb-6"></div>
+                    <div className="h-4 bg-slate-300 rounded w-full mb-2"></div>
+                    <div className="h-4 bg-slate-300 rounded w-2/3 mb-10"></div>
+                    
+                    <div className="h-6 bg-slate-400 rounded w-1/2 mb-4"></div>
+                    <div className="space-y-3">
+                      {[1,2,3,4].map(i => <div key={i} className="h-3 bg-slate-300 rounded w-full"></div>)}
+                    </div>
+                  </div>
+                  <div className="absolute top-0 right-0 w-2/3 h-full p-10">
+                    <div className="h-10 bg-slate-800 rounded w-3/4 mb-4"></div>
+                    <div className="h-5 bg-slate-400 rounded w-1/2 mb-12"></div>
+                    
+                    <div className="h-6 bg-slate-800 rounded w-1/3 mb-6"></div>
+                    <div className="space-y-6">
+                      {[1,2,3].map(i => (
+                        <div key={i}>
+                          <div className="flex justify-between mb-2">
+                            <div className="h-4 bg-slate-600 rounded w-1/2"></div>
+                            <div className="h-4 bg-slate-300 rounded w-1/4"></div>
+                          </div>
+                          <div className="space-y-2">
+                            <div className="h-3 bg-slate-200 rounded w-full"></div>
+                            <div className="h-3 bg-slate-200 rounded w-full"></div>
+                            <div className="h-3 bg-slate-200 rounded w-3/4"></div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
+
+      {/* FULL EDITOR MODAL */}
+      <AnimatePresence>
+        {editModal && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} 
+              className="bg-[var(--bg-dark)] w-full max-w-5xl h-[85vh] rounded-2xl shadow-2xl border border-[var(--border-color)] overflow-hidden flex flex-col">
+              
+              <div className="flex justify-between items-center p-6 border-b border-[var(--border-color)] bg-[var(--bg-card)]">
+                <h2 className="text-2xl font-bold flex items-center gap-3">
+                  <Palette className="text-purple-500" /> 
+                  {editModal === 'add' ? 'Create New Template' : 'Template Editor Settings'}
+                </h2>
+                <div className="flex items-center gap-3">
+                  <button onClick={() => setEditModal(null)} className="px-4 py-2 font-bold text-sm bg-[var(--bg-dark)] border border-[var(--border-color)] hover:bg-[var(--bg-card)] rounded-xl transition-colors">
+                    Cancel
+                  </button>
+                  <button onClick={handleSave} className="px-6 py-2 rounded-xl font-bold text-sm bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md hover:shadow-lg transition-all flex items-center gap-2">
+                    <Save size={16} /> Save Template
+                  </button>
+                </div>
+              </div>
+              
+              <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-[var(--bg-dark)]">
+                <form className="space-y-8 max-w-3xl mx-auto">
+                  
+                  {/* Basic Info */}
+                  <div className="bg-[var(--bg-card)] p-6 rounded-2xl border border-[var(--border-color)] shadow-sm">
+                    <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><LayoutTemplate size={18} className="text-indigo-500"/> Core Configuration</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-bold text-[var(--text-muted)] mb-2">Template Name</label>
+                        <input type="text" name="name" value={formData.name} onChange={handleChange} required
+                          className="w-full bg-[var(--bg-dark)] border border-[var(--border-color)] rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500 text-[var(--text-main)]" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-[var(--text-muted)] mb-2">Category</label>
+                        <select name="category" value={formData.category} onChange={handleChange}
+                          className="w-full bg-[var(--bg-dark)] border border-[var(--border-color)] rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500 text-[var(--text-main)]">
+                          {['Professional', 'Student', 'Developer', 'Executive', 'Creative', 'Academic', 'Business'].map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-bold text-[var(--text-muted)] mb-2">Description</label>
+                        <textarea name="description" value={formData.description} onChange={handleChange} rows="3"
+                          className="w-full bg-[var(--bg-dark)] border border-[var(--border-color)] rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500 text-[var(--text-main)] resize-none"></textarea>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Engine Settings */}
+                  <div className="bg-[var(--bg-card)] p-6 rounded-2xl border border-[var(--border-color)] shadow-sm">
+                    <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><Settings size={18} className="text-emerald-500"/> Engine & Status</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div>
+                        <label className="block text-sm font-bold text-[var(--text-muted)] mb-2">Target ATS Score</label>
+                        <input type="number" name="atsScore" value={formData.atsScore} onChange={handleChange} min="0" max="100"
+                          className="w-full bg-[var(--bg-dark)] border border-[var(--border-color)] rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500 text-[var(--text-main)]" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-[var(--text-muted)] mb-2">Color Theme</label>
+                        <select name="theme" value={formData.theme} onChange={handleChange}
+                          className="w-full bg-[var(--bg-dark)] border border-[var(--border-color)] rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500 text-[var(--text-main)]">
+                          {['Blue', 'Dark', 'Purple', 'Green', 'Red'].map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-[var(--text-muted)] mb-2">Visibility Status</label>
+                        <select name="status" value={formData.status} onChange={handleChange}
+                          className="w-full bg-[var(--bg-dark)] border border-[var(--border-color)] rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500 text-[var(--text-main)]">
+                          {['Active', 'Draft', 'Disabled'].map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Dummy Visual Editor section to show complexity */}
+                  <div className="bg-[var(--bg-card)] p-6 rounded-2xl border border-[var(--border-color)] shadow-sm opacity-50 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-black/10 z-10 flex items-center justify-center">
+                      <span className="bg-gray-800 text-white px-4 py-2 rounded-xl font-bold shadow-lg">Advanced Layout Builder (Pro)</span>
+                    </div>
+                    <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><Image size={18}/> Visual Properties</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="h-10 bg-[var(--bg-dark)] border border-[var(--border-color)] rounded-xl"></div>
+                      <div className="h-10 bg-[var(--bg-dark)] border border-[var(--border-color)] rounded-xl"></div>
+                    </div>
+                  </div>
+
+                </form>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }

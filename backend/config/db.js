@@ -161,6 +161,9 @@ export const db = {
       const newMessage = {
         id: uuidv4(),
         createdAt: new Date().toISOString(),
+        status: 'Unread', // default status
+        priority: 'Medium', // default priority
+        isStarred: false,
         ...messageData
       };
       data.messages.push(newMessage);
@@ -170,6 +173,20 @@ export const db = {
     async find(query = {}) {
       const data = await readDB();
       return data.messages.filter(m => matchQuery(m, query)).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    },
+    async findById(id) {
+      const data = await readDB();
+      return data.messages.find(m => m.id === id) || null;
+    },
+    async update(id, updatedData) {
+      const data = await readDB();
+      const index = data.messages.findIndex(m => m.id === id);
+      if (index !== -1) {
+        data.messages[index] = { ...data.messages[index], ...updatedData };
+        await writeDB(data);
+        return data.messages[index];
+      }
+      return null;
     },
     async deleteOne(query) {
       const data = await readDB();
@@ -215,6 +232,12 @@ export const db = {
         return data.templates[index];
       }
       return null;
+    },
+    async unsetAllDefaults() {
+      const data = await readDB();
+      data.templates = data.templates.map(t => ({ ...t, isDefault: false }));
+      await writeDB(data);
+      return true;
     },
     async deleteOne(query) {
       const data = await readDB();
