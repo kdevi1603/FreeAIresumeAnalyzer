@@ -10,11 +10,32 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis
 
 export default function StudioWorkspace({ resumeData, onBackToDashboard, initialTemplate = 'original', onUpdateResume }) {
   const [activeResume, setActiveResume] = useState(() => {
-    if (resumeData && !resumeData.isScratch) {
+    if (resumeData) {
+      // If it's a scratch resume, make sure it has all default fields while preserving the ID
+      if (resumeData.isScratch) {
+        return {
+          id: resumeData.id || 'scratch-' + Date.now(),
+          isScratch: true,
+          fileName: 'Untitled Resume',
+          personalInfo: { name: 'Untitled Resume', jobTitle: '', email: '', phone: '', city: '', linkedin: '', github: '', ...resumeData.personalInfo },
+          summary: resumeData.summary || '',
+          experienceList: resumeData.experienceList || [],
+          education: resumeData.education || '',
+          atsScore: 0,
+          sectionScores: { structure: 0, experience: 0, education: 0, projects: 0, skills: 0 },
+          grammar: { score: 0, readability: 'N/A', passiveSentences: 0 },
+          formatting: [],
+          skillsFound: [],
+          missingSkills: [],
+          customHtml: '',
+          ...resumeData
+        };
+      }
       return resumeData;
     }
     return {
       id: 'scratch-' + Date.now(),
+      isScratch: true,
       fileName: 'Untitled Resume',
       personalInfo: { fullName: '', jobTitle: '', email: '', phone: '', location: '', linkedin: '' },
       summary: '',
@@ -26,6 +47,7 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
       formatting: [],
       skillsFound: [],
       missingSkills: [],
+
       suggestions: []
     };
   });
@@ -242,6 +264,7 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
   };
 
   const handleUpdateResumeFromBuilder = (updatedFields) => {
+    setShowBuilderModal(false);
     setActiveResume(prev => {
       const isInitial = prev.atsScore === 0;
       return {
@@ -515,7 +538,17 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
                 <h3 style={{ fontSize: '1.1rem', color: '#EF4444', marginBottom: '12px' }}>Missing Keywords ({activeResume?.missingSkills?.length || 0})</h3>
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                   {(activeResume?.missingSkills || []).map(k => (
-                    <span key={k} style={{ padding: '6px 12px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #EF4444', borderRadius: '30px', fontSize: '0.85rem' }}>{k}</span>
+                    <span 
+                      key={k} 
+                      onClick={() => {
+                        setActiveView('AI Chat');
+                        handleSendMessage(`Please add the missing keyword "${k}" to my resume and rewrite the relevant section to include it naturally.`);
+                      }}
+                      style={{ padding: '6px 12px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #EF4444', borderRadius: '30px', fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.2s' }}
+                      title={`Click to ask AI to add "${k}" to your resume`}
+                    >
+                      {k}
+                    </span>
                   ))}
                   {(!activeResume?.missingSkills || activeResume.missingSkills.length === 0) && <span style={{ color: 'var(--text-muted)' }}>No missing keywords!</span>}
                 </div>
@@ -630,7 +663,7 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
                   background: '#fff'
                 }}>
                   <iframe
-                    src={activeResume.fileUrl + (activeResume.fileUrl.toLowerCase().endsWith('.pdf') ? '#view=FitH&toolbar=0&navpanes=0' : '')}
+                    src={`http://localhost:5000${activeResume.fileUrl}` + (activeResume.fileUrl.toLowerCase().endsWith('.pdf') ? '#view=FitH&toolbar=0&navpanes=0' : '')}
                     style={{ width: '100%', height: '100%', minHeight: '800px', border: 'none' }}
                     title="Uploaded Resume Preview"
                   />
@@ -643,6 +676,7 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
                     resumeData={activeResume} 
                     templateStyle={selectedTemplate} 
                     accentColor={accentColor} 
+                    onOpenTemplates={() => setShowBuilderModal(true)}
                     onManualEdit={(html) => setActiveResume(prev => ({ ...prev, customHtml: html }))}
                     onAcceptChanges={() => onUpdateResume && onUpdateResume(activeResume)}
                   />
@@ -654,7 +688,7 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
 
         {activeView === 'AI Chat' && (
           <div className="animate-fade-in" style={{ display: 'flex', gap: '24px', height: 'calc(100vh - 180px)', minHeight: '500px' }}>
-            <div style={{ flex: 1, minWidth: showSplitChat ? '350px' : '100%' }}>
+            <div style={{ flex: 1, minWidth: showSplitChat ? '350px' : '100%', height: '100%' }}>
               <AiAgentChat
                 resumeData={activeResume}
                 chatMessages={chatMessages}
@@ -680,17 +714,43 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
                     } else {
                       updated.rawText = content;
                     }
+
+                    // Remove fixed keywords dynamically
+                    if (updated.missingSkills) {
+                      const newlyFound = updated.missingSkills.filter(k => content.toLowerCase().includes(k.toLowerCase()));
+                      if (newlyFound.length > 0) {
+                        updated.missingSkills = updated.missingSkills.filter(k => !newlyFound.includes(k));
+                        updated.skillsFound = [...(updated.skillsFound || []), ...newlyFound];
+                      }
+                    }
+
+                    // Remove addressed suggestions dynamically
+                    if (updated.suggestions) {
+                      const recentUserMsgs = chatMessages.filter(m => m.sender === 'user').slice(-3);
+                      updated.suggestions = updated.suggestions.filter(s => {
+                        const isAddressed = recentUserMsgs.some(m => m.text.includes(s.text));
+                        return !isAddressed;
+                      });
+                    }
+
                     return updated;
                   });
-                  setChatMessages(prev => [
-                    ...prev,
-                    { sender: 'bot', text: `✨ Done! I've applied the changes to the ${section} section of your resume.` }
-                  ]);
+                  setChatMessages(prev => {
+                    const newMessages = [...prev];
+                    const msgIndex = newMessages.findIndex(m => m.proposedFix?.content === content);
+                    if (msgIndex !== -1) {
+                      newMessages[msgIndex] = { ...newMessages[msgIndex], proposedFix: null };
+                    }
+                    return [
+                      ...newMessages,
+                      { sender: 'bot', text: `✨ Done! I've applied the changes to the ${section} section of your resume.` }
+                    ];
+                  });
                 }}
               />
             </div>
             {showSplitChat && (
-              <div style={{ flex: 1, minWidth: '400px', borderLeft: '1px solid var(--border-color)', paddingLeft: '24px' }}>
+              <div style={{ flex: 1, minWidth: '400px', borderLeft: '1px solid var(--border-color)', paddingLeft: '24px', height: '100%' }}>
                 {activeResume?.fileUrl && (
                   <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
                     <div style={{ display: 'flex', background: 'var(--bg-card)', borderRadius: '8px', padding: '4px', border: '1px solid var(--border-color)', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
@@ -734,7 +794,7 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
                       background: '#fff'
                     }}>
                       <iframe
-                        src={activeResume.fileUrl + (activeResume.fileUrl.toLowerCase().endsWith('.pdf') ? '#view=FitH&toolbar=0&navpanes=0' : '')}
+                        src={`http://localhost:5000${activeResume.fileUrl}` + (activeResume.fileUrl.toLowerCase().endsWith('.pdf') ? '#view=FitH&toolbar=0&navpanes=0' : '')}
                         style={{ width: '100%', height: '100%', minHeight: '800px', border: 'none' }}
                         title="Uploaded Resume Preview"
                       />
@@ -747,6 +807,7 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
                         resumeData={activeResume} 
                         templateStyle={selectedTemplate} 
                         accentColor={accentColor}
+                        onOpenTemplates={() => setShowBuilderModal(true)}
                         onManualEdit={(html) => setActiveResume(prev => ({ ...prev, customHtml: html }))}
                         onAcceptChanges={() => onUpdateResume && onUpdateResume(activeResume)}
                       />

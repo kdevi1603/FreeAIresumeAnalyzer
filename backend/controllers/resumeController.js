@@ -31,6 +31,19 @@ export async function uploadResume(req, res) {
     });
 
     console.log(`✅ Resume analyzed successfully! ATS Score: ${resumeRecord.atsScore}`);
+    
+    // Log activity
+    try {
+      const user = await db.users.findById(req.user.id);
+      await db.activities.create({
+        user: user ? user.name : 'Unknown User',
+        action: 'Resume Uploaded & Analyzed',
+        status: 'success'
+      });
+    } catch (e) {
+      console.error('Failed to log activity', e);
+    }
+
     return res.status(201).json(resumeRecord);
   } catch (error) {
     console.error('Resume Upload & Analysis Error:', error);

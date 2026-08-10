@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ZoomIn, ZoomOut, RotateCcw, Download, Check, Eye, X, Maximize } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw, Download, Check, Eye, X, Maximize, Mail, Phone, Linkedin, Github } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import html2pdf from 'html2pdf.js';
 
-export default function LiveResumePreview({ resumeData, templateStyle = 'modern', accentColor = '#2563EB', onManualEdit, onAcceptChanges }) {
+export default function LiveResumePreview({ resumeData, templateStyle = 'fresher', accentColor = '#2563EB', onManualEdit, onAcceptChanges, onOpenTemplates }) {
   const [zoom, setZoom] = useState(window.innerWidth <= 768 ? 65 : 85);
   const [showDiff, setShowDiff] = useState(true);
   const [changesAccepted, setChangesAccepted] = useState(false);
@@ -100,7 +100,7 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
 
   const handleAcceptAll = () => {
     setChangesAccepted(true);
-    setShowDiff(false);
+    setShowDiff(true);
     confetti({ particleCount: 50, spread: 70, origin: { y: 0.6 } });
     if (onAcceptChanges) {
       onAcceptChanges();
@@ -113,12 +113,27 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
   const city = resumeData?.personalInfo?.city || '';
   const linkedin = resumeData?.personalInfo?.linkedin || '';
   const github = resumeData?.personalInfo?.github || '';
+
+  const ContactRow = ({ justify = 'flex-start', color, style = {} }) => (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: justify, color: color || '#475569', ...style }}>
+      {email && <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Mail size={12} /> {email}</span>}
+      {phone && <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Phone size={12} /> {phone}</span>}
+      {linkedin && <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Linkedin size={12} /> {linkedin}</span>}
+      {github && <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Github size={12} /> {github}</span>}
+    </div>
+  );
   const profilePicture = resumeData?.personalInfo?.profilePicture || null;
   const score = resumeData?.atsScore || 0;
 
   const summaryText = (showDiff && resumeData?.fixedSummary) ? resumeData.fixedSummary : (resumeData?.summary || '');
-  const projectsText = (showDiff && resumeData?.fixedProjects) ? resumeData.fixedProjects : (resumeData?.experienceList?.map(exp => `${exp.company} - ${exp.role}\n${exp.bullets}`).join('\n\n') || '');
-  const skillsText = (showDiff && resumeData?.fixedSkills) ? resumeData.fixedSkills : (resumeData?.skillsFound?.map(s => s.skill).join(', ') || '');
+  const projectsText = (showDiff && resumeData?.fixedProjects) ? resumeData.fixedProjects : (resumeData?.experienceList?.map(exp => {
+    let header = '';
+    const isPlaceholder = exp.company === 'Extracted Experience' || exp.company === 'Original Content';
+    if (!isPlaceholder && exp.company) header += exp.company;
+    if (exp.role) header += (header ? ' - ' : '') + exp.role;
+    return header ? `${header}\n${exp.bullets}` : exp.bullets;
+  }).join('\n\n') || '');
+  const skillsText = (showDiff && resumeData?.fixedSkills) ? resumeData.fixedSkills : (resumeData?.skills || resumeData?.skillsFound?.map(s => typeof s === 'string' ? s : s.skill).filter(Boolean).join(', ') || '');
   const educationText = (showDiff && resumeData?.fixedEducation) ? resumeData.fixedEducation : (resumeData?.education || '');
 
   const getContrastColor = (hexcolor) => {
@@ -133,7 +148,7 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
     return yiq >= 128 ? '#0f172a' : '#ffffff';
   };
 
-  const formatText = (text) => {
+  const formatText = (text, mergeLines = true) => {
     if (!text) return null;
     const rawLines = text.split(/\r?\n/);
     const mergedLines = [];
@@ -147,7 +162,7 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
       
       const isNewItem = /^([*\-•·➢>]|\d+\.)\s*/.test(trimmed);
       
-      if (isNewItem || mergedLines.length === 0 || mergedLines[mergedLines.length - 1] === '') {
+      if (!mergeLines || isNewItem || mergedLines.length === 0 || mergedLines[mergedLines.length - 1] === '') {
         mergedLines.push(trimmed);
       } else {
         mergedLines[mergedLines.length - 1] += ' ' + trimmed;
@@ -175,12 +190,12 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
   };
 
   const sections = [
-    { title: 'Executive Summary', content: formatText(summaryText), isModified: !!resumeData?.fixedSummary },
+    { title: 'Executive Summary', content: formatText(summaryText, false), isModified: !!resumeData?.fixedSummary },
     { title: 'Work & Project Experience', content: formatText(projectsText), isModified: !!resumeData?.fixedProjects },
     { title: 'Education & Academic Details', content: formatText(educationText), isModified: !!resumeData?.fixedEducation },
-    { title: 'Technical Skills & Tools', content: formatText(skillsText), isModified: !!resumeData?.fixedSkills },
+    { title: 'Technical Skills & Tools', content: formatText(skillsText, false), isModified: !!resumeData?.fixedSkills },
     { title: 'Languages', content: 'Tamil (Native), English (Professional Working Proficiency)' }
-  ];
+  ].filter(sec => sec.content);
 
   return (
     <div ref={containerRef} style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--bg-card)', borderRadius: '20px', border: '1px solid var(--border-color)', overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
@@ -192,9 +207,9 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
           <button onClick={() => setShowDiff(!showDiff)} style={{ padding: '6px 14px', fontSize: '0.8rem', borderRadius: '8px', background: showDiff ? '#2563EB' : 'rgba(37, 99, 235, 0.2)', color: '#fff', border: 'none', cursor: 'pointer' }}>
             <span>{showDiff ? 'Hide Changes' : 'Show Changes'}</span>
           </button>
-          <span style={{ fontSize: '0.75rem', background: 'rgba(255,255,255,0.08)', padding: '4px 10px', borderRadius: '12px', color: '#22d3ee', fontWeight: 700 }}>
+          <button onClick={onOpenTemplates} style={{ fontSize: '0.75rem', background: 'rgba(255,255,255,0.08)', padding: '4px 10px', borderRadius: '12px', color: '#22d3ee', fontWeight: 700, border: '1px solid rgba(34, 211, 238, 0.3)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', transition: 'all 0.2s' }}>
             Template: {templateStyle.toUpperCase()}
-          </span>
+          </button>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(128,128,128,0.1)', padding: '4px 10px', borderRadius: '30px', border: '1px solid var(--border-color)' }}>
@@ -311,7 +326,7 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
               <div style={{ borderBottom: `2px solid ${accentColor}`, paddingBottom: '16px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <h1 style={{ fontSize: '26px', fontWeight: 800, color: '#0f172a', margin: '0 0 6px 0' }}>{candidateName.toUpperCase()}</h1>
-                  <div style={{ fontSize: '12px', color: '#475569', display: 'flex', flexWrap: 'wrap', gap: '12px' }}><span>📧 {email}</span><span>•</span><span>📱 {phone}</span><span>•</span><span>🔗 {linkedin}</span></div>
+                  <ContactRow color="#475569" style={{ fontSize: '12px' }} />
                 </div>
                 {profilePicture && <img src={profilePicture} style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }} />}
               </div>
@@ -332,7 +347,7 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
                   <h1 style={{ fontSize: '28px', fontWeight: 900, marginBottom: '20px', letterSpacing: '-0.5px' }}>{candidateName}</h1>
-                  <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '24px' }}>{email} | {phone} | {linkedin}</div>
+                  <ContactRow color="#64748b" style={{ fontSize: '11px', marginBottom: '24px' }} />
                 </div>
                 {profilePicture && <img src={profilePicture} style={{ width: '64px', height: '64px', objectFit: 'cover', border: `2px solid ${accentColor}` }} />}
               </div>
@@ -355,7 +370,7 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
               <div style={{ textAlign: 'center', marginBottom: '20px' }}>
                 {profilePicture && <img src={profilePicture} style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover', marginBottom: '12px', display: 'inline-block' }} />}
                 <h1 style={{ fontSize: '28px', fontWeight: 700, color: accentColor, margin: '0 0 5px 0' }}>{candidateName}</h1>
-                <div style={{ fontSize: '12px', color: '#475569' }}>{email} • {phone} • {linkedin}</div>
+                <ContactRow justify="center" color="#475569" style={{ fontSize: '12px' }} />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
                 {sections.map((sec, idx) => sec && (
@@ -379,10 +394,7 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
                     <span style={{ fontSize: '14px', color: accentColor, fontWeight: 700 }}>Software Engineer</span>
                   </div>
                 </div>
-                <div style={{ fontSize: '11px', color: '#475569', textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <span>{email} | {phone}</span>
-                  <span>{github} | {linkedin}</span>
-                </div>
+                  <ContactRow justify="flex-end" color="#475569" style={{ fontSize: '11px', maxWidth: '300px' }} />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
                 {sections.map((sec, idx) => (
@@ -401,9 +413,7 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
               <div style={{ background: '#0f172a', color: '#fff', padding: '40px 40px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <h1 style={{ fontSize: '32px', fontWeight: 400, margin: '0 0 10px 0', letterSpacing: '2px', color: '#fff' }}>{candidateName.toUpperCase()}</h1>
-                  <div style={{ fontSize: '12px', color: '#94a3b8', display: 'flex', gap: '16px' }}>
-                    <span>{email}</span><span>{phone}</span><span>{linkedin}</span>
-                  </div>
+                  <ContactRow color="#94a3b8" style={{ fontSize: '12px' }} />
                 </div>
                 {profilePicture && <img src={profilePicture} style={{ width: '80px', height: '80px', objectFit: 'cover', border: '2px solid #fff' }} />}
               </div>
@@ -434,9 +444,7 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'modern'
                   </div>
                 )}
                 <h1 style={{ fontSize: '28px', fontWeight: 800, color: '#111', margin: '0 0 8px 0' }}>{candidateName}</h1>
-                <div style={{ fontSize: '12px', color: '#666', background: '#f8fafc', padding: '8px 16px', borderRadius: '30px', display: 'inline-flex', gap: '16px' }}>
-                  <span>{email}</span><span>{phone}</span><span>{linkedin}</span>
-                </div>
+                <ContactRow justify="center" color="#666" style={{ fontSize: '12px', background: '#f8fafc', padding: '8px 16px', borderRadius: '30px', display: 'inline-flex' }} />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
                 {sections.map((sec, idx) => sec && (

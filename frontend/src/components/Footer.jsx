@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, Mail, Github, Linkedin, Twitter, ArrowRight } from 'lucide-react';
 
-export default function Footer() {
+export default function Footer({ setViewMode, onOpenContact }) {
   const currentYear = new Date().getFullYear();
 
   const containerVariants = {
@@ -82,21 +82,21 @@ export default function Footer() {
           <motion.div variants={itemVariants} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <h4 style={{ fontSize: '1.1rem', color: 'var(--text-main)', margin: '0 0 4px 0', fontWeight: 700 }}>Quick Links</h4>
             {[
-              'Home',
-              'Templates',
-              'Resume Analysis',
-              'Resume Builder',
-              'Resume History',
-              'Pricing',
-              'Contact'
+              { label: 'Home', action: () => { setViewMode?.('landing'); window.scrollTo(0,0); } },
+              { label: 'Templates', action: () => { setViewMode?.('templates'); window.scrollTo(0,0); } },
+              { label: 'Resume Analysis', action: () => { setViewMode?.('studio'); window.scrollTo(0,0); } },
+              { label: 'Resume Builder', action: () => { setViewMode?.('studio'); window.scrollTo(0,0); } },
+              { label: 'Resume History', action: () => { setViewMode?.('sidebar_dashboard'); window.scrollTo(0,0); } },
+              { label: 'Contact', action: () => { onOpenContact?.(); } }
             ].map((link, idx) => (
               <motion.a 
                 key={idx} 
+                onClick={(e) => { e.preventDefault(); link.action(); }}
                 href="#" 
                 whileHover={{ x: 5, color: 'var(--accent-cyan)' }}
-                style={{ color: 'var(--text-muted)', fontSize: '0.95rem', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}
+                style={{ color: 'var(--text-muted)', fontSize: '0.95rem', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}
               >
-                <ArrowRight size={14} style={{ opacity: 0.5 }} /> {link}
+                <ArrowRight size={14} style={{ opacity: 0.5 }} /> {link.label}
               </motion.a>
             ))}
           </motion.div>
@@ -105,22 +105,23 @@ export default function Footer() {
           <motion.div variants={itemVariants} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <h4 style={{ fontSize: '1.1rem', color: 'var(--text-main)', margin: '0 0 4px 0', fontWeight: 700 }}>Features</h4>
             {[
-              'ATS Analysis',
-              'AI Chat Assistant',
-              'Resume Builder',
-              'Cover Letter Generator',
-              'Interview Questions',
-              'Job Description Match',
-              'Live Resume Preview',
-              'PDF Download'
+              { label: 'ATS Analysis', action: () => { setViewMode?.('studio'); window.scrollTo(0,0); } },
+              { label: 'AI Chat Assistant', action: () => { setViewMode?.('studio'); window.scrollTo(0,0); } },
+              { label: 'Resume Builder', action: () => { setViewMode?.('studio'); window.scrollTo(0,0); } },
+              { label: 'Cover Letter Generator', action: () => { setViewMode?.('sidebar_dashboard'); window.scrollTo(0,0); } },
+              { label: 'Interview Questions', action: () => { setViewMode?.('studio'); window.scrollTo(0,0); } },
+              { label: 'Job Description Match', action: () => { setViewMode?.('studio'); window.scrollTo(0,0); } },
+              { label: 'Live Resume Preview', action: () => { setViewMode?.('studio'); window.scrollTo(0,0); } },
+              { label: 'PDF Download', action: () => { setViewMode?.('studio'); window.scrollTo(0,0); } }
             ].map((feature, idx) => (
               <motion.a 
                 key={idx} 
+                onClick={(e) => { e.preventDefault(); feature.action(); }}
                 href="#" 
                 whileHover={{ x: 5, color: 'var(--accent-cyan)' }}
-                style={{ color: 'var(--text-muted)', fontSize: '0.95rem', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}
+                style={{ color: 'var(--text-muted)', fontSize: '0.95rem', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}
               >
-                <ArrowRight size={14} style={{ opacity: 0.5 }} /> {feature}
+                <ArrowRight size={14} style={{ opacity: 0.5 }} /> {feature.label}
               </motion.a>
             ))}
           </motion.div>
@@ -129,19 +130,20 @@ export default function Footer() {
           <motion.div variants={itemVariants} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <h4 style={{ fontSize: '1.1rem', color: 'var(--text-main)', margin: '0 0 4px 0', fontWeight: 700 }}>Resources & Contact</h4>
             {[
-              'FAQ',
-              'Privacy Policy',
-              'Terms of Service',
-              'Help Center',
-              'Email Support'
+              { label: 'FAQ', action: () => { window.scrollTo(0,0); } },
+              { label: 'Privacy Policy', action: () => { window.scrollTo(0,0); } },
+              { label: 'Terms of Service', action: () => { window.scrollTo(0,0); } },
+              { label: 'Help Center', action: () => { onOpenContact?.(); } },
+              { label: 'Email Support', action: () => { onOpenContact?.(); } }
             ].map((resource, idx) => (
               <motion.a 
                 key={idx} 
+                onClick={(e) => { e.preventDefault(); resource.action(); }}
                 href="#" 
                 whileHover={{ x: 5, color: 'var(--accent-cyan)' }}
-                style={{ color: 'var(--text-muted)', fontSize: '0.95rem', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}
+                style={{ color: 'var(--text-muted)', fontSize: '0.95rem', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}
               >
-                <ArrowRight size={14} style={{ opacity: 0.5 }} /> {resource}
+                <ArrowRight size={14} style={{ opacity: 0.5 }} /> {resource.label}
               </motion.a>
             ))}
             <a href="mailto:support@airesume.com" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent-cyan)', textDecoration: 'none', fontSize: '0.95rem', marginTop: '8px', fontWeight: 600 }}>

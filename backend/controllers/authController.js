@@ -24,6 +24,17 @@ export async function registerUser(req, res) {
       password: hashedPassword
     });
 
+    // Log activity
+    try {
+      await db.activities.create({
+        user: name,
+        action: 'New User Registered',
+        status: 'success'
+      });
+    } catch (e) {
+      console.error('Failed to log activity', e);
+    }
+
     return res.status(201).json({
       id: user.id,
       name: user.name,

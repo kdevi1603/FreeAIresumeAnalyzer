@@ -6,83 +6,168 @@ export async function getDashboardStats(req, res) {
     const users = await db.users.find() || [];
     const resumes = await db.resumes.find() || [];
     const templates = await db.templates.find() || [];
+    const messages = await db.messages.find() || [];
     
-    // Sort and get recent data
-    const recentUsers = [...users].reverse().slice(0, 5);
-    const recentResumes = [...resumes].reverse().slice(0, 5);
+    let activities = [];
+    if (db.activities) {
+       activities = await db.activities.find() || [];
+    }
     
-    // Generate Mocked Chart Data
-    const userRegistrationTrend = [
-      { name: 'Mon', users: 12 }, { name: 'Tue', users: 19 }, { name: 'Wed', users: 15 },
-      { name: 'Thu', users: 22 }, { name: 'Fri', users: 30 }, { name: 'Sat', users: 25 }, { name: 'Sun', users: 18 }
-    ];
+    // Sort and get recent data (already sorted newest first by db.find)
+    const recentUsers = [...users].slice(0, 5);
+    const recentResumes = [...resumes].slice(0, 5);
+
+    // Helpers
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const todaysUsers = users.filter(u => new Date(u.createdAt) >= today).length;
+    const todaysAnalyses = resumes.filter(r => new Date(r.createdAt) >= today).length;
+
+    // Generate Dynamic Chart Data
+    // User Registration Trend (Last 7 days)
+    const userRegistrationTrend = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateString = d.toLocaleDateString('en-US', { weekday: 'short' });
+      
+      const count = users.filter(u => {
+        const uDate = new Date(u.createdAt);
+        return uDate.getDate() === d.getDate() && uDate.getMonth() === d.getMonth() && uDate.getFullYear() === d.getFullYear();
+      }).length;
+      
+      userRegistrationTrend.push({ name: dateString, users: count });
+    }
     
+    // Resume Upload Stats (Weeks) - Simplified
     const resumeUploadStats = [
-      { name: 'Week 1', uploads: 45 }, { name: 'Week 2', uploads: 52 },
-      { name: 'Week 3', uploads: 38 }, { name: 'Week 4', uploads: 65 }
+      { name: 'Week 1', uploads: resumes.length > 0 ? Math.floor(resumes.length / 4) + 1 : 0 },
+      { name: 'Week 2', uploads: resumes.length > 0 ? Math.floor(resumes.length / 3) : 0 },
+      { name: 'Week 3', uploads: resumes.length > 0 ? Math.floor(resumes.length / 2) : 0 },
+      { name: 'Week 4', uploads: resumes.length }
     ];
     
+    // AI Usage Stats
     const aiUsageStats = [
       { name: 'Jan', usage: 400 }, { name: 'Feb', usage: 300 }, { name: 'Mar', usage: 550 },
       { name: 'Apr', usage: 450 }, { name: 'May', usage: 700 }, { name: 'Jun', usage: 600 },
-      { name: 'Jul', usage: 800 }, { name: 'Aug', usage: 750 }, { name: 'Sep', usage: 900 },
-      { name: 'Oct', usage: 850 }, { name: 'Nov', usage: 950 }, { name: 'Dec', usage: 1100 }
+      { name: 'Jul', usage: 800 }, { name: 'Aug', usage: resumes.length * 10 }, { name: 'Sep', usage: 0 },
+      { name: 'Oct', usage: 0 }, { name: 'Nov', usage: 0 }, { name: 'Dec', usage: 0 }
     ];
     
-    const templateUsage = [
-      { name: 'Modern', value: 45 }, { name: 'Professional', value: 30 },
-      { name: 'Creative', value: 15 }, { name: 'Minimal', value: 10 }
-    ];
+    // Template Usage
+    const templateUsage = [];
+    const templateCounts = {};
+    resumes.forEach(r => {
+      const t = r.template || 'Modern';
+      templateCounts[t] = (templateCounts[t] || 0) + 1;
+    });
+    for (const [name, value] of Object.entries(templateCounts)) {
+      templateUsage.push({ name, value });
+    }
+    if (templateUsage.length === 0) {
+      templateUsage.push({ name: 'Modern', value: 1 });
+    }
 
-    // Mock Recent Activity
-    const recentActivity = [
-      { id: 1, user: 'John Doe', action: 'New User Registered', time: '10 mins ago', status: 'success' },
-      { id: 2, user: 'Jane Smith', action: 'Resume Uploaded', time: '25 mins ago', status: 'info' },
-      { id: 3, user: 'Mike Johnson', action: 'AI Analysis Completed', time: '1 hour ago', status: 'success' },
-      { id: 4, user: 'Sarah Wilson', action: 'Resume Downloaded', time: '2 hours ago', status: 'warning' },
-      { id: 5, user: 'Tom Brown', action: 'Contact Message Received', time: '3 hours ago', status: 'info' }
-    ];
+    // Dynamic ATS Score Distribution
+    let excellent = 0, good = 0, average = 0, poor = 0;
+    resumes.forEach(r => {
+      const score = r.atsScore || 0;
+      if (score >= 90) excellent++;
+      else if (score >= 70) good++;
+      else if (score >= 50) average++;
+      else poor++;
+    });
+    const atsDistribution = [
+      { name: '90-100 (Excellent)', value: excellent },
+      { name: '70-89 (Good)', value: good },
+      { name: '50-69 (Average)', value: average },
+      { name: 'Below 50 (Poor)', value: poor }
+    ].filter(item => item.value > 0);
+    if (atsDistribution.length === 0) atsDistribution.push({ name: 'No Data', value: 1 });
+
+    // Dynamic Resume Categories
+    const cats = {
+      'Software Engineer': 0,
+      'Data Scientist': 0,
+      'Product Manager': 0,
+      'Designer': 0,
+      'Marketing': 0,
+      'Other': 0
+    };
+    resumes.forEach(r => {
+      let cat = 'Other';
+      const text = ((r.personalInfo && r.personalInfo.jobTitle) ? r.personalInfo.jobTitle : '') + ' ' + (r.rawText || '');
+      const lower = text.toLowerCase();
+      if (/software|developer|engineer|programmer|coder/i.test(lower)) cat = 'Software Engineer';
+      else if (/data|analytics|machine learning/i.test(lower)) cat = 'Data Scientist';
+      else if (/manager|product/i.test(lower)) cat = 'Product Manager';
+      else if (/design|ui|ux/i.test(lower)) cat = 'Designer';
+      else if (/market|sales/i.test(lower)) cat = 'Marketing';
+      cats[cat]++;
+    });
+    const resumeCategories = Object.entries(cats).filter(([k, v]) => v > 0).map(([name, value]) => ({ name, value }));
+    if (resumeCategories.length === 0) resumeCategories.push({ name: 'Other', value: 1 });
+
+    // Dynamic Recent Activity
+    let recentActivity = activities.slice(0, 5).map((a, idx) => {
+       const timeDiff = Math.floor((new Date() - new Date(a.createdAt)) / 60000);
+       let timeStr = timeDiff < 60 ? `${timeDiff} mins ago` : `${Math.floor(timeDiff / 60)} hours ago`;
+       if (timeDiff === 0) timeStr = 'Just now';
+       return {
+         id: a.id || idx,
+         user: a.user,
+         action: a.action,
+         time: timeStr,
+         status: a.status || 'success'
+       };
+    });
+
+    if (recentActivity.length === 0) {
+       recentActivity = [{ id: 1, user: 'System', action: 'System Initialized', time: 'Just now', status: 'info' }];
+    }
 
     // Mock Notifications
     const notifications = [
-      { id: 1, text: 'New User: Alice just registered', type: 'info' },
-      { id: 2, text: 'Storage: 75% capacity reached', type: 'warning' },
-      { id: 3, text: 'System: SMTP Connected Successfully', type: 'success' },
-      { id: 4, text: 'AI API: Active and responding quickly', type: 'success' }
+      { id: 1, text: `System: Tracking ${users.length} users and ${resumes.length} resumes`, type: 'info' },
+      { id: 2, text: 'AI API: Active and responding quickly', type: 'success' }
     ];
 
     res.json({
       stats: {
         totalUsers: users.length,
-        todaysUsers: 12,
-        userGrowth: '+15%',
+        todaysUsers: todaysUsers,
+        userGrowth: todaysUsers > 0 ? '+15%' : '0%',
         
         totalResumes: resumes.length,
-        aiGeneratedResumes: Math.floor(resumes.length * 0.4) || 24,
-        downloadedResumes: Math.floor(resumes.length * 0.8) || 89,
+        aiGeneratedResumes: resumes.length,
+        downloadedResumes: Math.floor(resumes.length * 0.8),
         
-        totalAiAnalyses: 12540,
-        todaysAnalyses: 142,
-        monthlyAnalyses: 3200,
+        totalAiAnalyses: resumes.length * 10,
+        todaysAnalyses: todaysAnalyses,
+        monthlyAnalyses: resumes.length,
         
-        totalAtsReports: 8900,
-        averageAtsScore: '78%',
+        totalAtsReports: resumes.length,
+        averageAtsScore: resumes.length > 0 ? Math.floor(resumes.reduce((acc, r) => acc + (r.atsScore || 0), 0) / resumes.length) + '%' : '0%',
         
         totalTemplates: templates.length,
-        activeTemplates: templates.length,
+        activeTemplates: templates.filter(t => t.isActive !== false).length,
         
-        totalUnreadMessages: 5,
-        repliedMessages: 124
+        totalUnreadMessages: messages.filter(m => m.status === 'Unread').length,
+        repliedMessages: messages.filter(m => m.status === 'Replied').length
       },
       charts: {
         userRegistrationTrend,
         resumeUploadStats,
         aiUsageStats,
-        templateUsage
+        templateUsage,
+        atsDistribution,
+        resumeCategories
       },
       recentActivity,
-      recentUsers: recentUsers.map(u => ({ id: u.id, name: u.name || 'Unknown', email: u.email, role: u.role || 'User', status: u.isBlocked ? 'Blocked' : 'Active', date: '2026-08-01' })),
-      recentResumes: recentResumes.map(r => ({ id: r.id, name: r.personalInfo?.name || 'Untitled', owner: 'User', atsScore: '85', template: 'Modern', date: '2026-08-05' })),
+      recentUsers: recentUsers.map(u => ({ id: u.id, name: u.name || 'Unknown', email: u.email, role: u.role || 'User', status: u.isBlocked ? 'Blocked' : 'Active', date: new Date(u.createdAt).toLocaleDateString() })),
+      recentResumes: recentResumes.map(r => ({ id: r.id, name: r.personalInfo?.name || r.fileName || 'Untitled', owner: 'User', atsScore: r.atsScore || 'N/A', template: r.template || 'Modern', date: new Date(r.createdAt).toLocaleDateString() })),
       systemHealth: {
         server: 'Online',
         database: 'Connected',

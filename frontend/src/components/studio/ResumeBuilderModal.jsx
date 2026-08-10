@@ -13,7 +13,7 @@ export default function ResumeBuilderModal({
 }) {
   if (!isOpen) return null;
 
-  const [activeTab, setActiveTab] = useState('templates'); // 'templates' | 'personal' | 'summary' | 'experience' | 'skills'
+  const [activeTab, setActiveTab] = useState('personal'); // 'templates' | 'personal' | 'summary' | 'experience' | 'skills'
   const [hoveredTemplate, setHoveredTemplate] = useState(null);
 
   const cleanSummary = (text, pInfo) => {
@@ -83,7 +83,7 @@ export default function ResumeBuilderModal({
       setSummary(cleanSummary(resumeData.fixedSummary || resumeData.summary, resumeData.personalInfo));
       setExperience(resumeData.experienceList?.length > 0 ? resumeData.experienceList : []);
       setEducation(cleanEducation(resumeData.education));
-      setSkills(resumeData.fixedSkills || resumeData.skillsFound?.map(s => s.skill).join(', ') || '');
+      setSkills(resumeData.fixedSkills || resumeData.skills || resumeData.skillsFound?.map(s => typeof s === 'string' ? s : s.skill).filter(Boolean).join(', ') || '');
     }
   }, [isOpen]);
 
@@ -654,7 +654,7 @@ export default function ResumeBuilderModal({
                 <div style={{ background: '#ecfdf5', padding: '16px', borderRadius: '12px', border: '1px solid #a7f3d0', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <span style={{ color: '#059669', fontWeight: 700, fontSize: '0.85rem' }}>🔥 Detected High-Value Keywords:</span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                    {skills.split(',').map((s, idx) => s.trim() && (
+                    {skills.split(/,|\n/).filter(s => s.trim()).map((s, idx) => (
                       <span key={idx} style={{ background: '#10B981', color: '#fff', padding: '4px 10px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600 }}>
                         ✓ {s.trim()}
                       </span>
@@ -701,7 +701,7 @@ export default function ResumeBuilderModal({
             Selected: <strong style={{ color: '#0f172a' }}>{allTemplates.find(t => t.id === selectedTemplate)?.name}</strong> ({accentColor})
           </div>
           <div style={{ display: 'flex', gap: '12px' }}>
-            <button onClick={onClose} className="btn" style={{ background: '#fff', color: '#0f172a', border: '1px solid #cbd5e1', padding: '10px 20px' }}>Cancel</button>
+            <button onClick={onClose} className="btn" style={{ background: '#fff', color: '#0f172a', border: '1px solid #cbd5e1', padding: '10px 20px' }}>Close</button>
             <button onClick={handleSaveAll} className="btn btn-primary" style={{ background: '#10B981', color: '#fff', padding: '10px 24px', fontWeight: 700 }}>
               ✓ Save & Update Live Preview
             </button>

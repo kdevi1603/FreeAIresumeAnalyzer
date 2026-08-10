@@ -27,7 +27,8 @@ export async function initDB() {
         templates: [],
         skills: [],
         certifications: [],
-        languages: []
+        languages: [],
+        activities: []
       };
       await fs.writeFile(DB_FILE, JSON.stringify(initialData, null, 2), 'utf8');
       console.log('📦 Initialized local JSON database storage.');
@@ -48,9 +49,10 @@ async function readDB() {
     if (!parsed.skills) parsed.skills = [];
     if (!parsed.certifications) parsed.certifications = [];
     if (!parsed.languages) parsed.languages = [];
+    if (!parsed.activities) parsed.activities = [];
     return parsed;
   } catch (error) {
-    return { users: [], resumes: [], messages: [], settings: {}, templates: [], skills: [], certifications: [], languages: [] };
+    return { users: [], resumes: [], messages: [], settings: {}, templates: [], skills: [], certifications: [], languages: [], activities: [] };
   }
 }
 
@@ -347,6 +349,19 @@ export const db = {
         return { deletedCount: initialLen - data.languages.length };
       }
       return { deletedCount: 0 };
+    }
+  },
+  activities: {
+    async find(query = {}) {
+      const data = await readDB();
+      return data.activities.filter(a => matchQuery(a, query)).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    },
+    async create(activityData) {
+      const data = await readDB();
+      const newActivity = { id: uuidv4(), createdAt: new Date().toISOString(), ...activityData };
+      data.activities.push(newActivity);
+      await writeDB(data);
+      return newActivity;
     }
   }
 };

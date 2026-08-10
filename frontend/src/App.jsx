@@ -57,6 +57,11 @@ export default function App() {
 
   const handleTemplateSelectFromGallery = (templateId) => {
     setSelectedTemplateId(templateId);
+    if (!currentAnalysis) {
+      const newRes = { id: 'scratch-' + Date.now(), isScratch: true, personalInfo: { name: 'Untitled Resume' } };
+      setSavedResumes(prev => [newRes, ...prev]);
+      setCurrentAnalysis(newRes);
+    }
     setViewMode('studio');
   };
 
@@ -194,7 +199,7 @@ export default function App() {
       </div>
 
       {/* Sleek Footer */}
-      <Footer />
+      <Footer setViewMode={setViewMode} onOpenContact={() => setIsContactOpen(true)} />
 
       <AuthModal
         isOpen={isAuthOpen}

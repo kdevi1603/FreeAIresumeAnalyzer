@@ -69,21 +69,9 @@ export default function AdminAnalytics() {
     );
   }
 
-  // --- Mocked Deep Analytics Data ---
-  const atsDistribution = [
-    { name: '90-100 (Excellent)', value: 400 },
-    { name: '70-89 (Good)', value: 850 },
-    { name: '50-69 (Average)', value: 320 },
-    { name: 'Below 50 (Poor)', value: 120 }
-  ];
-
-  const resumeCategories = [
-    { name: 'Software Engineer', value: 850 },
-    { name: 'Data Scientist', value: 420 },
-    { name: 'Product Manager', value: 310 },
-    { name: 'Designer', value: 240 },
-    { name: 'Marketing', value: 180 }
-  ];
+  // Use real data from API
+  const atsDistribution = data.charts?.atsDistribution || [];
+  const resumeCategories = data.charts?.resumeCategories || [];
 
   return (
     <div className="w-full pb-32 text-[var(--text-main)] font-sans relative">

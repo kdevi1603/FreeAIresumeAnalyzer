@@ -17,7 +17,7 @@ async function callGemini(prompt, systemInstruction = '') {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error('GEMINI_API_KEY not found');
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
   const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -116,21 +116,35 @@ function runSmartDemoAnalysis(resumeText) {
   let summary = '';
   let education = '';
   let experience = '';
+  let exactSkills = '';
 
-  const expIndex = textLower.indexOf('experience');
+  let expIndex = textLower.indexOf('professional experience');
+  if (expIndex === -1) expIndex = textLower.indexOf('work experience');
+  if (expIndex === -1) expIndex = textLower.indexOf('experience');
+  
   const edIndex = textLower.indexOf('education');
+  
+  let skillsIndex = textLower.indexOf('technical skills');
+  if (skillsIndex === -1) skillsIndex = textLower.indexOf('skills');
 
   if (expIndex !== -1 && edIndex !== -1) {
-    const firstIdx = Math.min(expIndex, edIndex);
-    const lastIdx = Math.max(expIndex, edIndex);
+    const firstIdx = Math.min(expIndex, edIndex, skillsIndex !== -1 ? skillsIndex : Infinity);
     summary = resumeText.substring(0, firstIdx).replace(name, '').trim().substring(0, 300);
     
-    if (expIndex < edIndex) {
-      experience = resumeText.substring(expIndex, edIndex).trim().substring(0, 1000);
-      education = resumeText.substring(edIndex).trim().substring(0, 500);
-    } else {
-      education = resumeText.substring(edIndex, expIndex).trim().substring(0, 500);
-      experience = resumeText.substring(expIndex).trim().substring(0, 1000);
+    // Sort the indices to extract sections in order
+    const sections = [
+      { name: 'experience', idx: expIndex },
+      { name: 'education', idx: edIndex },
+      { name: 'skills', idx: skillsIndex }
+    ].filter(s => s.idx !== -1).sort((a, b) => a.idx - b.idx);
+    
+    for (let i = 0; i < sections.length; i++) {
+      const start = sections[i].idx;
+      const end = (i + 1 < sections.length) ? sections[i+1].idx : resumeText.length;
+      const text = resumeText.substring(start, end).trim();
+      if (sections[i].name === 'experience') experience = text.substring(0, 1000);
+      if (sections[i].name === 'education') education = text.substring(0, 1000);
+      if (sections[i].name === 'skills') exactSkills = text.substring(0, 1000);
     }
   } else {
     summary = resumeText.substring(0, 300);
@@ -139,18 +153,18 @@ function runSmartDemoAnalysis(resumeText) {
   }
 
   // Clean up experience text for bullets
-  const expBullets = experience.replace(/experience/i, '').trim();
+  const expBullets = experience.replace(/^[\s\S]*?experience/i, '').trim();
 
-  // Clean up summary: remove email and phone
-  if (email) summary = summary.replace(email, '');
   if (phone) summary = summary.replace(phone, '');
-  // also remove common url patterns like linkedin.com/...
-  summary = summary.replace(/linkedin\.com\/in\/[^\s]+/gi, '');
   summary = summary.trim();
 
   // Clean up education remnant
-  education = education.replace(/^education/i, '').replace(/^& academic details/i, '').trim();
+  education = education.replace(/^[\s\S]*?education/i, '').replace(/^& academic details/i, '').trim();
   education = education.replace(/^[\s&|-]+/, '').trim();
+  
+  if (exactSkills) {
+    exactSkills = exactSkills.replace(/^[\s\S]*?skills/i, '').trim();
+  }
 
   return {
     atsScore,
@@ -164,7 +178,8 @@ function runSmartDemoAnalysis(resumeText) {
       github: ''
     },
     summary: summary || resumeText.substring(0, 500) + '...',
-    education: education.replace(/education/i, '').trim() || '',
+    education: education || '',
+    skills: exactSkills || foundSkills.join(', '),
     experienceList: [
       {
         company: expBullets ? 'Extracted Experience' : 'Original Content',
@@ -206,7 +221,8 @@ function runSmartDemoAnalysis(resumeText) {
 }
 
 export async function analyzeResume(resumeText) {
-  const prompt = `You are an expert ATS (Applicant Tracking System) algorithm and executive tech recruiter. Analyze the following candidate resume text and return a strict JSON object evaluating its quality, skills, and ATS compatibility.
+  const prompt = `You are an expert ATS (Applicant Tracking System) algorithm and data extractor. Analyze the following candidate resume text and extract the EXACT ORIGINAL TEXT into the corresponding JSON sections. 
+DO NOT summarize, rewrite, or omit any details from the original text. Maintain all bullet points and original wording. Ensure technical skills do not bleed into the education section.
 
 Resume Text:
 """
@@ -225,14 +241,14 @@ Required JSON Schema:
     "linkedin": string,
     "github": string
   },
-  "summary": string,
-  "education": string,
+  "summary": string (Extract the exact original executive summary or objective without rewriting),
+  "education": string (Extract the exact original education details, excluding skills),
   "experienceList": [
     {
       "company": string,
       "role": string,
       "period": string,
-      "bullets": string
+      "bullets": string (Extract the exact original bullet points verbatim)
     }
   ],
   "sectionScores": {
@@ -254,6 +270,7 @@ Required JSON Schema:
     { "label": "Bullet Points", "passed": boolean },
     { "label": "No Large Tables", "passed": boolean }
   ],
+  "skills": string (Extract the exact original technical skills text verbatim, do not mix into education),
   "skillsFound": string[] (list of technical and soft skills clearly detected),
   "missingSkills": string[] (5-7 crucial industry-standard skills that would make this profile much stronger),
   "suggestions": [

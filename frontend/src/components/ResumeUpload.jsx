@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { resumeService } from '../services/api.js';
 import { UploadCloud, FileText, CheckCircle2, AlertCircle, Loader2, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -49,6 +49,12 @@ export default function ResumeUpload({ onAnalysisComplete, requireAuth }) {
     }
     setFile(selectedFile);
   };
+
+  useEffect(() => {
+    if (file) {
+      handleUpload();
+    }
+  }, [file]);
 
   const handleUpload = async (e) => {
     if (e) e.preventDefault();
@@ -200,27 +206,7 @@ export default function ResumeUpload({ onAnalysisComplete, requireAuth }) {
           )}
         </div>
 
-        {file && !loading && (
-          <div style={{ marginTop: '24px', display: 'flex', gap: '16px', justifyContent: 'center' }}>
-            <button
-              type="button"
-              onClick={() => setFile(null)}
-              className="btn btn-secondary"
-              style={{ padding: '12px 24px' }}
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleUpload}
-              className="btn btn-primary"
-              style={{ padding: '12px 32px', fontSize: '1.05rem' }}
-            >
-              <Sparkles size={20} />
-              <span>Run AI Analysis</span>
-            </button>
-          </div>
-        )}
+        {/* Manual upload buttons removed as per user request for automatic upload */}
       </div>
     </div>
   );

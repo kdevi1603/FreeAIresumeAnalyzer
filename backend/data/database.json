@@ -37,6 +37,13 @@
       "name": "Nisha",
       "email": "nisha@gmail.com",
       "password": "$2a$10$3TYpeYrRCX1ZnqiXos2FDuYy61jjp3.KVg0yhiTYmAru49NK/ON.6"
+    },
+    {
+      "id": "e3b367ae-f728-4890-8661-cbafac8af698",
+      "createdAt": "2026-08-10T06:34:28.711Z",
+      "name": "Pravin",
+      "email": "ppravin@gmailcom",
+      "password": "$2a$10$hIL2KW9aZEeXev7N/aiinuUU1MvARz1KKCO/XpVdHOS.UDhdIzpUi"
     }
   ],
   "resumes": [
@@ -159,10 +166,11 @@
         "phone": "",
         "city": "",
         "linkedin": "",
+        "portfolio": "",
         "github": "",
-        "portfolio": ""
+        "profilePicture": null
       },
-      "summary": "Innovative Full Stack Developer with 5+ years building cloud-native web applications. Proven track record of scaling user architectures and mentoring junior developers to increase sprint velocity by 25%.",
+      "summary": "Results-driven Full Stack Developer with 5+ years of experience designing and scaling cloud-native web applications. Proficient in Python, Java, SQL, and system architecture. Proven track record of optimizing database performance, improving application efficiency, and mentoring cross-functional teams to boost sprint velocity by 25%.",
       "education": "BCom — Palaniammal Arts College for Women (2021) | 88%\nHSC — Government Higher Secondary School (2018) | 81%\nSSLC — Government Higher Secondary School (2016) | 92%\n",
       "experienceList": [
         {
@@ -251,6 +259,112 @@
       "fixedProjects": "Resume Experience Section () — • Engineered high-performance banking transaction modules using VB.Net and SQL Server 2005, supporting 5,000+ daily secure operations.\n• Spearheaded query optimization initiatives that slashed latency by 20% and improved database indexing efficiency by 35%.",
       "fixedSummary": "Results-driven Full Stack Developer with 5+ years of experience designing and scaling cloud-native web applications. Proficient in Python, Java, SQL, and system architecture. Proven track record of optimizing database performance, improving application efficiency, and mentoring cross-functional teams to boost sprint velocity by 25%.",
       "fixedSkills": "C, C++, Java, Oracle, SQL Server, MS Office, HTML, Tally, Python, Operating Systems, Agile Methodology, Git/GitHub.",
+      "customHtml": ""
+    },
+    {
+      "id": "ebb4a14c-6d22-4464-b7b8-45e0e0dac697",
+      "createdAt": "2026-08-10T11:21:26.700Z",
+      "userId": "e3b367ae-f728-4890-8661-cbafac8af698",
+      "fileName": "PRAVEEN N RESUME.pdf",
+      "fileUrl": "/uploads/9b69e52e-9f5f-449b-a170-09b1a9841dcd.pdf",
+      "rawText": "praveen.natarajan.in@gmail.com",
+      "pages": 1,
+      "atsScore": 92,
+      "personalInfo": {
+        "name": "PRAVEEN N",
+        "jobTitle": "Full stack developer",
+        "email": "praveen.natarajan.in @gmail.com",
+        "phone": "9600097807",
+        "city": "Chennai",
+        "linkedin": "linkedin.com/in/praveen-n-416a54318",
+        "portfolio": "",
+        "github": "",
+        "profilePicture": null
+      },
+      "summary": "",
+      "education": "Master of Computer application, Madras Christian College (Autonomous)\nPercentage: 70%\n06/2024 – 05/2026\nChennai",
+      "experienceList": [
+        {
+          "company": "Tekquora",
+          "role": "Full Stack Developer Intern | MCC MRF Innovation Park",
+          "period": "02/2026 - Ongoing",
+          "bullets": "•Built frontend (React.js) and backend (Node.js, Laravel) applications\n•Developed REST APIs, authentication, and database integration\n•Worked on debugging, performance, and team-based development"
+        },
+        {
+          "company": "Oriz Software Private Limited",
+          "role": "Web Development & Full Stack Intern",
+          "period": "03/2025 – 06/2025",
+          "bullets": "•Developed and integrated frontend and backend using HTML, CSS, Python, and Flask\n•Applied SDLC principles and OOP concepts in building modular code\n•Gained experience in REST API integration, backend logic, and basic deployment"
+        }
+      ],
+      "sectionScores": {
+        "structure": 75,
+        "experience": 68,
+        "education": 80,
+        "projects": 75,
+        "skills": 78
+      },
+      "grammar": {
+        "score": 90,
+        "readability": "B+",
+        "passiveSentences": 0
+      },
+      "formatting": [
+        {
+          "label": "ATS Friendly Layout",
+          "passed": true
+        },
+        {
+          "label": "Proper Headings",
+          "passed": true
+        },
+        {
+          "label": "Font Size",
+          "passed": true
+        },
+        {
+          "label": "Bullet Points",
+          "passed": true
+        },
+        {
+          "label": "No Large Tables",
+          "passed": true
+        }
+      ],
+      "skills": "Programming Languages\n Java, Python, C, C++ \nDatabases\nSQL, MySQL, SQLite (Strong Knowledge) \nData Tools\nExcel, Power BI, Tableau\nWeb Technologies\nHTML, CSS, JavaScript (Frontend Development)\nFrameworks & Tools\n Flask, ReactJS (Intermediate), Visual Studio Code",
+      "skillsFound": [
+        "Java",
+        "Python",
+        "C",
+        "C++",
+        "SQL",
+        "MySQL",
+        "SQLite",
+        "Excel",
+        "Power BI",
+        "Tableau",
+        "HTML",
+        "CSS",
+        "JavaScript",
+        "Flask",
+        "React.js",
+        "Node.js",
+        "Laravel",
+        "REST APIs",
+        "Visual Studio Code",
+        "Git",
+        "GitHub"
+      ],
+      "missingSkills": [
+        "Docker",
+        "TypeScript",
+        "MongoDB",
+        "CI/CD"
+      ],
+      "suggestions": [],
+      "fixedSummary": "Motivated Full Stack Developer and MCA candidate with hands-on experience in building responsive web applications, RESTful APIs, and scalable backend systems using Python, React.js, Node.js, and Flask. Demonstrated proficiency in object-oriented programming, database management, and modern software development practices. Passionate about creating efficient full-stack solutions and integrating emerging technologies.",
+      "fixedProjects": "Tekquora (Full Stack Developer Intern | MCC MRF Innovation Park) —\n• Built responsive React.js frontends and Node.js/Laravel backends, boosting application performance and user engagement by 25%\n• Developed secure REST APIs with authentication and database integration, reducing API response latency by 30%\n• Collaborated in a 5+ member team on debugging and performance optimization, decreasing bug resolution time by 20%\n\nOriz Software Private Limited (Web Development & Full Stack Intern) —\n• Developed full-stack web applications using Python, Flask, HTML, and CSS, delivering features 15% ahead of schedule\n• Applied SDLC and OOP principles to build modular code, improving codebase maintainability and reducing testing bugs by 20%\n• Integrated REST APIs and backend logic to streamline data processing and optimize deployment workflows",
+      "fixedSkills": "Programming Languages: Java, Python, C, C++, JavaScript\nFrameworks & Web Technologies: React.js, Node.js, Flask, Laravel, HTML5, CSS3, REST APIs\nDatabases & Data Tools: SQL, MySQL, SQLite, Power BI, Tableau, Excel\nDeveloper Tools & Version Control: Git, GitHub, Visual Studio Code",
       "customHtml": ""
     }
   ],
@@ -439,5 +553,98 @@
       "proficiencyLevel": "Intermediate"
     }
   ],
-  "languages": []
+  "languages": [],
+  "activities": [
+    {
+      "id": "0b2bd1ab-594d-4c2a-813e-316198ddf785",
+      "createdAt": "2026-08-10T06:34:28.713Z",
+      "user": "Pravin",
+      "action": "New User Registered",
+      "status": "success"
+    },
+    {
+      "id": "61617241-53a2-4a6c-b681-c4a344231117",
+      "createdAt": "2026-08-10T06:34:43.345Z",
+      "user": "Pravin",
+      "action": "Resume Uploaded & Analyzed",
+      "status": "success"
+    },
+    {
+      "id": "681cab72-03cb-4ece-96cf-7fac9d2818d4",
+      "createdAt": "2026-08-10T06:59:36.726Z",
+      "user": "Pravin",
+      "action": "Resume Uploaded & Analyzed",
+      "status": "success"
+    },
+    {
+      "id": "df4e78ed-89f0-468e-bcaf-c14aed1532ce",
+      "createdAt": "2026-08-10T07:10:12.819Z",
+      "user": "Pravin",
+      "action": "Resume Uploaded & Analyzed",
+      "status": "success"
+    },
+    {
+      "id": "08c07f74-acc8-47d2-8ebd-f030fae020ff",
+      "createdAt": "2026-08-10T07:16:42.627Z",
+      "user": "Pravin",
+      "action": "Resume Uploaded & Analyzed",
+      "status": "success"
+    },
+    {
+      "id": "d4b27256-3969-4d39-a444-0f134140c719",
+      "createdAt": "2026-08-10T07:24:25.146Z",
+      "user": "Pravin",
+      "action": "Resume Uploaded & Analyzed",
+      "status": "success"
+    },
+    {
+      "id": "1b9ba461-7fd5-4d53-bfb8-0996ef7e64f3",
+      "createdAt": "2026-08-10T08:09:02.611Z",
+      "user": "Pravin",
+      "action": "Resume Uploaded & Analyzed",
+      "status": "success"
+    },
+    {
+      "id": "9882a89b-878b-4e71-9c9b-aff32dad8058",
+      "createdAt": "2026-08-10T08:18:51.950Z",
+      "user": "Pravin",
+      "action": "Resume Uploaded & Analyzed",
+      "status": "success"
+    },
+    {
+      "id": "46068201-8ea9-4fd9-964f-8735c6a808d0",
+      "createdAt": "2026-08-10T08:27:53.361Z",
+      "user": "Pravin",
+      "action": "Resume Uploaded & Analyzed",
+      "status": "success"
+    },
+    {
+      "id": "1ec54bd8-19c5-42f4-af2f-27e4b52e062d",
+      "createdAt": "2026-08-10T08:37:32.012Z",
+      "user": "Pravin",
+      "action": "Resume Uploaded & Analyzed",
+      "status": "success"
+    },
+    {
+      "id": "3f8344a0-f2bb-47d2-afcd-35bac1a4e96e",
+      "createdAt": "2026-08-10T08:42:04.308Z",
+      "user": "Pravin",
+      "action": "Resume Uploaded & Analyzed",
+      "status": "success"
+    },
+    {
+      "id": "247f5c18-7203-4446-98d6-467b4334fe21",
+      "createdAt": "2026-08-10T08:42:18.687Z",
+      "user": "Pravin",
+      "action": "Resume Uploaded & Analyzed",
+      "status": "success"
+    },
+    {
+      "id": "5979b674-03f1-4014-b27f-aff95fc5fdda",
+      "createdAt": "2026-08-10T11:21:26.701Z",
+      "user": "Pravin",
+      "action": "Resume Uploaded & Analyzed",
+      "status": "success"
+    }
+  ]
 }
