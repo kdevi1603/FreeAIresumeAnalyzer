@@ -1,5 +1,34 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { X } from 'lucide-react';
+import ResumeContentRenderer from './studio/ResumeContentRenderer.jsx';
+
+const MOCK_RESUME_DATA = {
+  personalInfo: {
+    name: 'Sarah Johnson',
+    email: 'sarah.j@example.com',
+    phone: '+1 (555) 123-4567',
+    city: 'San Francisco, CA',
+    linkedin: 'linkedin.com/in/sarahj',
+    github: 'github.com/sarahj',
+    profilePicture: 'https://i.pravatar.cc/150?u=sarah'
+  },
+  summary: 'Creative and detail-oriented professional with over 5 years of experience in delivering high-impact solutions. Proven track record of leading cross-functional teams and improving operational efficiency by 30%.',
+  experienceList: [
+    {
+      company: 'Tech Innovations Inc.',
+      role: 'Senior Project Lead',
+      bullets: '• Directed a team of 10 developers to launch a flagship product 2 months ahead of schedule.\n• Optimized internal processes, reducing deployment time by 40%.'
+    },
+    {
+      company: 'Creative Solutions',
+      role: 'Product Specialist',
+      bullets: '• Managed client relationships and increased retention rate by 25%.\n• Designed and implemented automated reporting dashboards.'
+    }
+  ],
+  education: 'Master of Business Administration\nStanford University - 2020\n\nBachelor of Science in Computer Science\nUniversity of California, Berkeley - 2018',
+  skills: 'Project Management, Agile Methodologies, Data Analysis, Python, SQL, Cross-functional Leadership, Strategic Planning',
+  atsScore: 98
+};
 
 const CATEGORIES = [
   'All', 'With Photo', 'Without Photo', 'Single Column', 'Two Column', 'ATS Friendly'
@@ -81,6 +110,37 @@ const TEMPLATES = [
 export default function TemplateSelectionModal({ isOpen, onClose, onApply }) {
   const [activeCategory, setActiveCategory] = useState('All');
   const [selectedTemplateId, setSelectedTemplateId] = useState('modern');
+  const [displayTemplates, setDisplayTemplates] = useState(TEMPLATES);
+
+  useEffect(() => {
+    fetch('http://localhost:5000/api/admin/templates')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          const live = data
+            .filter(t => t.status !== 'Suspended' && t.status !== 'Offline')
+            .map(t => {
+              const staticMatch = TEMPLATES.find(st => st.name.includes(t.name) || t.name.includes(st.name)) 
+                                || TEMPLATES.find(st => st.id === t.theme?.toLowerCase()) 
+                                || TEMPLATES[0];
+              
+              return {
+                id: staticMatch.id,
+                name: t.name,
+                description: t.description || staticMatch.description,
+                image: staticMatch.image,
+                tags: staticMatch.tags,
+                badge: t.isDefault ? 'Default' : null
+              };
+            });
+          
+          if (live.length > 0) {
+            setDisplayTemplates(live);
+          }
+        }
+      })
+      .catch(err => console.error("Error fetching live templates:", err));
+  }, []);
   
   // Handle window resizing for inline grid fallback
   const [cols, setCols] = useState(3);
@@ -96,9 +156,9 @@ export default function TemplateSelectionModal({ isOpen, onClose, onApply }) {
   }, []);
 
   const filteredTemplates = useMemo(() => {
-    if (activeCategory === 'All') return TEMPLATES;
-    return TEMPLATES.filter(t => t.tags.includes(activeCategory));
-  }, [activeCategory]);
+    if (activeCategory === 'All') return displayTemplates;
+    return displayTemplates.filter(t => t.tags.includes(activeCategory));
+  }, [activeCategory, displayTemplates]);
 
   if (!isOpen) return null;
 
@@ -173,17 +233,18 @@ export default function TemplateSelectionModal({ isOpen, onClose, onApply }) {
                     borderWidth: isSelected ? '2px' : '1px'
                   }}
                 >
-                  {/* Preview Area - Exactly 500px, Object Contain, Full Preview */}
+                  {/* Preview Area - Live Scaled Render */}
                   <div 
-                    className="border-b border-gray-100 bg-[#f8fafc] flex justify-center items-center overflow-hidden" 
-                    style={{ width: '100%', height: '500px', overflow: 'hidden', boxSizing: 'border-box', padding: '24px' }}
+                    className="border-b border-gray-100 bg-[#e2e8f0] flex justify-center items-start overflow-hidden relative" 
+                    style={{ width: '100%', height: '480px', overflow: 'hidden', boxSizing: 'border-box', paddingTop: '16px' }}
                   >
-                    <img
-                      src={template.image}
-                      alt={template.name}
-                      className="drop-shadow-md"
-                      style={{ width: '100%', height: '100%', objectFit: 'contain', maxWidth: '100%' }}
-                    />
+                    <div style={{ transform: 'scale(0.4)', transformOrigin: 'top center', width: '794px', height: '1123px', pointerEvents: 'none' }} className="shadow-2xl">
+                       <ResumeContentRenderer 
+                          resumeData={MOCK_RESUME_DATA} 
+                          templateStyle={template.id} 
+                          zoom={100}
+                       />
+                    </div>
                   </div>
                   
                   {/* Text & Button Area */}

@@ -221,8 +221,12 @@ function runSmartDemoAnalysis(resumeText) {
 }
 
 export async function analyzeResume(resumeText) {
-  const prompt = `You are an expert ATS (Applicant Tracking System) algorithm and data extractor. Analyze the following candidate resume text and extract the EXACT ORIGINAL TEXT into the corresponding JSON sections. 
-DO NOT summarize, rewrite, or omit any details from the original text. Maintain all bullet points and original wording. Ensure technical skills do not bleed into the education section.
+  const prompt = `You are an expert ATS (Applicant Tracking System) algorithm and data extractor. Analyze the following candidate resume text and extract the information into the corresponding JSON sections. 
+CRITICAL RULES:
+1. Clean up the raw text! Remove floating headers (like "SUMMARY", "PROJECTS", "CERTIFICATES"), page numbers, weird formatting artifacts, or raw labels like "Description:", "Technologies Used:".
+2. Format ALL experience and project details as clean, professional bullet points starting with the '•' character. DO NOT output massive raw paragraphs. 
+3. Ensure technical skills do not bleed into the education section.
+4. Remove contact info (address, email, phone, web links) from the summary section.
 
 Resume Text:
 """
@@ -241,16 +245,16 @@ Required JSON Schema:
     "linkedin": string,
     "github": string
   },
-  "summary": string (Extract the exact original executive summary or objective without rewriting),
-  "education": string (Extract the exact original education details, excluding skills),
+  "summary": string (A clean, professional executive summary. Remove any contact info, links, or section headers like 'Summary'),
+  "education": string (A clean list of education details. Remove skills and coursework),
   "experienceList": [
     {
-      "company": string,
-      "role": string,
+      "company": string (For jobs use Company Name. For projects use Project Title),
+      "role": string (For jobs use Job Title. For projects use Tech Stack or Role),
       "period": string,
-      "bullets": string (Extract the exact original bullet points verbatim)
+      "bullets": string (Format the responsibilities/achievements as a professional bulleted list starting with '•'. Remove labels like 'Description:', 'Technologies:' and integrate them smoothly.)
     }
-  ],
+  ] (Extract BOTH professional work experience and academic/personal projects into this list),
   "sectionScores": {
     "structure": number (0 to 100),
     "experience": number (0 to 100),
@@ -270,7 +274,7 @@ Required JSON Schema:
     { "label": "Bullet Points", "passed": boolean },
     { "label": "No Large Tables", "passed": boolean }
   ],
-  "skills": string (Extract the exact original technical skills text verbatim, do not mix into education),
+  "skills": string (A clean, comma-separated list of technical skills. Remove headers like 'Technical Skills' or 'Tools'),
   "skillsFound": string[] (list of technical and soft skills clearly detected),
   "missingSkills": string[] (5-7 crucial industry-standard skills that would make this profile much stronger),
   "suggestions": [

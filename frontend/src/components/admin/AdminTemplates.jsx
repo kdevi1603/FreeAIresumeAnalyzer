@@ -53,7 +53,7 @@ export default function AdminTemplates() {
       theme: t.theme || 'Blue',
       status: t.status || 'Active',
       atsScore: t.atsScore || 85,
-      usageCount: t.usageCount || Math.floor(Math.random() * 5000)
+      usageCount: t.usageCount || 0
     });
     setEditModal(t.id);
   };

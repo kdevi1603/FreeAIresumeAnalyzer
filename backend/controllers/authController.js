@@ -21,7 +21,8 @@ export async function registerUser(req, res) {
     const user = await db.users.create({
       name,
       email: email.toLowerCase(),
-      password: hashedPassword
+      password: hashedPassword,
+      lastLogin: new Date().toISOString()
     });
 
     // Log activity
@@ -63,6 +64,20 @@ export async function loginUser(req, res) {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid email or password.' });
+    }
+
+    // Update last login
+    await db.users.update(user.id, { lastLogin: new Date().toISOString() });
+
+    // Log activity
+    try {
+      await db.activities.create({
+        user: user.name,
+        action: 'Logged in successfully',
+        status: 'success'
+      });
+    } catch (e) {
+      console.error('Failed to log login activity', e);
     }
 
     return res.json({

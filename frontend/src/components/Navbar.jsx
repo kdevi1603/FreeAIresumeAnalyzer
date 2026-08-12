@@ -32,7 +32,7 @@ export default function Navbar({ onOpenAuth, viewMode, setViewMode, onOpenContac
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={() => setViewMode('landing')}>
-          <img src="/logo.png" alt="Logo" style={{ width: '42px', height: '42px', borderRadius: '12px', objectFit: 'cover', boxShadow: isLightMode ? '0 4px 12px rgba(0, 0, 0, 0.1)' : '0 0 20px rgba(0, 242, 254, 0.4)', filter: isLightMode ? 'invert(1) hue-rotate(180deg)' : 'none', transition: 'all 0.3s ease' }} />
+          <img src="/admin-logo.jpg" alt="Logo" style={{ width: '42px', height: '42px', borderRadius: '12px', objectFit: 'cover', boxShadow: isLightMode ? '0 4px 12px rgba(0, 0, 0, 0.1)' : '0 0 20px rgba(0, 242, 254, 0.4)', transition: 'all 0.3s ease' }} />
           <div>
             <span style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.03em', background: 'var(--gradient-main)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               AI Resume Analyzer

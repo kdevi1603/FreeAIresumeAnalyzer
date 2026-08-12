@@ -11,10 +11,31 @@ import CoverLetterStudio from './components/studio/CoverLetterStudio.jsx';
 import CreateResumeModal from './components/CreateResumeModal.jsx';
 import { Sparkles, Shield, Heart, Github } from 'lucide-react';
 
+function usePersistentState(key, initialValue) {
+  const [state, setState] = useState(() => {
+    try {
+      const item = window.sessionStorage.getItem(key);
+      return item ? JSON.parse(item) : (typeof initialValue === 'function' ? initialValue() : initialValue);
+    } catch (error) {
+      return typeof initialValue === 'function' ? initialValue() : initialValue;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      window.sessionStorage.setItem(key, JSON.stringify(state));
+    } catch (error) {
+      console.error('Error saving to sessionStorage', error);
+    }
+  }, [key, state]);
+
+  return [state, setState];
+}
+
 export default function App() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isContactOpen, setIsContactOpen] = useState(false);
-  const [viewMode, setViewMode] = useState(() => {
+  const [viewMode, setViewMode] = usePersistentState('app_viewMode', () => {
     if (window.location.pathname === '/admin') return 'admin';
     return 'landing';
   });
@@ -28,18 +49,18 @@ export default function App() {
   }, [viewMode]);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [isCreateResumeModalOpen, setIsCreateResumeModalOpen] = useState(false);
-  const [currentAnalysis, setCurrentAnalysis] = useState(null);
-  const [currentCoverLetterName, setCurrentCoverLetterName] = useState('');
-  const [currentCoverLetterContent, setCurrentCoverLetterContent] = useState('');
-  const [currentCoverLetterId, setCurrentCoverLetterId] = useState(null);
+  const [currentAnalysis, setCurrentAnalysis] = usePersistentState('app_currentAnalysis', null);
+  const [currentCoverLetterName, setCurrentCoverLetterName] = usePersistentState('app_currentCoverLetterName', '');
+  const [currentCoverLetterContent, setCurrentCoverLetterContent] = usePersistentState('app_currentCoverLetterContent', '');
+  const [currentCoverLetterId, setCurrentCoverLetterId] = usePersistentState('app_currentCoverLetterId', null);
 
-  const [savedCoverLetters, setSavedCoverLetters] = useState([
+  const [savedCoverLetters, setSavedCoverLetters] = usePersistentState('app_savedCoverLetters', [
     { id: '1', title: 'Software Engineer Cover Letter', target: 'Google - Frontend', date: '1 day ago', content: '' },
     { id: '2', title: 'Product Manager Cover Letter', target: 'Microsoft', date: '3 days ago', content: '' }
   ]);
 
-  const [savedResumes, setSavedResumes] = useState([]);
-  const [selectedTemplateId, setSelectedTemplateId] = useState('modern');
+  const [savedResumes, setSavedResumes] = usePersistentState('app_savedResumes', []);
+  const [selectedTemplateId, setSelectedTemplateId] = usePersistentState('app_selectedTemplateId', 'modern');
 
   const handleApplyTemplate = (templateId) => {
     setIsTemplateModalOpen(false);

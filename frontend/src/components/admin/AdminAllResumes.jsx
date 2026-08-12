@@ -40,29 +40,25 @@ export default function AdminAllResumes() {
 
   const decorateResumeData = (rawResumes) => {
     return rawResumes.map((r, i) => {
-      // Simulate missing backend fields
-      const templates = ['Modern', 'Professional', 'Creative', 'Minimal'];
-      const fileSizes = ['1.2 MB', '850 KB', '2.4 MB', '450 KB', '3.1 MB'];
-      
-      const atsScore = r.atsScore || Math.floor(65 + Math.random() * 35);
+      const atsScore = r.atsScore || 0;
       const isAnalyzed = atsScore > 0;
       
       return {
         ...r,
-        name: r.personalInfo?.name || 'Untitled Candidate',
+        name: r.personalInfo?.name || r.fileName || 'Untitled Candidate',
         jobTitle: r.personalInfo?.jobTitle || 'Unspecified Role',
         email: r.personalInfo?.email || 'N/A',
         phone: r.personalInfo?.phone || 'N/A',
-        template: templates[i % templates.length],
-        fileSize: fileSizes[i % fileSizes.length],
-        downloads: Math.floor(Math.random() * 50),
+        template: r.template || 'Modern',
+        fileSize: r.fileSize || 'N/A',
+        downloads: r.downloads || 0,
         status: isAnalyzed ? (atsScore >= 80 ? 'Analyzed' : 'Failed') : 'Pending',
         atsScore,
-        grammarScore: Math.floor(70 + Math.random() * 30),
-        formatScore: Math.floor(70 + Math.random() * 30),
-        keywordMatch: Math.floor(60 + Math.random() * 40),
-        missingSkills: ['Kubernetes', 'GraphQL', 'AWS'].slice(0, Math.floor(Math.random() * 3) + 1),
-        suggestions: ['Quantify your achievements with metrics.', 'Add more industry-specific keywords.']
+        grammarScore: r.grammarScore || 0,
+        formatScore: r.formatScore || 0,
+        keywordMatch: r.keywordMatch || 0,
+        missingSkills: r.missingSkills || [],
+        suggestions: r.suggestions || []
       };
     });
   };
@@ -441,7 +437,7 @@ export default function AdminAllResumes() {
             <div className="flex-1 overflow-auto p-8 flex justify-center items-start bg-[#121212]">
               {previewModal.fileUrl ? (
                 <div className="bg-white shadow-2xl transition-all duration-200" style={{ width: '800px', height: '1131px', transform: `scale(${zoomLevel / 100})`, transformOrigin: 'top center' }}>
-                  <iframe src={`http://localhost:5000${previewModal.fileUrl}#toolbar=0&navpanes=0`} width="100%" height="100%" style={{ border: 'none' }} title="Resume PDF"></iframe>
+                  <iframe src={`${previewModal.fileUrl}#toolbar=0&navpanes=0`} width="100%" height="100%" style={{ border: 'none' }} title="Resume PDF"></iframe>
                 </div>
               ) : (
                 <div className="text-white/50 m-auto flex flex-col items-center gap-4">

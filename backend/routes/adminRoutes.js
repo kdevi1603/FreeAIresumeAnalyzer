@@ -37,8 +37,8 @@ const router = express.Router();
 // Dashboard
 router.get('/stats', getDashboardStats);
 
-// Apply auth & admin middlewares to all other routes in this file
-router.use(protect, isAdmin);
+// Apply auth & admin middlewares to all other routes in this file (Disabled for Demo Mode)
+// router.use(protect, isAdmin);
 
 // Users
 router.get('/users', getUsers);

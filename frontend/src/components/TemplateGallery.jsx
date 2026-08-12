@@ -1,5 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Sparkles, Check } from 'lucide-react';
+import ResumeContentRenderer from './studio/ResumeContentRenderer.jsx';
+
+const MOCK_RESUME_DATA = {
+  personalInfo: {
+    name: 'Sarah Johnson',
+    email: 'sarah.j@example.com',
+    phone: '+1 (555) 123-4567',
+    city: 'San Francisco, CA',
+    linkedin: 'linkedin.com/in/sarahj',
+    github: 'github.com/sarahj',
+    profilePicture: 'https://i.pravatar.cc/150?u=sarah'
+  },
+  summary: 'Creative and detail-oriented professional with over 5 years of experience in delivering high-impact solutions. Proven track record of leading cross-functional teams and improving operational efficiency by 30%.',
+  experienceList: [
+    {
+      company: 'Tech Innovations Inc.',
+      role: 'Senior Project Lead',
+      bullets: '• Directed a team of 10 developers to launch a flagship product 2 months ahead of schedule.\n• Optimized internal processes, reducing deployment time by 40%.'
+    },
+    {
+      company: 'Creative Solutions',
+      role: 'Product Specialist',
+      bullets: '• Managed client relationships and increased retention rate by 25%.\n• Designed and implemented automated reporting dashboards.'
+    }
+  ],
+  education: 'Master of Business Administration\nStanford University - 2020\n\nBachelor of Science in Computer Science\nUniversity of California, Berkeley - 2018',
+  skills: 'Project Management, Agile Methodologies, Data Analysis, Python, SQL, Cross-functional Leadership, Strategic Planning',
+  atsScore: 98
+};
 
 export const TEMPLATES = [
   {
@@ -87,6 +116,40 @@ export const TEMPLATES = [
 
 export default function TemplateGallery({ onSelectTemplate, onBack }) {
   const [hoveredTemplate, setHoveredTemplate] = useState(null);
+  const [displayTemplates, setDisplayTemplates] = useState(TEMPLATES);
+
+  useEffect(() => {
+    fetch('http://localhost:5000/api/admin/templates')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          // Merge live templates with hardcoded assets
+          const live = data
+            .filter(t => t.status !== 'Suspended' && t.status !== 'Offline')
+            .map(t => {
+              // Try to find matching static template by name or category to borrow its image
+              const staticMatch = TEMPLATES.find(st => st.name.includes(t.name) || t.name.includes(st.name)) 
+                                || TEMPLATES.find(st => st.id === t.theme?.toLowerCase()) 
+                                || TEMPLATES[0];
+              
+              return {
+                id: staticMatch.id, // Keep the same renderer ID
+                name: t.name,
+                description: t.description || staticMatch.description,
+                image: staticMatch.image,
+                tags: staticMatch.tags,
+                displayTags: staticMatch.displayTags,
+                badge: t.isDefault ? 'Default' : null
+              };
+            });
+          
+          if (live.length > 0) {
+            setDisplayTemplates(live);
+          }
+        }
+      })
+      .catch(err => console.error("Error fetching live templates:", err));
+  }, []);
 
   return (
     <div className="animate-fade-in font-sans" style={{ padding: '40px 20px', maxWidth: '1400px', margin: '0 auto' }}>
@@ -121,7 +184,7 @@ export default function TemplateGallery({ onSelectTemplate, onBack }) {
       </div>
 
       <div className="grid grid-cols-3" style={{ gap: '32px' }}>
-        {TEMPLATES.map(template => {
+        {displayTemplates.map(template => {
           const isHovered = hoveredTemplate === template.id;
           return (
             <div
@@ -136,15 +199,16 @@ export default function TemplateGallery({ onSelectTemplate, onBack }) {
             >
               {/* Preview Area */}
               <div
-                className="border border-gray-200 rounded-lg mb-4 bg-white flex justify-center items-start overflow-hidden relative"
-                style={{ width: '100%', height: '380px', overflow: 'hidden', boxSizing: 'border-box', position: 'relative' }}
+                className="border border-gray-200 rounded-lg mb-4 bg-gray-50 flex justify-center items-start overflow-hidden relative shadow-inner"
+                style={{ width: '100%', height: '380px', overflow: 'hidden', boxSizing: 'border-box', position: 'relative', paddingTop: '16px' }}
               >
-                <img
-                  src={template.image}
-                  alt={template.name}
-                  className="drop-shadow-sm"
-                  style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'top', maxWidth: '100%' }}
-                />
+                <div style={{ transform: 'scale(0.31)', transformOrigin: 'top center', width: '794px', height: '1123px', pointerEvents: 'none' }} className="shadow-2xl">
+                    <ResumeContentRenderer 
+                        resumeData={MOCK_RESUME_DATA} 
+                        templateStyle={template.id} 
+                        zoom={100}
+                    />
+                </div>
                 {/* Hover Overlay Button */}
                 {isHovered && (
                   <div className="absolute inset-0 flex items-center justify-center bg-white/40 backdrop-blur-[1px] rounded-lg z-20 transition-all duration-300">

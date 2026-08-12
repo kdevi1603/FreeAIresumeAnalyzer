@@ -78,7 +78,7 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
   const [isTyping, setIsTyping] = useState(false);
   const [isFixing, setIsFixing] = useState(false);
   const [autoFixMessage, setAutoFixMessage] = useState(null);
-  const [showSplitChat, setShowSplitChat] = useState(false);
+  const [showSplitChat, setShowSplitChat] = useState(true);
   const [previewMode, setPreviewMode] = useState('original'); // 'original' | 'ai_edited'
 
 
@@ -663,7 +663,7 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
                   background: '#fff'
                 }}>
                   <iframe
-                    src={`http://localhost:5000${activeResume.fileUrl}` + (activeResume.fileUrl.toLowerCase().endsWith('.pdf') ? '#view=FitH&toolbar=0&navpanes=0' : '')}
+                    src={`${activeResume.fileUrl}` + (activeResume.fileUrl.toLowerCase().endsWith('.pdf') ? '#view=FitH&toolbar=0&navpanes=0' : '')}
                     style={{ width: '100%', height: '100%', minHeight: '800px', border: 'none' }}
                     title="Uploaded Resume Preview"
                   />
@@ -794,7 +794,7 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
                       background: '#fff'
                     }}>
                       <iframe
-                        src={`http://localhost:5000${activeResume.fileUrl}` + (activeResume.fileUrl.toLowerCase().endsWith('.pdf') ? '#view=FitH&toolbar=0&navpanes=0' : '')}
+                        src={`${activeResume.fileUrl}` + (activeResume.fileUrl.toLowerCase().endsWith('.pdf') ? '#view=FitH&toolbar=0&navpanes=0' : '')}
                         style={{ width: '100%', height: '100%', minHeight: '800px', border: 'none' }}
                         title="Uploaded Resume Preview"
                       />

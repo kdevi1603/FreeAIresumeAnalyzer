@@ -72,6 +72,7 @@ export default function AuthModal({ isOpen, onClose }) {
         </button>
 
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+          <img src="/admin-logo.jpg" alt="Logo" style={{ width: '56px', height: '56px', borderRadius: '14px', objectFit: 'cover', margin: '0 auto 16px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
           <h2 style={{ fontSize: '1.75rem', marginBottom: '8px' }}>
             {isLogin ? 'Welcome Back' : 'Create Account'}
           </h2>

@@ -1,5 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { Sparkles, Plus, Trash2, Check, Layout, Palette, User, FileText, Briefcase, Code, GraduationCap, ArrowRight, Upload, X, Image } from 'lucide-react';
+import ResumeContentRenderer from './ResumeContentRenderer.jsx';
+
+const MOCK_RESUME_DATA = {
+  personalInfo: {
+    name: 'Sarah Johnson',
+    email: 'sarah.j@example.com',
+    phone: '+1 (555) 123-4567',
+    city: 'San Francisco, CA',
+    linkedin: 'linkedin.com/in/sarahj',
+    github: 'github.com/sarahj',
+    profilePicture: 'https://i.pravatar.cc/150?u=sarah'
+  },
+  summary: 'Creative and detail-oriented professional with over 5 years of experience in delivering high-impact solutions. Proven track record of leading cross-functional teams and improving operational efficiency by 30%.',
+  experienceList: [
+    {
+      company: 'Tech Innovations Inc.',
+      role: 'Senior Project Lead',
+      bullets: '• Directed a team of 10 developers to launch a flagship product 2 months ahead of schedule.\n• Optimized internal processes, reducing deployment time by 40%.'
+    },
+    {
+      company: 'Creative Solutions',
+      role: 'Product Specialist',
+      bullets: '• Managed client relationships and increased retention rate by 25%.\n• Designed and implemented automated reporting dashboards.'
+    }
+  ],
+  education: 'Master of Business Administration\nStanford University - 2020\n\nBachelor of Science in Computer Science\nUniversity of California, Berkeley - 2018',
+  skills: 'Project Management, Agile Methodologies, Data Analysis, Python, SQL, Cross-functional Leadership, Strategic Planning',
+  atsScore: 98
+};
 
 export default function ResumeBuilderModal({
   isOpen,
@@ -211,11 +240,11 @@ export default function ResumeBuilderModal({
     onUpdateResume({
       personalInfo,
       summary,
-      fixedSummary: summary,
+      fixedSummary: null, // Clear old AI changes so manual edits take precedence
       education,
       experienceList: experience,
-      fixedProjects: experience.map(e => `${e.company} (${e.role}) — ${e.bullets}`).join('\n\n'),
-      fixedSkills: skills
+      fixedProjects: null, // Clear old AI changes
+      fixedSkills: null // Clear old AI changes
     });
     onClose();
   };
@@ -414,8 +443,14 @@ export default function ResumeBuilderModal({
                         }}
                       >
                         {/* Preview Image Area */}
-                        <div style={{ border: '1px solid #f1f5f9', borderRadius: '12px', marginBottom: '16px', background: '#f8fafc', height: '240px', position: 'relative', overflow: 'hidden', display: 'flex', justifyContent: 'center' }}>
-                           <img src={tmpl.image} alt={tmpl.name} style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'top' }} />
+                        <div style={{ border: '1px solid #f1f5f9', borderRadius: '12px', marginBottom: '16px', background: '#f8fafc', height: '280px', position: 'relative', overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'flex-start' }}>
+                            <div style={{ transform: 'scale(0.24)', transformOrigin: 'top center', width: '794px', height: '1123px', pointerEvents: 'none' }} className="shadow-2xl mt-4">
+                               <ResumeContentRenderer 
+                                  resumeData={MOCK_RESUME_DATA} 
+                                  templateStyle={tmpl.id === 'original' ? 'modern' : tmpl.id} 
+                                  zoom={100}
+                               />
+                            </div>
                            {/* Hover / Active Overlay */}
                            {(isHovered || isSelected) && (
                              <div style={{ position: 'absolute', inset: 0, background: isSelected ? 'transparent' : 'rgba(255,255,255,0.5)', backdropFilter: isSelected ? 'none' : 'blur(1px)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', zIndex: 10 }}>

@@ -37,31 +37,19 @@ export default function AdminUsers() {
 
   const decorateUserData = (rawUsers) => {
     return rawUsers.map((u, i) => {
-      // Generate some realistic fake data for missing API fields
-      const methods = ['Email', 'Google', 'GitHub'];
-      const countries = ['United States', 'United Kingdom', 'India', 'Canada', 'Australia', 'Germany'];
-      
-      const resumeCount = Math.floor(Math.random() * 5);
-      const atsReports = resumeCount > 0 ? Math.floor(Math.random() * 8) : 0;
-      const downloads = resumeCount > 0 ? Math.floor(Math.random() * 15) : 0;
-      
       return {
         ...u,
         name: u.name || 'Anonymous User',
         email: u.email || 'No email provided',
         role: u.role || 'user',
-        method: methods[i % methods.length],
-        country: countries[i % countries.length],
-        phone: '+1 (555) 01' + Math.floor(10 + Math.random() * 90),
-        lastLogin: new Date(Date.now() - Math.floor(Math.random() * 86400000 * 30)).toISOString(),
-        resumeCount,
-        atsReports,
-        downloads,
-        activityTimeline: [
-          { action: 'Logged in successfully', time: '2 hours ago', icon: <Key size={14}/> },
-          { action: 'Created new resume', time: '1 day ago', icon: <FileText size={14}/> },
-          { action: 'Downloaded PDF', time: '3 days ago', icon: <DownloadCloud size={14}/> }
-        ]
+        method: u.method || 'Email',
+        country: u.country || 'Unknown',
+        phone: u.phone || 'N/A',
+        lastLogin: u.lastLogin || u.createdAt || new Date().toISOString(),
+        resumeCount: u.resumeCount || 0,
+        atsReports: u.atsReports || 0,
+        downloads: u.downloads || 0,
+        activityTimeline: u.activities || []
       };
     });
   };

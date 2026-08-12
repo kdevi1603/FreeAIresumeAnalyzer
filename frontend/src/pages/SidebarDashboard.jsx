@@ -13,16 +13,28 @@ import HelpBoard from '../components/HelpBoard.jsx';
 export default function SidebarDashboard({ onCreateNew, onEditResume, onDeleteResume, savedResumes, onBackToLanding, onCreateCoverLetter, currentAnalysis, savedCoverLetters, setSavedCoverLetters, onEditCoverLetter }) {
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('My Resumes');
-  const [isDarkMode, setIsDarkMode] = useState(() => !document.body.classList.contains('light-mode'));
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const savedTheme = localStorage.getItem('app_theme');
+    if (savedTheme === 'light') {
+      document.body.classList.add('light-mode');
+      return false;
+    } else if (savedTheme === 'dark') {
+      document.body.classList.remove('light-mode');
+      return true;
+    }
+    return !document.body.classList.contains('light-mode');
+  });
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const toggleTheme = () => {
     if (isDarkMode) {
       document.body.classList.add('light-mode');
       setIsDarkMode(false);
+      localStorage.setItem('app_theme', 'light');
     } else {
       document.body.classList.remove('light-mode');
       setIsDarkMode(true);
+      localStorage.setItem('app_theme', 'dark');
     }
   };
 

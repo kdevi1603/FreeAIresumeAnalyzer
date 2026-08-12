@@ -41,30 +41,26 @@ export default function AdminManagement() {
         ...u,
         name: u.name || 'Admin User',
         email: u.email || 'admin@example.com',
-        role: assignedRole,
-        department: depts[i % depts.length],
-        status: u.isBlocked ? 'Suspended' : statusOptions[i % statusOptions.length],
-        permissions: {
-          Users: assignedRole === 'Super Admin' || assignedRole === 'Admin' || assignedRole === 'Moderator',
-          Resumes: assignedRole === 'Super Admin' || assignedRole === 'Admin',
-          Templates: assignedRole === 'Super Admin' || assignedRole === 'Template Manager',
-          Analytics: assignedRole === 'Super Admin' || assignedRole === 'Analytics Manager',
-          Support: assignedRole === 'Super Admin' || assignedRole === 'Support Manager',
-          Settings: assignedRole === 'Super Admin',
-          Admin: assignedRole === 'Super Admin'
+        role: u.role || 'admin',
+        department: u.department || 'Management',
+        status: u.isBlocked ? 'Suspended' : (u.status || 'Active'),
+        permissions: u.permissions || {
+          Users: true,
+          Resumes: true,
+          Templates: true,
+          Analytics: true,
+          Support: true,
+          Settings: true,
+          Admin: true
         },
-        lastLogin: new Date(Date.now() - Math.floor(Math.random() * 86400000 * 5)).toISOString(),
-        createdAt: u.createdAt || new Date(Date.now() - Math.floor(Math.random() * 30000000000)).toISOString(),
-        phone: '+1 (555) 01' + Math.floor(10 + Math.random() * 90),
-        twoFactor: assignedRole === 'Super Admin' ? true : Math.random() > 0.5,
-        emailVerified: true,
-        failedLogins: Math.floor(Math.random() * 3),
-        activeSessions: Math.floor(Math.random() * 3) + 1,
-        activityTimeline: [
-          { action: 'Logged in successfully', time: '2 mins ago', ip: '192.168.1.5', device: 'MacBook Pro - Chrome' },
-          { action: 'Updated Resume Template', time: '1 hour ago', ip: '192.168.1.5', device: 'MacBook Pro - Chrome' },
-          { action: 'Deleted user account', time: 'Yesterday', ip: '192.168.1.5', device: 'MacBook Pro - Chrome' }
-        ]
+        lastLogin: u.lastLogin || u.createdAt || new Date().toISOString(),
+        createdAt: u.createdAt || new Date().toISOString(),
+        phone: u.phone || 'N/A',
+        twoFactor: u.twoFactor || false,
+        emailVerified: u.emailVerified || true,
+        failedLogins: u.failedLogins || 0,
+        activeSessions: u.activeSessions || 1,
+        activityTimeline: u.activities || []
       }
     });
   };
@@ -79,20 +75,7 @@ export default function AdminManagement() {
         let data = await res.json();
         const adminUsers = data.filter(u => u.role === 'admin');
         const decoratedData = decorateAdminData(adminUsers);
-        // Add a few more mock admins to make the UI look good if there's only 1 admin
-        if (decoratedData.length < 5) {
-          const mockAdmins = Array(7).fill(null).map((_, i) => ({
-            id: `mock-${i}`,
-            name: `Mock Admin ${i+1}`,
-            email: `mockadmin${i+1}@company.com`,
-            isBlocked: false,
-            createdAt: new Date().toISOString()
-          }));
-          const decoratedMock = decorateAdminData(mockAdmins);
-          setAdmins([...decoratedData, ...decoratedMock]);
-        } else {
-          setAdmins(decoratedData);
-        }
+        setAdmins(decoratedData);
       }
       setLoading(false);
     } catch (err) {
@@ -151,13 +134,8 @@ export default function AdminManagement() {
     }
   };
 
-  // Mock Activity Log Data
-  const recentActivities = [
-    { id: 1, action: "Modified Template 'Creative Minimal'", admin: "K.DEVAKI", time: "10 mins ago", icon: <Edit2 size={16} className="text-pink-500"/>, bg: 'bg-pink-500/10' },
-    { id: 2, action: "Deleted Resume Record", admin: "S.ELSHA", time: "1 hour ago", icon: <Trash2 size={16} className="text-rose-500"/>, bg: 'bg-rose-500/10' },
-    { id: 3, action: "Updated SMTP Settings", admin: "Super Admin", time: "3 hours ago", icon: <Settings size={16} className="text-indigo-500"/>, bg: 'bg-indigo-500/10' },
-    { id: 4, action: "Activated new Moderator account", admin: "Super Admin", time: "5 hours ago", icon: <Users size={16} className="text-emerald-500"/>, bg: 'bg-emerald-500/10' },
-  ];
+  // Activity Log Data
+  const recentActivities = [];
 
   return (
     <div className="text-[var(--text-main)] w-full relative">
@@ -214,10 +192,10 @@ export default function AdminManagement() {
       </div>
 
       {/* Main Content Area */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 gap-8">
         
-        {/* Left Side: Data Table */}
-        <div className="xl:col-span-2 flex flex-col gap-6">
+        {/* Data Table */}
+        <div className="flex flex-col gap-6">
           <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl shadow-lg overflow-hidden flex flex-col">
             
             {/* Toolbar */}
@@ -385,35 +363,6 @@ export default function AdminManagement() {
                 </div>
               </div>
             )}
-          </div>
-        </div>
-
-        {/* Right Side: Activity Log & Quick Security Info */}
-        <div className="xl:col-span-1 flex flex-col gap-6">
-          <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl shadow-lg p-6 flex flex-col h-full">
-            <h3 className="text-lg font-bold flex items-center gap-2 mb-6">
-              <Activity className="text-blue-500" size={20}/> Enterprise Activity Log
-            </h3>
-            <div className="flex-1 overflow-y-auto space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-[var(--border-color)] before:to-transparent">
-              {recentActivities.map((log, index) => (
-                <div key={log.id} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                  <div className={`flex items-center justify-center w-10 h-10 rounded-full border border-white/10 ${log.bg} shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2`}>
-                    {log.icon}
-                  </div>
-                  <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-[var(--bg-dark)] p-4 rounded-xl border border-[var(--border-color)] shadow-sm">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-sm text-[var(--text-main)]">{log.admin}</span>
-                      <time className="text-[10px] font-medium text-[var(--text-muted)] flex items-center gap-1"><Clock size={10}/> {log.time}</time>
-                    </div>
-                    <div className="text-xs text-[var(--text-muted)]">{log.action}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <button onClick={() => showToast('Full activity log loaded successfully.')} className="w-full mt-6 py-2.5 bg-[var(--bg-dark)] border border-[var(--border-color)] hover:bg-[var(--bg-main)] rounded-xl text-sm font-bold transition-colors">
-              View All Logs
-            </button>
-          </div>
         </div>
       </div>
 
@@ -603,5 +552,6 @@ export default function AdminManagement() {
       </AnimatePresence>
 
     </div>
+  </div>
   );
 }

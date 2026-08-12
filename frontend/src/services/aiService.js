@@ -117,7 +117,7 @@ const mockSimulateChat = async (message, resumeContext, chatHistory = []) => {
   await new Promise(r => setTimeout(r, 1200)); // Simulate human typing delay
   const lowerMsg = message.toLowerCase();
   
-  if (['hi', 'hello', 'hey', 'greetings', 'helloi'].some(g => lowerMsg.includes(g))) {
+  if (/\b(hi|hello|hey|greetings)\b/.test(lowerMsg)) {
     return {
       reply: `Hello, how can I help you?`
     };

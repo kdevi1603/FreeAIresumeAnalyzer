@@ -78,8 +78,8 @@ export default function AdminSkills() {
           ...langs.map(l => ({ ...l, _type: 'Language' }))
         ];
         allItems.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        setActivityLog(allItems.slice(0, 5).map(item => ({
-          id: item.id + Math.random(),
+        setActivityLog(allItems.slice(0, 5).map((item, index) => ({
+          id: `${item.id}-${index}`,
           action: `${item._type} "${item.name}" was created.`,
           time: new Date(item.createdAt).toLocaleDateString(),
           user: 'Admin'

@@ -34,26 +34,18 @@ export default function AdminResumes() {
       });
       if (res.ok) {
         let data = await res.json();
-        // Decorate data with simulated fields if they don't exist
+        // Map real data without simulated fields
         data = data.map(r => {
-          const grammarScore = r.grammarScore || Math.floor(Math.random() * 20) + 80;
-          const formattingScore = r.formattingScore || Math.floor(Math.random() * 20) + 80;
-          const keywordMatch = r.keywordMatch || Math.floor(Math.random() * 30) + 70;
-          const skillsMatch = r.skillsMatch || Math.floor(Math.random() * 30) + 70;
-          const atsCompatibility = r.atsCompatibility || Math.floor(Math.random() * 20) + 80;
-          
-          const atsScore = Math.round((grammarScore + formattingScore + keywordMatch + skillsMatch + atsCompatibility) / 5);
-
           return {
             ...r,
-            grammarScore,
-            formattingScore,
-            keywordMatch,
-            skillsMatch,
-            atsCompatibility,
-            atsScore,
-            templateUsed: r.templateUsed || ['Modern Blue', 'Executive', 'Creative', 'Minimal'][Math.floor(Math.random() * 4)],
-            version: r.version || `v${Math.floor(Math.random() * 3) + 1}.0`
+            grammarScore: r.grammarScore || 0,
+            formattingScore: r.formattingScore || 0,
+            keywordMatch: r.keywordMatch || 0,
+            skillsMatch: r.skillsMatch || 0,
+            atsCompatibility: r.atsCompatibility || 0,
+            atsScore: r.atsScore || 0,
+            templateUsed: r.templateUsed || r.template || 'Unknown',
+            version: r.version || 'v1.0'
           };
         });
         setResumes(data);
@@ -368,7 +360,7 @@ export default function AdminResumes() {
                         </div>
                       )}
                       <iframe 
-                        src={`http://localhost:5000${viewModal.fileUrl}#view=FitH`}
+                        src={`${viewModal.fileUrl}#view=FitH`}
                         title="Resume PDF Preview"
                         className="w-full h-full absolute inset-0 z-0"
                         style={{ border: 'none' }}
@@ -455,9 +447,20 @@ export default function AdminResumes() {
                       <h4 className="font-bold mb-4 flex items-center gap-2"><Zap size={16} className="text-yellow-500"/> AI Suggestions</h4>
                       <ul className="space-y-3 text-sm text-[var(--text-muted)]">
                         <li className="flex gap-3"><span className="text-blue-500">•</span> Add more action verbs in your experience section.</li>
-                        <li className="flex gap-3"><span className="text-blue-500">•</span> Missing key industry skills: React, Node.js, GraphQL.</li>
-                        <li className="flex gap-3"><span className="text-blue-500">•</span> Quantify your achievements with metrics and numbers.</li>
+                        {viewModal.suggestions && viewModal.suggestions.map((s, i) => (
+                          <li key={i} className="flex gap-3"><span className="text-blue-500">•</span> {s}</li>
+                        ))}
                       </ul>
+                    </div>
+
+                    <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-6">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
+                          <TrendingUp size={20} />
+                        </div>
+                        <p className="text-[var(--text-muted)] font-semibold">Total Recommendations</p>
+                      </div>
+                      <h4 className="text-2xl font-black text-blue-500">{viewModal.suggestions ? viewModal.suggestions.length : 0}</h4>
                     </div>
 
                     <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl p-5">
@@ -513,7 +516,7 @@ export default function AdminResumes() {
                   </div>
                   <div className="bg-[var(--bg-card)] border border-[var(--border-color)] p-4 rounded-xl">
                     <p className="text-[var(--text-muted)] text-xs font-bold uppercase mb-1">Downloads</p>
-                    <h4 className="text-2xl font-black text-blue-500">{Math.floor(Math.random() * 50) + 10}</h4>
+                    <h4 className="text-2xl font-black text-blue-500">{detailsModal.downloads || 0}</h4>
                   </div>
                 </div>
 

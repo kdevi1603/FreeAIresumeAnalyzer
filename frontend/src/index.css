@@ -4,6 +4,7 @@
 
 :root {
   --bg-dark: #07090e;
+  --bg-main: var(--bg-dark);
   --bg-card: rgba(18, 23, 38, 0.7);
   --bg-card-hover: rgba(26, 33, 54, 0.85);
   --bg-input: rgba(0, 0, 0, 0.3);
@@ -33,6 +34,7 @@
 
 body.light-mode {
   --bg-dark: #f8fafc;
+  --bg-main: var(--bg-dark);
   --bg-card: rgba(255, 255, 255, 0.9);
   --bg-card-hover: rgba(255, 255, 255, 1);
   --bg-input: rgba(0, 0, 0, 0.05);

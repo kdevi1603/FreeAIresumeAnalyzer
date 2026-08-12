@@ -11,9 +11,27 @@ import AdminManagement from '../components/admin/AdminManagement.jsx';
 import AdminSupport from '../components/admin/AdminSupport.jsx';
 import AdminAnalytics from '../components/admin/AdminAnalytics.jsx';
 import { ShieldCheck, Moon, Sun } from 'lucide-react';
+import AdminLogin from '../components/admin/AdminLogin.jsx';
 
 export default function AdminPanel({ onLogout, onBackToLanding }) {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem('adminAuth') === 'true';
+  });
+  const [activeTab, setActiveTab] = useState(() => {
+    return localStorage.getItem('adminTab') || 'dashboard';
+  });
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      localStorage.setItem('adminAuth', 'true');
+    } else {
+      localStorage.removeItem('adminAuth');
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    localStorage.setItem('adminTab', activeTab);
+  }, [activeTab]);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   const [isLightMode, setIsLightMode] = useState(() => {
@@ -58,6 +76,9 @@ export default function AdminPanel({ onLogout, onBackToLanding }) {
       default: return <div style={{ padding: '20px', color: 'var(--text-main)' }}>Under construction...</div>;
     }
   };
+  if (!isAuthenticated) {
+    return <AdminLogin onLogin={() => setIsAuthenticated(true)} onBackToLanding={onBackToLanding} />;
+  }
 
   return (
     <>
@@ -186,7 +207,11 @@ export default function AdminPanel({ onLogout, onBackToLanding }) {
 
           <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px', marginTop: 'auto' }}>
             <button
-              onClick={onLogout}
+              onClick={() => {
+                setIsAuthenticated(false);
+                localStorage.removeItem('adminAuth');
+                onLogout();
+              }}
               style={{
                 display: 'flex', alignItems: 'center', gap: '8px',
                 padding: '10px 16px', borderRadius: '8px',

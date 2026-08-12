@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ZoomIn, ZoomOut, RotateCcw, Download, Check, Eye, X, Maximize, Mail, Phone, Linkedin, Github } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import html2pdf from 'html2pdf.js';
+import ResumeContentRenderer from './ResumeContentRenderer.jsx';
 
 export default function LiveResumePreview({ resumeData, templateStyle = 'fresher', accentColor = '#2563EB', onManualEdit, onAcceptChanges, onOpenTemplates }) {
   const [zoom, setZoom] = useState(window.innerWidth <= 768 ? 65 : 85);
@@ -150,7 +151,7 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'fresher
 
   const formatText = (text, mergeLines = true) => {
     if (!text) return null;
-    const rawLines = text.split(/\r?\n/);
+    const rawLines = String(text).split(/\r?\n/);
     const mergedLines = [];
     
     for (let line of rawLines) {
@@ -197,16 +198,22 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'fresher
     { title: 'Languages', content: 'Tamil (Native), English (Professional Working Proficiency)' }
   ].filter(sec => sec.content);
 
+  const hasChanges = !!(resumeData?.fixedSummary || resumeData?.fixedProjects || resumeData?.fixedEducation || resumeData?.fixedSkills);
+
   return (
     <div ref={containerRef} style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--bg-card)', borderRadius: '20px', border: '1px solid var(--border-color)', overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', padding: '12px 20px', background: 'var(--bg-card-hover)', borderBottom: '1px solid var(--border-color)', zIndex: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-          <button onClick={handleAcceptAll} disabled={changesAccepted} style={{ padding: '6px 14px', fontSize: '0.8rem', borderRadius: '8px', background: changesAccepted ? 'rgba(16, 185, 129, 0.2)' : '#10B981', color: '#fff', border: 'none', fontWeight: 700, cursor: 'pointer' }}>
-            <span>{changesAccepted ? 'Changes Accepted' : 'Accept Changes'}</span>
-          </button>
-          <button onClick={() => setShowDiff(!showDiff)} style={{ padding: '6px 14px', fontSize: '0.8rem', borderRadius: '8px', background: showDiff ? '#2563EB' : 'rgba(37, 99, 235, 0.2)', color: '#fff', border: 'none', cursor: 'pointer' }}>
-            <span>{showDiff ? 'Hide Changes' : 'Show Changes'}</span>
-          </button>
+          {hasChanges && (
+            <>
+              <button onClick={handleAcceptAll} disabled={changesAccepted} style={{ padding: '6px 14px', fontSize: '0.8rem', borderRadius: '8px', background: changesAccepted ? 'rgba(16, 185, 129, 0.2)' : '#10B981', color: '#fff', border: 'none', fontWeight: 700, cursor: 'pointer' }}>
+                <span>{changesAccepted ? 'Changes Accepted' : 'Accept Changes'}</span>
+              </button>
+              <button onClick={() => setShowDiff(!showDiff)} style={{ padding: '6px 14px', fontSize: '0.8rem', borderRadius: '8px', background: showDiff ? '#2563EB' : 'rgba(37, 99, 235, 0.2)', color: '#fff', border: 'none', cursor: 'pointer' }}>
+                <span>{showDiff ? 'Hide Changes' : 'Show Changes'}</span>
+              </button>
+            </>
+          )}
           <button onClick={onOpenTemplates} style={{ fontSize: '0.75rem', background: 'rgba(255,255,255,0.08)', padding: '4px 10px', borderRadius: '12px', color: '#22d3ee', fontWeight: 700, border: '1px solid rgba(34, 211, 238, 0.3)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', transition: 'all 0.2s' }}>
             Template: {templateStyle.toUpperCase()}
           </button>
@@ -277,292 +284,47 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'fresher
             className="a4-print-container"
             style={{
               transform: `scale(${zoom / 100})`, transformOrigin: 'top center', transition: 'transform 0.2s ease',
-              width: '794px', minHeight: '1123px', backgroundColor: '#ffffff', color: '#1a1a1a',
-              padding: '56px 56px',
+              width: '794px', height: '1123px', overflow: 'hidden', backgroundColor: '#ffffff', color: '#1a1a1a',
               boxShadow: '0 20px 60px rgba(0,0,0,0.6)', borderRadius: '4px',
               fontFamily: "'Inter', sans-serif",
               position: 'relative',
               textAlign: 'left'
             }}
-            contentEditable={true}
-            suppressContentEditableWarning={true}
-            spellCheck={true}
-            title="Right-click on red underlined words for spelling suggestions"
-            onBlur={(e) => {
-              const html = e.currentTarget.innerHTML;
-              setCustomHtml(html);
-              if (onManualEdit) onManualEdit(html);
-            }}
-            dangerouslySetInnerHTML={{ __html: customHtml || '<div style="padding: 40px; text-align: center; color: #64748b;">Original formatting not available.</div>' }}
-          />
-        ) : (
-        <div ref={resumeContentRef} className="a4-print-container" style={{
-          transform: `scale(${zoom / 100})`, transformOrigin: 'top center', transition: 'transform 0.2s ease',
-          width: '794px', minHeight: '1123px', backgroundColor: '#ffffff', color: '#1a1a1a',
-          padding: (templateStyle === 'sidebar' || templateStyle === 'executive') ? '0' : '56px 56px',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.6)', borderRadius: '4px',
-          fontFamily: ['academic', 'corporate', 'serif'].includes(templateStyle) ? "'Times New Roman', serif"
-            : ['minimalist', 'software'].includes(templateStyle) ? "'Courier New', monospace"
-            : "'Inter', sans-serif",
-          position: 'relative'
-        }}
-        contentEditable={templateStyle !== 'original'}
-        suppressContentEditableWarning={true}
-        spellCheck={true}
-        title="Right-click on red underlined words for spelling suggestions"
-        onBlur={(e) => {
-            if (templateStyle !== 'original') {
-                const html = e.currentTarget.innerHTML;
-                setCustomHtml(html);
-                if (onManualEdit) onManualEdit(html);
-            }
-        }}>
-          
-          <style>{resumeData?.formattingCss || ''}</style>
-          
-          {/* 1. Modern Professional (formerly modern) */}
-          {templateStyle === 'modern' && (
-            <>
-              <div style={{ borderBottom: `2px solid ${accentColor}`, paddingBottom: '16px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h1 style={{ fontSize: '26px', fontWeight: 800, color: '#0f172a', margin: '0 0 6px 0' }}>{candidateName.toUpperCase()}</h1>
-                  <ContactRow color="#475569" style={{ fontSize: '12px' }} />
-                </div>
-                {profilePicture && <img src={profilePicture} style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }} />}
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-                {sections.map((sec, idx) => (
-                  <div key={idx}>
-                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: accentColor, borderBottom: '1px solid #e2e8f0', paddingBottom: '4px', textTransform: 'uppercase' }}>{sec.title}</h3>
-                    <div style={{ fontSize: '12px', lineHeight: 1.8, color: '#334155', whiteSpace: 'pre-line', textAlign: 'justify' }}>{sec.content}</div>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-
-          {/* 2. Minimal ATS (formerly minimalist) */}
-          {templateStyle === 'minimalist' && (
-            <div style={{ borderLeft: `6px solid ${accentColor}`, paddingLeft: '24px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div>
-                  <h1 style={{ fontSize: '28px', fontWeight: 900, marginBottom: '20px', letterSpacing: '-0.5px' }}>{candidateName}</h1>
-                  <ContactRow color="#64748b" style={{ fontSize: '11px', marginBottom: '24px' }} />
-                </div>
-                {profilePicture && <img src={profilePicture} style={{ width: '64px', height: '64px', objectFit: 'cover', border: `2px solid ${accentColor}` }} />}
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-                {sections.map((sec, idx) => (
-                  <div key={idx}>
-                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', textTransform: 'uppercase' }}>
-                      <span style={{ width: '8px', height: '8px', background: accentColor }} /> {sec.title}
-                    </h3>
-                    <div style={{ fontSize: '12px', lineHeight: 1.8, paddingLeft: '16px', whiteSpace: 'pre-line', textAlign: 'justify' }}>{sec.content}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* 3. Fresher / Student (Education First) */}
-          {templateStyle === 'fresher' && (
-            <>
-              <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                {profilePicture && <img src={profilePicture} style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover', marginBottom: '12px', display: 'inline-block' }} />}
-                <h1 style={{ fontSize: '28px', fontWeight: 700, color: accentColor, margin: '0 0 5px 0' }}>{candidateName}</h1>
-                <ContactRow justify="center" color="#475569" style={{ fontSize: '12px' }} />
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-                {sections.map((sec, idx) => sec && (
-                  <div key={idx}>
-                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#111', background: '#f1f5f9', padding: '4px 8px', borderRadius: '4px', textTransform: 'uppercase' }}>{sec.title}</h3>
-                    <div style={{ fontSize: '12px', lineHeight: 1.8, color: '#334155', whiteSpace: 'pre-line', padding: '4px 8px', textAlign: 'justify' }}>{sec.content}</div>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-
-          {/* 4. Software Engineer */}
-          {templateStyle === 'software' && (
-            <>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderBottom: `2px solid ${accentColor}`, paddingBottom: '12px', marginBottom: '20px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                  {profilePicture && <img src={profilePicture} style={{ width: '56px', height: '56px', borderRadius: '8px', objectFit: 'cover' }} />}
-                  <div>
-                    <h1 style={{ fontSize: '26px', fontWeight: 800, color: '#0f172a', margin: '0 0 4px 0' }}>{candidateName}</h1>
-                    <span style={{ fontSize: '14px', color: accentColor, fontWeight: 700 }}>Software Engineer</span>
-                  </div>
-                </div>
-                  <ContactRow justify="flex-end" color="#475569" style={{ fontSize: '11px', maxWidth: '300px' }} />
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-                {sections.map((sec, idx) => (
-                  <div key={idx}>
-                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#0f172a', textTransform: 'uppercase', display: 'inline-block', borderBottom: `2px solid ${accentColor}`, paddingBottom: '2px', marginBottom: '8px' }}>{'//'} {sec.title}</h3>
-                    <div style={{ fontSize: '12px', lineHeight: 1.8, color: '#334155', whiteSpace: 'pre-line' }}>{sec.content}</div>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-
-          {/* 5. Executive */}
-          {templateStyle === 'executive' && (
-            <div>
-              <div style={{ background: '#0f172a', color: '#fff', padding: '40px 40px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h1 style={{ fontSize: '32px', fontWeight: 400, margin: '0 0 10px 0', letterSpacing: '2px', color: '#fff' }}>{candidateName.toUpperCase()}</h1>
-                  <ContactRow color="#94a3b8" style={{ fontSize: '12px' }} />
-                </div>
-                {profilePicture && <img src={profilePicture} style={{ width: '80px', height: '80px', objectFit: 'cover', border: '2px solid #fff' }} />}
-              </div>
-              <div style={{ padding: '30px 40px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
-                {sections.map((sec, idx) => (
-                  <div key={idx} style={{ display: 'flex', gap: '32px' }}>
-                    <div style={{ width: '140px', flexShrink: 0 }}>
-                      <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: accentColor, textTransform: 'uppercase', textAlign: 'right' }}>{sec.title}</h3>
-                    </div>
-                    <div style={{ fontSize: '12px', lineHeight: 1.8, color: '#334155', whiteSpace: 'pre-line', flex: 1, borderLeft: '1px solid #e2e8f0', paddingLeft: '24px', textAlign: 'justify' }}>
-                      {sec.content}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* 6. Creative */}
-          {templateStyle === 'creative' && (
-            <>
-              <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-                {profilePicture ? (
-                  <img src={profilePicture} style={{ width: '80px', height: '80px', borderRadius: '40px', objectFit: 'cover', margin: '0 auto 16px', border: `3px solid ${accentColor}` }} />
-                ) : (
-                  <div style={{ width: '80px', height: '80px', borderRadius: '40px', background: accentColor, color: getContrastColor(accentColor), fontSize: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontWeight: 800 }}>
-                    {candidateName.charAt(0)}
-                  </div>
-                )}
-                <h1 style={{ fontSize: '28px', fontWeight: 800, color: '#111', margin: '0 0 8px 0' }}>{candidateName}</h1>
-                <ContactRow justify="center" color="#666" style={{ fontSize: '12px', background: '#f8fafc', padding: '8px 16px', borderRadius: '30px', display: 'inline-flex' }} />
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-                {sections.map((sec, idx) => sec && (
-                  <div key={idx} style={{ background: '#f8fafc', padding: '16px', borderRadius: '16px', border: idx % 2 !== 0 ? `1px solid ${accentColor}30` : 'none' }}>
-                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: accentColor, textTransform: 'uppercase', marginBottom: '8px' }}>{sec.title}</h3>
-                    <div style={{ fontSize: '12px', lineHeight: 1.8, color: '#334155', whiteSpace: 'pre-line' }}>{sec.content}</div>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-
-          {/* 7. Corporate */}
-          {templateStyle === 'corporate' && (
-            <>
-              <div style={{ borderBottom: '3px solid #1e293b', paddingBottom: '16px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h1 style={{ fontSize: '28px', fontWeight: 700, color: '#000', margin: 0, fontFamily: "'Times New Roman', serif" }}>{candidateName.toUpperCase()}</h1>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                  <div style={{ fontSize: '11px', color: '#333', textAlign: 'right' }}>
-                    <div>{email}</div>
-                    <div>{phone}</div>
-                    <div>{linkedin}</div>
-                  </div>
-                  {profilePicture && <img src={profilePicture} style={{ width: '60px', height: '75px', objectFit: 'cover', border: '1px solid #1e293b' }} />}
-                </div>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-                {sections.map((sec, idx) => (
-                  <div key={idx}>
-                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff', background: '#1e293b', padding: '4px 8px', textTransform: 'uppercase', marginBottom: '8px' }}>{sec.title}</h3>
-                    <div style={{ fontSize: '12px', lineHeight: 1.8, color: '#111', whiteSpace: 'pre-line', padding: '0 8px', textAlign: 'justify' }}>{sec.content}</div>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-
-          {/* 8. Academic (formerly serif) */}
-          {templateStyle === 'academic' && (
-            <div style={{ textAlign: 'center' }}>
-              {profilePicture && <img src={profilePicture} style={{ width: '70px', height: '70px', borderRadius: '50%', objectFit: 'cover', marginBottom: '12px', display: 'inline-block', border: '2px solid #000' }} />}
-              <h1 style={{ fontSize: '28px', fontWeight: 700, borderBottom: '1px solid #000', paddingBottom: '10px' }}>{candidateName.toUpperCase()}</h1>
-              <div style={{ fontSize: '12px', color: '#333', marginTop: '8px' }}>{email} • {phone} • {city}</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginTop: '24px' }}>
-                {sections.map((sec, idx) => (
-                  <div key={idx}>
-                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '5px', fontWeight: 700 }}>{sec.title}</h3>
-                    <div style={{ fontSize: '12px', textAlign: 'justify', whiteSpace: 'pre-line' }}>{sec.content}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* 9. One-Page ATS */}
-          {templateStyle === 'onepage' && (
-            <>
-              <div style={{ textAlign: 'center', marginBottom: '16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', marginBottom: '4px' }}>
-                  {profilePicture && <img src={profilePicture} style={{ width: '32px', height: '32px', borderRadius: '16px', objectFit: 'cover' }} />}
-                  <h1 style={{ fontSize: '24px', fontWeight: 800, color: '#000', margin: 0 }}>{candidateName}</h1>
-                </div>
-                <div style={{ fontSize: '11px', color: '#444' }}>{email} | {phone} | {linkedin} | {github}</div>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {sections.map((sec, idx) => (
-                  <div key={idx}>
-                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: accentColor, textTransform: 'uppercase', borderBottom: '1px solid #ccc', margin: '0 0 4px 0' }}>{sec.title}</h3>
-                    <div style={{ fontSize: '12px', lineHeight: 1.4, color: '#222', whiteSpace: 'pre-line', textAlign: 'justify' }}>{sec.content}</div>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-
-          {/* 10. Elegant */}
-          {templateStyle === 'elegant' && (
-            <div style={{ border: `1px solid ${accentColor}40`, padding: '30px', minHeight: '100%' }}>
-              <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-                {profilePicture && <img src={profilePicture} style={{ width: '64px', height: '64px', borderRadius: '32px', objectFit: 'cover', marginBottom: '16px', display: 'inline-block', border: `1px solid ${accentColor}` }} />}
-                <h1 style={{ fontSize: '30px', fontWeight: 300, color: '#111', margin: '0 0 8px 0', letterSpacing: '4px', textTransform: 'uppercase' }}>{candidateName}</h1>
-                <div style={{ width: '40px', height: '2px', background: accentColor, margin: '0 auto 12px' }} />
-                <div style={{ fontSize: '11px', color: '#666', letterSpacing: '1px' }}>{email} • {phone} • {city}</div>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-                {sections.map((sec, idx) => (
-                  <div key={idx} style={{ textAlign: 'center' }}>
-                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: accentColor, textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '12px' }}>{sec.title}</h3>
-                    <div style={{ fontSize: '12px', lineHeight: 1.8, color: '#444', whiteSpace: 'pre-line', textAlign: 'justify' }}>{sec.content}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Legacy sidebar alias for any previously selected sidebar template */}
-          {templateStyle === 'sidebar' && (
-            <div style={{ display: 'grid', gridTemplateColumns: '190px 1fr', minHeight: '842px' }}>
-              <div style={{ background: accentColor, color: getContrastColor(accentColor), padding: '36px 20px' }}>
-                <h2 style={{ fontSize: '18px' }}>{candidateName}</h2>
-                <div style={{ fontSize: '10px', marginTop: '20px' }}>{email}<br/>{phone}</div>
-              </div>
-              <div style={{ padding: '36px 30px' }}>
-                {sections.map((sec, idx) => (
-                  <div key={idx} style={{ marginBottom: '20px' }}>
-                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: accentColor, textTransform: 'uppercase' }}>{sec.title}</h3>
-                    <p style={{ fontSize: '12px', whiteSpace: 'pre-line', textAlign: 'justify' }}>{sec.content}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div style={{ position: 'absolute', bottom: '15px', left: '40px', right: '40px', fontSize: '10px', color: '#94a3b8', borderTop: '1px solid #f1f5f9', paddingTop: '8px', display: 'flex', justifyContent: 'space-between' }}>
-            <span>Generated by AI Resume Analyzer</span>
-            <span>Score: {score}/100</span>
+          >
+            {resumeData?.fileUrl ? (
+              <iframe
+                src={`${resumeData.fileUrl}` + (resumeData.fileUrl.toLowerCase().endsWith('.pdf') ? '#view=FitH&toolbar=0&navpanes=0' : '')}
+                style={{ width: '100%', height: '100%', minHeight: '1123px', border: 'none' }}
+                title="Original PDF"
+              />
+            ) : (
+              <div
+                style={{ padding: '56px 56px' }}
+                contentEditable={true}
+                suppressContentEditableWarning={true}
+                spellCheck={true}
+                title="Right-click on red underlined words for spelling suggestions"
+                onBlur={(e) => {
+                  const html = e.currentTarget.innerHTML;
+                  setCustomHtml(html);
+                  if (onManualEdit) onManualEdit(html);
+                }}
+                dangerouslySetInnerHTML={{ __html: customHtml || '<div style="padding: 40px; text-align: center; color: #64748b;">Original formatting not available. Upload a resume to see it here.</div>' }}
+              />
+            )}
           </div>
-        </div>
+        ) : (
+          <div ref={resumeContentRef} style={{ display: 'inline-block' }}>
+            <ResumeContentRenderer
+              resumeData={resumeData}
+              templateStyle={templateStyle}
+              accentColor={accentColor}
+              showDiff={showDiff}
+              zoom={zoom}
+              contentEditable={true}
+              onManualEdit={onManualEdit}
+            />
+          </div>
         )}
       </div>
     </div>
