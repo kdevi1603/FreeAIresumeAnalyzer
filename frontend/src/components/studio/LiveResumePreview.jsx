@@ -4,12 +4,46 @@ import confetti from 'canvas-confetti';
 import html2pdf from 'html2pdf.js';
 import ResumeContentRenderer from './ResumeContentRenderer.jsx';
 
+const TEMPLATES = [
+  { id: 'modern', name: '1. Modern Professional' },
+  { id: 'minimalist', name: '2. Minimal ATS' },
+  { id: 'software', name: '3. Software Engineer' },
+  { id: 'fresher', name: '4. Student / Fresher' },
+  { id: 'executive', name: '5. Executive' },
+  { id: 'corporate', name: '6. Corporate' },
+  { id: 'academic', name: '7. Academic CV' },
+  { id: 'creative', name: '8. Creative' },
+  { id: 'onepage', name: '9. Business Analyst' },
+  { id: 'elegant', name: '10. Clean Professional' }
+];
+
 export default function LiveResumePreview({ resumeData, templateStyle = 'fresher', accentColor = '#2563EB', onManualEdit, onAcceptChanges, onOpenTemplates }) {
   const [zoom, setZoom] = useState(window.innerWidth <= 768 ? 65 : 85);
   const [showDiff, setShowDiff] = useState(true);
   const [changesAccepted, setChangesAccepted] = useState(false);
   const [showPrintPreview, setShowPrintPreview] = useState(false);
   const [customHtml, setCustomHtml] = useState(resumeData?.customHtml || '');
+  const [liveCustomTemplate, setLiveCustomTemplate] = useState(null);
+
+  useEffect(() => {
+    if (templateStyle === 'original') return;
+    fetch('http://localhost:5000/api/admin/templates')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          const match = data.find(t => {
+            const staticMatch = TEMPLATES.find(st => st.name.includes(t.name) || (t.name && st.name.includes(t.name))) || TEMPLATES.find(st => st.id === t.theme?.toLowerCase()) || TEMPLATES[0];
+            return staticMatch.id === templateStyle;
+          });
+          if (match && match.customHtml) {
+            setLiveCustomTemplate(match.customHtml);
+          } else {
+            setLiveCustomTemplate(null);
+          }
+        }
+      })
+      .catch(() => {});
+  }, [templateStyle]);
   
   useEffect(() => {
     if (resumeData?.customHtml !== undefined && resumeData?.customHtml !== customHtml) {
@@ -92,10 +126,28 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'fresher
   const handlePrint = () => {
     const element = resumeContentRef.current;
     if (!element) return;
-    const originalTransform = element.style.transform;
-    element.style.transform = 'scale(1)';
-    window.print();
-    element.style.transform = originalTransform;
+    
+    const printContainer = element.classList?.contains('a4-print-container') ? element : element.querySelector('.a4-print-container');
+    
+    if (printContainer) {
+      const originalTransform = printContainer.style.transform;
+      printContainer.style.transform = 'scale(1)';
+      
+      const clone = printContainer.cloneNode(true);
+      const printWrapper = document.createElement('div');
+      printWrapper.id = 'print-wrapper';
+      printWrapper.appendChild(clone);
+      document.body.appendChild(printWrapper);
+      
+      printContainer.style.transform = originalTransform;
+      
+      window.print();
+      
+      document.body.removeChild(printWrapper);
+    } else {
+      window.print();
+    }
+    
     setShowPrintPreview(false);
   };
 
@@ -323,6 +375,7 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'fresher
               zoom={zoom}
               contentEditable={true}
               onManualEdit={onManualEdit}
+              customTemplateHtml={liveCustomTemplate}
             />
           </div>
         )}

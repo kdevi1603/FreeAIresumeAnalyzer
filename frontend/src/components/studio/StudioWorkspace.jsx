@@ -163,7 +163,7 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
       // Delegate all conversational logic to the Live AI service
       const res = await aiService.chatWithResumeAgent(userText, activeResume, chatMessages);
 
-      if (res.proposedFix) {
+      if (res.proposedFix && res.autoApply) {
         setShowSplitChat(true);
         setActiveResume(prev => {
           const updated = { ...prev };
@@ -176,6 +176,16 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
             updated.fixedSummary = res.proposedFix.content;
           } else if (sec.includes('education')) {
             updated.fixedEducation = res.proposedFix.content;
+          } else if (sec.includes('format') || sec.includes('heading') || sec.includes('font') || sec.includes('bullet') || sec.includes('space')) {
+            updated.formattingCss = (updated.formattingCss || '') + '\n' + res.proposedFix.content;
+          } else if (sec.includes('github')) {
+            updated.personalInfo = { ...updated.personalInfo, github: res.proposedFix.content.trim() };
+          } else if (sec.includes('linkedin')) {
+            updated.personalInfo = { ...updated.personalInfo, linkedin: res.proposedFix.content.trim() };
+          } else if (sec.includes('email')) {
+            updated.personalInfo = { ...updated.personalInfo, email: res.proposedFix.content.trim() };
+          } else if (sec.includes('phone')) {
+            updated.personalInfo = { ...updated.personalInfo, phone: res.proposedFix.content.trim() };
           } else {
             updated.rawText = res.proposedFix.content;
           }
@@ -687,7 +697,7 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
         )}
 
         {activeView === 'AI Chat' && (
-          <div className="animate-fade-in" style={{ display: 'flex', gap: '24px', height: 'calc(100vh - 180px)', minHeight: '500px' }}>
+          <div className="animate-fade-in" style={{ display: 'flex', gap: '24px', height: '1123px' }}>
             <div style={{ flex: 1, minWidth: showSplitChat ? '350px' : '100%', height: '100%' }}>
               <AiAgentChat
                 resumeData={activeResume}
@@ -711,6 +721,14 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
                       updated.fixedEducation = content;
                     } else if (sec.includes('format') || sec.includes('heading') || sec.includes('font') || sec.includes('bullet') || sec.includes('space')) {
                       updated.formattingCss = (updated.formattingCss || '') + '\n' + content;
+                    } else if (sec.includes('github')) {
+                      updated.personalInfo = { ...updated.personalInfo, github: content.trim() };
+                    } else if (sec.includes('linkedin')) {
+                      updated.personalInfo = { ...updated.personalInfo, linkedin: content.trim() };
+                    } else if (sec.includes('email')) {
+                      updated.personalInfo = { ...updated.personalInfo, email: content.trim() };
+                    } else if (sec.includes('phone')) {
+                      updated.personalInfo = { ...updated.personalInfo, phone: content.trim() };
                     } else {
                       updated.rawText = content;
                     }
@@ -732,6 +750,9 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
                         return !isAddressed;
                       });
                     }
+
+                    // Increment ATS score when user explicitly applies
+                    updated.atsScore = Math.min(100, (updated.atsScore || 41) + 4);
 
                     return updated;
                   });
@@ -826,7 +847,10 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
         resumeData={activeResume}
         onUpdateResume={handleUpdateResumeFromBuilder}
         selectedTemplate={selectedTemplate}
-        onSelectTemplate={(tmplId) => setSelectedTemplate(tmplId)}
+        onSelectTemplate={(tmplId) => {
+          setSelectedTemplate(tmplId);
+          setActiveResume(prev => ({ ...prev, templateUsed: tmplId, template: tmplId }));
+        }}
         accentColor={accentColor}
         onSelectAccentColor={(col) => setAccentColor(col)}
       />

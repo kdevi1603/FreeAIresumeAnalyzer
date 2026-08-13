@@ -227,6 +227,7 @@ CRITICAL RULES:
 2. Format ALL experience and project details as clean, professional bullet points starting with the '•' character. DO NOT output massive raw paragraphs. 
 3. Ensure technical skills do not bleed into the education section.
 4. Remove contact info (address, email, phone, web links) from the summary section.
+5. When identifying "missingSkills", ONLY suggest alternative or related keywords that the candidate is highly likely to already know based on their existing experience. NEVER suggest completely unrelated or fake skills just to boost the ATS score.
 
 Resume Text:
 """

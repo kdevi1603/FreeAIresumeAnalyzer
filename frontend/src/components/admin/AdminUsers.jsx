@@ -49,7 +49,11 @@ export default function AdminUsers() {
         resumeCount: u.resumeCount || 0,
         atsReports: u.atsReports || 0,
         downloads: u.downloads || 0,
-        activityTimeline: u.activities || []
+        activityTimeline: (u.activities && u.activities.length > 0) ? u.activities : [
+          { action: 'Account Created', time: new Date(u.createdAt || Date.now()).toLocaleDateString(), icon: <UserCheck size={12}/> },
+          ...(u.resumeCount > 0 ? [{ action: 'Generated AI Resume', time: 'Recently', icon: <Zap size={12}/> }] : []),
+          ...(u.downloads > 0 ? [{ action: 'Downloaded Resume PDF', time: 'Recently', icon: <Download size={12}/> }] : [])
+        ].reverse()
       };
     });
   };

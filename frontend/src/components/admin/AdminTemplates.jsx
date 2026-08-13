@@ -4,6 +4,7 @@ import {
   Plus, Edit2, Trash2, X, Save, Copy, Eye, Star, Upload, Download, 
   Search, Filter, LayoutTemplate, Zap, FileText, CheckCircle, Image, Settings, Palette
 } from 'lucide-react';
+import ResumeContentRenderer from '../studio/ResumeContentRenderer';
 
 export default function AdminTemplates() {
   const [templates, setTemplates] = useState([]);
@@ -20,9 +21,33 @@ export default function AdminTemplates() {
   // Form State
   const initialForm = {
     name: '', category: 'Professional', description: '', atsScore: 85, 
-    theme: 'Blue', status: 'Active', usageCount: 0, isDefault: false
+    theme: 'Blue', status: 'Active', usageCount: 0, isDefault: false,
+    primaryColor: '#3b82f6', fontFamily: 'Inter', spacing: 'Normal', layoutType: 'Standard'
   };
   const [formData, setFormData] = useState(initialForm);
+
+  const dummyResume = {
+    personalInfo: { name: 'John Doe', jobTitle: 'Developer', email: 'john@example.com' },
+    summary: 'A short professional summary.',
+    experienceList: [{ company: 'Company', role: 'Dev', period: '2020-2022', bullets: '• Developed features' }],
+    education: 'B.S. CS',
+    skills: 'React, Node'
+  };
+
+  const getRendererStyle = (name) => {
+    const n = (name || '').toLowerCase();
+    if (n.includes('elegant')) return 'elegant';
+    if (n.includes('modern')) return 'modern';
+    if (n.includes('minimal')) return 'minimalist';
+    if (n.includes('software') || n.includes('tech')) return 'software';
+    if (n.includes('fresh') || n.includes('student')) return 'fresher';
+    if (n.includes('exec')) return 'executive';
+    if (n.includes('corporat') || n.includes('business')) return 'corporate';
+    if (n.includes('academic')) return 'academic';
+    if (n.includes('creativ')) return 'creative';
+    if (n.includes('one')) return 'onepage';
+    return 'modern';
+  };
 
   const fetchTemplates = async () => {
     setLoading(true);
@@ -53,7 +78,11 @@ export default function AdminTemplates() {
       theme: t.theme || 'Blue',
       status: t.status || 'Active',
       atsScore: t.atsScore || 85,
-      usageCount: t.usageCount || 0
+      usageCount: t.usageCount || 0,
+      primaryColor: t.primaryColor || '#3b82f6',
+      fontFamily: t.fontFamily || 'Inter',
+      spacing: t.spacing || 'Normal',
+      layoutType: t.layoutType || 'Standard'
     });
     setEditModal(t.id);
   };
@@ -244,12 +273,16 @@ export default function AdminTemplates() {
                 <tr key={t.id} className="hover:bg-[var(--bg-dark)] transition-colors group">
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-4">
-                      {/* Thumbnail Placeholder */}
-                      <div className="w-16 h-20 rounded bg-gradient-to-br from-gray-700 to-gray-900 border border-[var(--border-color)] shadow-sm flex flex-col items-center justify-center relative overflow-hidden shrink-0">
-                        <div className="w-full h-2 bg-indigo-500 absolute top-0"></div>
-                        <FileText size={20} className="text-gray-500 mb-1" />
-                        <div className="w-8 h-1 bg-gray-600 rounded"></div>
-                        <div className="w-10 h-1 bg-gray-600 rounded mt-1"></div>
+                      {/* Live Template Preview */}
+                      <div className="w-16 h-20 rounded border border-[var(--border-color)] shadow-sm flex flex-col items-start justify-start overflow-hidden shrink-0 bg-white">
+                        <div style={{ transform: 'scale(0.08)', transformOrigin: 'top left', width: '794px', height: '1123px', pointerEvents: 'none' }}>
+                          <ResumeContentRenderer 
+                            resumeData={dummyResume} 
+                            templateStyle={getRendererStyle(t.name)} 
+                            zoom={100}
+                            customTemplateHtml={t.customHtml}
+                          />
+                        </div>
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
@@ -327,49 +360,73 @@ export default function AdminTemplates() {
               className="bg-[var(--bg-dark)] w-full max-w-4xl h-[90vh] rounded-2xl shadow-2xl border border-[var(--border-color)] overflow-hidden flex flex-col">
               
               <div className="flex justify-between items-center p-4 border-b border-[var(--border-color)] bg-[var(--bg-card)]">
-                <div>
-                  <h2 className="text-xl font-bold flex items-center gap-2"><Eye className="text-blue-500" /> Previewing: {previewModal.name}</h2>
+                <h2 className="text-xl font-bold flex items-center gap-2"><Eye className="text-blue-500" /> Previewing: {previewModal.name}</h2>
+                <div className="flex items-center gap-3">
+                  <button 
+                    onClick={async () => {
+                      if (!previewModal._editedHtml) {
+                        alert('No changes to save.');
+                        return;
+                      }
+                      let html = previewModal._editedHtml;
+                      html = html.replace(/John Doe/g, '{{name}}')
+                                 .replace(/Senior Software Engineer/g, '{{jobTitle}}')
+                                 .replace(/john\.doe@example\.com/g, '{{email}}')
+                                 .replace(/\+1 234 567 8900/g, '{{phone}}');
+                      try {
+                        const token = localStorage.getItem('token');
+                        await fetch(`http://localhost:5000/api/admin/templates/${previewModal.id}`, {
+                          method: 'PUT',
+                          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                          body: JSON.stringify({ ...previewModal, customHtml: html })
+                        });
+                        alert('Template layout updated successfully! Changes will reflect on the live website.');
+                      } catch (err) {
+                        console.error(err);
+                        alert('Failed to save layout.');
+                      }
+                    }} 
+                    className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-colors font-medium text-sm flex items-center gap-2"
+                  >
+                    <Save size={16} /> Save Layout
+                  </button>
+                  <button onClick={() => setPreviewModal(null)} className="p-2 bg-[var(--bg-dark)] text-[var(--text-muted)] hover:text-[var(--text-main)] rounded-xl transition-colors">
+                    <X size={20} />
+                  </button>
                 </div>
-                <button onClick={() => setPreviewModal(null)} className="p-2 bg-[var(--bg-dark)] text-[var(--text-muted)] hover:text-[var(--text-main)] rounded-xl transition-colors">
-                  <X size={20} />
-                </button>
               </div>
               
               <div className="flex-1 bg-[var(--bg-dark)] overflow-y-auto p-8 flex justify-center items-start">
-                {/* A4 Paper Simulation */}
-                <div className="w-full max-w-[794px] min-h-[1123px] bg-white shadow-2xl relative">
-                  {/* Fake Resume Content */}
-                  <div className="absolute top-0 left-0 w-1/3 h-full bg-slate-100 p-8 border-r border-gray-200">
-                    <div className="w-32 h-32 rounded-full bg-slate-300 mx-auto mb-6"></div>
-                    <div className="h-4 bg-slate-300 rounded w-full mb-2"></div>
-                    <div className="h-4 bg-slate-300 rounded w-2/3 mb-10"></div>
-                    
-                    <div className="h-6 bg-slate-400 rounded w-1/2 mb-4"></div>
-                    <div className="space-y-3">
-                      {[1,2,3,4].map(i => <div key={i} className="h-3 bg-slate-300 rounded w-full"></div>)}
-                    </div>
-                  </div>
-                  <div className="absolute top-0 right-0 w-2/3 h-full p-10">
-                    <div className="h-10 bg-slate-800 rounded w-3/4 mb-4"></div>
-                    <div className="h-5 bg-slate-400 rounded w-1/2 mb-12"></div>
-                    
-                    <div className="h-6 bg-slate-800 rounded w-1/3 mb-6"></div>
-                    <div className="space-y-6">
-                      {[1,2,3].map(i => (
-                        <div key={i}>
-                          <div className="flex justify-between mb-2">
-                            <div className="h-4 bg-slate-600 rounded w-1/2"></div>
-                            <div className="h-4 bg-slate-300 rounded w-1/4"></div>
-                          </div>
-                          <div className="space-y-2">
-                            <div className="h-3 bg-slate-200 rounded w-full"></div>
-                            <div className="h-3 bg-slate-200 rounded w-full"></div>
-                            <div className="h-3 bg-slate-200 rounded w-3/4"></div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                {/* A4 Paper Real Preview using ResumeContentRenderer */}
+                <div style={{ transform: 'scale(0.8)', transformOrigin: 'top center' }} className="w-[794px]">
+                  <ResumeContentRenderer 
+                    resumeData={{
+                      personalInfo: { 
+                        name: 'John Doe',
+                        jobTitle: 'Senior Software Engineer',
+                        email: 'john.doe@example.com',
+                        phone: '+1 234 567 8900'
+                      },
+                      summary: previewModal.description || 'Experienced professional with a track record of delivering high-quality results.',
+                    }} 
+                    templateStyle={
+                      (previewModal.name || '').toLowerCase().includes('elegant') ? 'elegant' :
+                      (previewModal.name || '').toLowerCase().includes('creative') ? 'creative' :
+                      (previewModal.name || '').toLowerCase().includes('business') ? 'corporate' :
+                      (previewModal.name || '').toLowerCase().includes('academic') ? 'academic' :
+                      (previewModal.name || '').toLowerCase().includes('software') ? 'software' :
+                      (previewModal.name || '').toLowerCase().includes('executive') ? 'executive' :
+                      (previewModal.name || '').toLowerCase().includes('minimal') ? 'minimalist' :
+                      'modern'
+                    } 
+                    accentColor={previewModal.theme === 'Blue' ? '#3b82f6' : previewModal.theme === 'Dark' ? '#1f2937' : previewModal.theme === 'Purple' ? '#8b5cf6' : previewModal.theme === 'Green' ? '#10b981' : previewModal.theme === 'Red' ? '#ef4444' : '#3b82f6'}
+                    zoom={100}
+                    contentEditable={true}
+                    onManualEdit={(html) => {
+                      setPreviewModal(prev => ({ ...prev, _editedHtml: html }));
+                    }}
+                    customTemplateHtml={previewModal.customHtml}
+                  />
                 </div>
               </div>
             </motion.div>
@@ -452,15 +509,36 @@ export default function AdminTemplates() {
                     </div>
                   </div>
 
-                  {/* Dummy Visual Editor section to show complexity */}
-                  <div className="bg-[var(--bg-card)] p-6 rounded-2xl border border-[var(--border-color)] shadow-sm opacity-50 relative overflow-hidden">
-                    <div className="absolute inset-0 bg-black/10 z-10 flex items-center justify-center">
-                      <span className="bg-gray-800 text-white px-4 py-2 rounded-xl font-bold shadow-lg">Advanced Layout Builder (Pro)</span>
-                    </div>
-                    <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><Image size={18}/> Visual Properties</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="h-10 bg-[var(--bg-dark)] border border-[var(--border-color)] rounded-xl"></div>
-                      <div className="h-10 bg-[var(--bg-dark)] border border-[var(--border-color)] rounded-xl"></div>
+                  {/* Visual Editor section */}
+                  <div className="bg-[var(--bg-card)] p-6 rounded-2xl border border-[var(--border-color)] shadow-sm">
+                    <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><Palette size={18} className="text-pink-500"/> Visual Properties</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-bold text-[var(--text-muted)] mb-2">Primary Color</label>
+                        <input type="color" name="primaryColor" value={formData.primaryColor || '#3b82f6'} onChange={handleChange}
+                          className="w-full h-12 bg-[var(--bg-dark)] border border-[var(--border-color)] rounded-xl p-1 cursor-pointer outline-none focus:ring-2 focus:ring-pink-500" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-[var(--text-muted)] mb-2">Font Family</label>
+                        <select name="fontFamily" value={formData.fontFamily || 'Inter'} onChange={handleChange}
+                          className="w-full bg-[var(--bg-dark)] border border-[var(--border-color)] rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-pink-500 text-[var(--text-main)]">
+                          {['Inter', 'Roboto', 'Times New Roman', 'Courier New', 'Merriweather'].map(f => <option key={f} value={f}>{f}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-[var(--text-muted)] mb-2">Spacing / Padding</label>
+                        <select name="spacing" value={formData.spacing || 'Normal'} onChange={handleChange}
+                          className="w-full bg-[var(--bg-dark)] border border-[var(--border-color)] rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-pink-500 text-[var(--text-main)]">
+                          {['Compact', 'Normal', 'Spacious'].map(s => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-[var(--text-muted)] mb-2">Layout Type</label>
+                        <select name="layoutType" value={formData.layoutType || 'Standard'} onChange={handleChange}
+                          className="w-full bg-[var(--bg-dark)] border border-[var(--border-color)] rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-pink-500 text-[var(--text-main)]">
+                          {['Standard', 'Sidebar Left', 'Sidebar Right', 'Two Column'].map(l => <option key={l} value={l}>{l}</option>)}
+                        </select>
+                      </div>
                     </div>
                   </div>
 

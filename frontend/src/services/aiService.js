@@ -21,9 +21,11 @@ Your goal is to help the user improve their resume to bypass ATS and land a job.
 CRITICAL INSTRUCTIONS:
 1. If the user just says "hi", "hello", etc., ONLY respond with a short greeting like "Hello! How can I help you?". DO NOT analyze the resume unless they ask.
 2. Be concise. Avoid huge walls of text.
-3. If the user asks you to fix, rewrite, or add a section, you MUST output the COMPLETE new text (including any additions) wrapped inside a <fix section="[section_name]">...</fix> tag, where [section_name] is one of: 'projects', 'skills', 'summary', or 'rawText'. 
-4. CRITICAL: Any new content or rewritten text MUST be placed INSIDE the <fix> tag. Do not output the new content outside the tag! If they ask to add a Technical Summary or update technical skills, output it inside the <fix section="skills"> tag.
-5. If they just provided a keyword/skill, assume they want to add it to their skills, and output the updated full skills list in a <fix section="skills">...</fix> tag.
+3. If the user asks you to fix, rewrite, or add a section, you MUST output the COMPLETE new text (including any additions) wrapped inside a <fix section="[section_name]">...</fix> tag, where [section_name] is one of: 'projects', 'skills', 'summary', 'github', 'linkedin', 'email', 'phone', or 'rawText'. 
+24. CRITICAL: Any new content or rewritten text MUST be placed INSIDE the <fix> tag. Do not output the new content outside the tag! If they ask to add a Technical Summary or update technical skills, output it inside the <fix section="skills"> tag.
+25. If they just provided a keyword/skill, assume they want to add it to their skills, and output the updated full skills list in a <fix section="skills">...</fix> tag.
+26. FORMATTING: When outputting Projects or Experience, NEVER use a bullet point for the Title/Company name line. Only use bullet points for the achievement descriptions below the title.
+27. When suggesting keywords or skills to improve the ATS score, proactively analyze the user's existing skills and experience. ONLY suggest alternative or related keywords that they are highly likely to already know based on their context. NEVER suggest completely unrelated or fake skills just to boost the score.
 Example: "I have added that keyword to your skills:\n<fix section="skills">Python, System Design, React</fix>"
 
 Context of user's resume:
@@ -48,8 +50,8 @@ ${JSON.stringify(resumeContext, null, 2)}`;
           section: fixMatch[1],
           content: fixMatch[2].trim()
         };
-        // Remove the <fix> tag from the text displayed to the user
-        text = text.replace(fixMatch[0], '').trim();
+        // Remove ALL <fix> tags from the text displayed to the user
+        text = text.replace(/<fix\s+section="([^"]+)">([\s\S]*?)<\/fix>/gi, '').trim();
       }
 
       return {
@@ -153,8 +155,14 @@ const mockSimulateChat = async (message, resumeContext, chatHistory = []) => {
   }
 
   if (lowerMsg.includes('rewrite') || lowerMsg.includes('bullet')) {
+    let companyName = '"Bank Transaction" project';
+    if (resumeContext?.experienceList && resumeContext.experienceList.length > 0) {
+      const expCompany = resumeContext.experienceList[0].company;
+      companyName = expCompany === 'Extracted Experience' ? (resumeContext.personalInfo?.jobTitle || 'recent role') : expCompany;
+      companyName = `your "${companyName}" experience`;
+    }
     return {
-      reply: `Awesome! Let's take your "Bank Transaction" project. Instead of just stating what you did, we can make it pop:\n\n*"Engineered an enterprise-grade banking transaction system, optimizing SQL queries to reduce processing latency by 20%."*\n\nIf you type **"Fix with AI"** or just say **"fix it"**, I can automatically update that for you in the editor!`
+      reply: `Awesome! Let's take ${companyName}. Instead of just stating what you did, we can make it pop:\n\n*"Optimized system performance and improved API response time by 35% through scalable architecture."*\n\nIf you click **"Fix with AI"** or say **"fix it"**, I can automatically update that for you in the editor!`
     };
   }
   
@@ -180,11 +188,21 @@ const mockSimulateChat = async (message, resumeContext, chatHistory = []) => {
 
     // If the user clicked a project/experience suggestion
     if (lowerMsg.includes('verb') || lowerMsg.includes('quantify') || lowerMsg.includes('bullet') || lowerMsg.includes('experience')) {
+      let projectContent = `New Company (Software Engineer) — Student Management System\n• Optimized system performance using HTML, CSS, JavaScript, improving API response time by 35%\n• Spearheaded development of a scalable backend architecture\n• Reduced database query latency by 20% through efficient indexing`;
+      
+      if (resumeContext?.experienceList && resumeContext.experienceList.length > 0) {
+        const firstExp = resumeContext.experienceList[0];
+        // Don't use the placeholder "Extracted Experience"
+        const company = firstExp.company === 'Extracted Experience' ? (resumeContext.personalInfo?.jobTitle || 'Professional Role') : (firstExp.company || 'Professional Experience');
+        const role = firstExp.role ? ` (${firstExp.role})` : '';
+        projectContent = `${company}${role} —\n• Optimized system performance and improved API response time by 35%\n• Spearheaded development of a scalable backend architecture\n• Reduced database query latency by 20% through efficient indexing`;
+      }
+
       return {
         reply: `I can help you with that! Click the button below to apply the fix to your resume.`,
         proposedFix: {
           section: 'project',
-          content: `New Company (Software Engineer) — Student Management System\n• Optimized system performance using HTML, CSS, JavaScript, improving API response time by 35%\n• Spearheaded development of a scalable backend architecture\n• Reduced database query latency by 20% through efficient indexing`
+          content: projectContent
         }
       };
     }
@@ -204,6 +222,12 @@ const mockSimulateChat = async (message, resumeContext, chatHistory = []) => {
     }
 
     let rewrittenExperience = `Bank Transaction (Project) — Engineered an enterprise-grade banking transaction system, optimizing SQL queries to reduce processing latency by 20%.`;
+    if (resumeContext?.experienceList && resumeContext.experienceList.length > 0) {
+      const expCompany = resumeContext.experienceList[0].company;
+      const companyName = expCompany === 'Extracted Experience' ? (resumeContext.personalInfo?.jobTitle || 'Professional Role') : expCompany;
+      rewrittenExperience = `${companyName} — Engineered an enterprise-grade system, optimizing SQL queries to reduce processing latency by 20%.`;
+    }
+
     if (resumeContext?.experience) {
       // Keep the rest of the experience, just prepend the rewritten part for demo purposes
       rewrittenExperience = `${rewrittenExperience}\n\n${resumeContext.experience}`;

@@ -9,6 +9,9 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, 
   LineChart, Line, AreaChart, Area, Cell, PieChart, Pie
 } from 'recharts';
+import { createRoot } from 'react-dom/client';
+import html2pdf from 'html2pdf.js';
+import ResumeContentRenderer from '../studio/ResumeContentRenderer.jsx';
 
 export default function AdminResumes() {
   const [resumes, setResumes] = useState([]);
@@ -18,14 +21,67 @@ export default function AdminResumes() {
   const [filter, setFilter] = useState('All');
   
   const [viewModal, setViewModal] = useState(null);
-  const [detailsModal, setDetailsModal] = useState(null);
-  const [pdfLoading, setPdfLoading] = useState(true);
+  const [previewResumeModal, setPreviewResumeModal] = useState(null);
+  const [customTemplates, setCustomTemplates] = useState([]);
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   useEffect(() => {
-    if (viewModal) {
-      setPdfLoading(true);
-    }
-  }, [viewModal]);
+    fetch('http://localhost:5000/api/admin/templates')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setCustomTemplates(data);
+      })
+      .catch(err => console.error(err));
+  }, []);
+
+  const getCustomHtml = (templateUsed) => {
+    const tStyle = (templateUsed || 'modern').toLowerCase();
+    const match = customTemplates.find(t => 
+      t.name.toLowerCase().includes(tStyle) || 
+      (t.theme && t.theme.toLowerCase() === tStyle) ||
+      t.id === tStyle
+    );
+    return match ? match.customHtml : null;
+  };
+
+  const handleDownloadPdf = (resumeData) => {
+    const element = document.createElement('div');
+    element.style.position = 'absolute';
+    element.style.left = '-9999px';
+    element.style.top = '-9999px';
+    document.body.appendChild(element);
+
+    const root = createRoot(element);
+    root.render(
+      <ResumeContentRenderer 
+        resumeData={resumeData} 
+        templateStyle={(resumeData.templateUsed || 'modern').toLowerCase()} 
+        zoom={100}
+        showDiff={true}
+        customTemplateHtml={getCustomHtml(resumeData.templateUsed)}
+      />
+    );
+
+    setTimeout(() => {
+      const pdfTarget = element.querySelector('.a4-print-container');
+      if (pdfTarget) {
+        const opt = {
+          margin: 0,
+          filename: `${resumeData.personalInfo?.name || 'resume'}_AI.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        html2pdf().set(opt).from(pdfTarget).save().then(() => {
+          root.unmount();
+          document.body.removeChild(element);
+        });
+      } else {
+        root.unmount();
+        document.body.removeChild(element);
+      }
+    }, 1000);
+  };
 
   const fetchResumes = async () => {
     try {
@@ -38,13 +94,13 @@ export default function AdminResumes() {
         data = data.map(r => {
           return {
             ...r,
-            grammarScore: r.grammarScore || 0,
-            formattingScore: r.formattingScore || 0,
-            keywordMatch: r.keywordMatch || 0,
-            skillsMatch: r.skillsMatch || 0,
-            atsCompatibility: r.atsCompatibility || 0,
+            grammarScore: r.grammar?.score || 0,
+            formattingScore: r.sectionScores?.structure || 0,
+            keywordMatch: r.sectionScores?.skills || 0,
+            skillsMatch: r.sectionScores?.experience || 0,
+            atsCompatibility: r.sectionScores?.projects || 0,
             atsScore: r.atsScore || 0,
-            templateUsed: r.templateUsed || r.template || 'Unknown',
+            templateUsed: (r.templateUsed && r.templateUsed !== 'Unknown') ? r.templateUsed : ((r.template && r.template !== 'Unknown') ? r.template : 'modern'),
             version: r.version || 'v1.0'
           };
         });
@@ -253,16 +309,10 @@ export default function AdminResumes() {
                     </td>
                     <td className="py-4 px-6">
                       <div className="flex items-center justify-end gap-2">
-                        <button onClick={() => setDetailsModal(r)} className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 rounded-lg transition-colors font-medium text-xs">
+                        <button onClick={() => setPreviewResumeModal(r)} className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 rounded-lg transition-colors font-medium text-xs">
                           <Eye size={14} /> View
                         </button>
-                        <button onClick={() => {
-                          if (r.fileUrl) {
-                            window.open(`http://localhost:5000${r.fileUrl}`, '_blank');
-                          } else {
-                            alert('Original PDF not found for this resume.');
-                          }
-                        }} className="p-1.5 bg-[var(--bg-dark)] hover:bg-purple-500/10 text-[var(--text-muted)] hover:text-purple-500 rounded-lg transition-colors" title="Download PDF">
+                        <button onClick={() => handleDownloadPdf(r)} className="p-1.5 bg-[var(--bg-dark)] hover:bg-purple-500/10 text-[var(--text-muted)] hover:text-purple-500 rounded-lg transition-colors" title="Download AI Resume">
                           <Download size={14} />
                         </button>
                         <button onClick={() => setViewModal(r)} className="p-1.5 bg-[var(--bg-dark)] hover:bg-emerald-500/10 text-[var(--text-muted)] hover:text-emerald-500 rounded-lg transition-colors" title="AI Report">
@@ -305,18 +355,16 @@ export default function AdminResumes() {
           <h3 className="text-lg font-bold mb-6">Most Used Templates</h3>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={templatesData}>
-                <defs>
-                  <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
+              <BarChart data={templatesData}>
                 <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} />
-                <RechartsTooltip contentStyle={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)', borderRadius: '8px' }} />
-                <Area type="monotone" dataKey="count" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorCount)" />
-              </AreaChart>
+                <YAxis stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
+                <RechartsTooltip cursor={{ fill: 'var(--bg-dark)' }} contentStyle={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)', borderRadius: '8px' }} />
+                <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                  {templatesData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={['#3b82f6', '#8b5cf6', '#ec4899', '#10b981', '#f59e0b'][index % 5]} />
+                  ))}
+                </Bar>
+              </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
@@ -339,44 +387,17 @@ export default function AdminResumes() {
               <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
                 {/* Left Side: Mock Resume Preview */}
                 <div className="w-full lg:w-1/2 p-6 overflow-y-auto border-r border-[var(--border-color)] bg-[var(--bg-dark)] flex justify-center items-start relative">
-                  {viewModal.fileUrl ? (
-                    <div className="w-full h-full min-h-[600px] relative rounded shadow-lg overflow-hidden bg-white">
-                      {pdfLoading && (
-                        <div className="absolute inset-0 z-10 bg-white p-8 animate-pulse flex flex-col">
-                          <div className="h-6 bg-slate-300 rounded w-1/2 mb-2"></div>
-                          <div className="h-3 bg-slate-200 rounded w-1/3 mb-8"></div>
-                          <div className="h-4 bg-slate-300 rounded w-1/4 mb-4"></div>
-                          <div className="space-y-2 mb-8">
-                            <div className="h-2 bg-slate-200 rounded w-full"></div>
-                            <div className="h-2 bg-slate-200 rounded w-full"></div>
-                            <div className="h-2 bg-slate-200 rounded w-5/6"></div>
-                          </div>
-                          <div className="h-4 bg-slate-300 rounded w-1/4 mb-4"></div>
-                          <div className="space-y-4">
-                            <div className="h-2 bg-slate-200 rounded w-full"></div>
-                            <div className="h-2 bg-slate-200 rounded w-full"></div>
-                            <div className="h-2 bg-slate-200 rounded w-11/12"></div>
-                          </div>
-                        </div>
-                      )}
-                      <iframe 
-                        src={`${viewModal.fileUrl}#view=FitH`}
-                        title="Resume PDF Preview"
-                        className="w-full h-full absolute inset-0 z-0"
-                        style={{ border: 'none' }}
-                        onLoad={() => setPdfLoading(false)}
-                      ></iframe>
+                  <div className="w-full h-full min-h-[600px] relative rounded shadow-lg overflow-hidden flex justify-center bg-[#f8fafc] p-4">
+                    <div style={{ transform: 'scale(0.6)', transformOrigin: 'top center' }} className="w-[794px]">
+                      <ResumeContentRenderer 
+                        resumeData={viewModal} 
+                        templateStyle={(viewModal.templateUsed || 'modern').toLowerCase()} 
+                        zoom={100}
+                        showDiff={true}
+                        customTemplateHtml={getCustomHtml(viewModal.templateUsed)}
+                      />
                     </div>
-                  ) : (
-                    <div className="w-full max-w-[500px] min-h-[500px] border-2 border-dashed border-[var(--border-color)] rounded-xl flex flex-col items-center justify-center p-8 text-center">
-                      <FileText size={48} className="text-[var(--text-muted)] mb-4" />
-                      <h3 className="text-xl font-bold text-[var(--text-main)] mb-2">Resume Not Found</h3>
-                      <p className="text-[var(--text-muted)] mb-6">The original PDF file for this resume is missing or was not uploaded.</p>
-                      <button className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors">
-                        Re-upload Resume
-                      </button>
-                    </div>
-                  )}
+                  </div>
                 </div>
 
                 {/* Right Side: Analysis Metrics */}
@@ -386,14 +407,8 @@ export default function AdminResumes() {
                       <h3 className="text-3xl font-extrabold">{viewModal.atsScore}%</h3>
                       <p className="text-[var(--text-muted)] font-medium">Overall ATS Match</p>
                     </div>
-                    <button onClick={() => {
-                      if (viewModal.fileUrl) {
-                        window.open(`http://localhost:5000${viewModal.fileUrl}`, '_blank');
-                      } else {
-                        alert('Original PDF not found for this resume.');
-                      }
-                    }} className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg transition-all">
-                      <Download size={16} /> Export Report
+                    <button onClick={() => handleDownloadPdf(viewModal)} className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg transition-all">
+                      <Download size={16} /> Export Resume
                     </button>
                   </div>
 
@@ -448,7 +463,7 @@ export default function AdminResumes() {
                       <ul className="space-y-3 text-sm text-[var(--text-muted)]">
                         <li className="flex gap-3"><span className="text-blue-500">•</span> Add more action verbs in your experience section.</li>
                         {viewModal.suggestions && viewModal.suggestions.map((s, i) => (
-                          <li key={i} className="flex gap-3"><span className="text-blue-500">•</span> {s}</li>
+                          <li key={i} className="flex gap-3"><span className="text-blue-500">•</span> {s.text || s}</li>
                         ))}
                       </ul>
                     </div>
@@ -484,50 +499,32 @@ export default function AdminResumes() {
         )}
       </AnimatePresence>
 
-      {/* Candidate Details Modal */}
+      {/* Resume Preview Modal */}
       <AnimatePresence>
-        {detailsModal && (
+        {previewResumeModal && (
           <div className="fixed inset-0 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" style={{ zIndex: 9999 }}>
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="bg-[var(--bg-dark)] w-full max-w-2xl max-h-[90vh] rounded-2xl shadow-2xl border border-[var(--border-color)] overflow-hidden flex flex-col">
-              <div className="flex justify-between items-center p-5 border-b border-[var(--border-color)] bg-[var(--bg-card)] shrink-0">
-                <h2 className="text-xl font-bold flex items-center gap-2"><User className="text-blue-500" /> Candidate Details</h2>
-                <button onClick={() => setDetailsModal(null)} className="p-2 bg-[var(--bg-dark)] text-[var(--text-muted)] hover:text-[var(--text-main)] rounded-xl transition-colors"><X size={20} /></button>
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} 
+              className="bg-[var(--bg-dark)] w-full max-w-4xl h-[90vh] rounded-2xl shadow-2xl border border-[var(--border-color)] overflow-hidden flex flex-col">
+              <div className="flex justify-between items-center p-4 border-b border-[var(--border-color)] bg-[var(--bg-card)] shrink-0">
+                <h2 className="text-xl font-bold flex items-center gap-2"><Eye className="text-blue-500" /> Resume Preview: {previewResumeModal.personalInfo?.name}</h2>
+                <div className="flex items-center gap-3">
+                  <button onClick={() => handleDownloadPdf(previewResumeModal)} className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-colors font-medium text-sm flex items-center gap-2">
+                    <Download size={16} /> Download
+                  </button>
+                  <button onClick={() => setPreviewResumeModal(null)} className="p-2 bg-[var(--bg-dark)] text-[var(--text-muted)] hover:text-[var(--text-main)] rounded-xl transition-colors">
+                    <X size={20} />
+                  </button>
+                </div>
               </div>
-              
-              <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                <div className="flex items-center gap-6">
-                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-4xl font-black text-white shadow-lg shrink-0 border-4 border-[var(--bg-dark)]">
-                    {(detailsModal.personalInfo?.name || 'U').charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-black mb-1">{detailsModal.personalInfo?.name || 'Untitled Candidate'}</h3>
-                    <p className="text-[var(--text-muted)] font-medium mb-3 flex items-center gap-2"><Briefcase size={16}/> {detailsModal.personalInfo?.jobTitle || 'Unspecified Role'}</p>
-                    <div className="flex items-center gap-4 text-sm text-[var(--text-muted)]">
-                      <span className="flex items-center gap-1.5"><Mail size={14}/> {detailsModal.personalInfo?.email || 'N/A'}</span>
-                      <span className="flex items-center gap-1.5"><Phone size={14}/> {detailsModal.personalInfo?.phone || 'N/A'}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-[var(--bg-card)] border border-[var(--border-color)] p-4 rounded-xl">
-                    <p className="text-[var(--text-muted)] text-xs font-bold uppercase mb-1">ATS Score</p>
-                    <h4 className={`text-2xl font-black ${detailsModal.atsScore >= 80 ? 'text-emerald-500' : detailsModal.atsScore >= 50 ? 'text-amber-500' : 'text-rose-500'}`}>{detailsModal.atsScore || 100}%</h4>
-                  </div>
-                  <div className="bg-[var(--bg-card)] border border-[var(--border-color)] p-4 rounded-xl">
-                    <p className="text-[var(--text-muted)] text-xs font-bold uppercase mb-1">Downloads</p>
-                    <h4 className="text-2xl font-black text-blue-500">{detailsModal.downloads || 0}</h4>
-                  </div>
-                </div>
-
-                <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl p-5 space-y-4">
-                  <h4 className="font-bold border-b border-[var(--border-color)] pb-3">Resume Information</h4>
-                  <div className="grid grid-cols-2 gap-y-4 text-sm">
-                    <div><span className="text-[var(--text-muted)] block mb-1">Template Used</span><span className="font-semibold bg-[var(--bg-dark)] px-2 py-1 rounded border border-[var(--border-color)]">Modern</span></div>
-                    <div><span className="text-[var(--text-muted)] block mb-1">File Size</span><span className="font-semibold">1.2 MB</span></div>
-                    <div><span className="text-[var(--text-muted)] block mb-1">Upload Date</span><span className="font-semibold">{new Date(detailsModal.createdAt).toLocaleDateString()}</span></div>
-                    <div><span className="text-[var(--text-muted)] block mb-1">Status</span><span className="font-semibold">Analyzed</span></div>
-                  </div>
+              <div className="flex-1 overflow-y-auto p-8 flex justify-center bg-[var(--bg-dark)]">
+                <div style={{ transform: 'scale(0.8)', transformOrigin: 'top center' }} className="w-[794px]">
+                  <ResumeContentRenderer 
+                    resumeData={previewResumeModal} 
+                    templateStyle={(previewResumeModal.templateUsed || 'modern').toLowerCase()} 
+                    zoom={100}
+                    showDiff={true}
+                    customTemplateHtml={getCustomHtml(previewResumeModal.templateUsed)}
+                  />
                 </div>
               </div>
             </motion.div>
