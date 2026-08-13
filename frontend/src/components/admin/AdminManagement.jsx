@@ -21,6 +21,7 @@ export default function AdminManagement() {
   // Modals
   const [viewModal, setViewModal] = useState(null);
   const [editModal, setEditModal] = useState(null);
+  const [addModal, setAddModal] = useState(false);
   const [toast, setToast] = useState(null);
 
   const showToast = (msg) => {
@@ -241,7 +242,7 @@ export default function AdminManagement() {
                 </div>
               </div>
               
-              <button className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg transition-all transform hover:scale-105 active:scale-95">
+              <button onClick={() => setAddModal(true)} className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg transition-all transform hover:scale-105 active:scale-95">
                 <Plus size={18} /> Add Admin
               </button>
             </div>
@@ -534,6 +535,59 @@ export default function AdminManagement() {
                 </button>
                 <button onClick={() => {setEditModal(null); showToast('Admin configuration saved.');}} className="px-8 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-bold shadow-lg transition-all">
                   Save Changes
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ADD MODAL */}
+      <AnimatePresence>
+        {addModal && (
+          <div className="fixed inset-0 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" style={{ zIndex: 9999 }}>
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} 
+              className="bg-[var(--bg-main)] w-full max-w-3xl rounded-2xl shadow-2xl border border-[var(--border-color)] overflow-hidden flex flex-col">
+              
+              <div className="flex justify-between items-center p-5 border-b border-[var(--border-color)] bg-[var(--bg-card)] shrink-0">
+                <h2 className="text-xl font-bold flex items-center gap-2"><Plus className="text-indigo-500" /> Register New Admin</h2>
+                <button onClick={() => setAddModal(false)} className="p-2 bg-[var(--bg-dark)] text-[var(--text-muted)] hover:text-[var(--text-main)] rounded-xl transition-colors">
+                  <X size={20} />
+                </button>
+              </div>
+              
+              <div className="p-6 bg-[var(--bg-dark)] space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-bold text-[var(--text-muted)] mb-2">Full Name</label>
+                    <input type="text" placeholder="e.g. John Doe" className="w-full bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl px-4 py-2.5 focus:border-blue-500 focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-[var(--text-muted)] mb-2">Email Address</label>
+                    <input type="email" placeholder="e.g. john@example.com" className="w-full bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl px-4 py-2.5 focus:border-blue-500 focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-[var(--text-muted)] mb-2">Assigned Role</label>
+                    <select className="w-full bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl px-4 py-2.5 focus:border-blue-500 focus:outline-none appearance-none">
+                      <option className="bg-[var(--bg-dark)] text-[var(--text-main)]">Admin</option>
+                      <option className="bg-[var(--bg-dark)] text-[var(--text-main)]">Moderator</option>
+                      <option className="bg-[var(--bg-dark)] text-[var(--text-main)]">Analytics Manager</option>
+                      <option className="bg-[var(--bg-dark)] text-[var(--text-main)]">Template Manager</option>
+                      <option className="bg-[var(--bg-dark)] text-[var(--text-main)]">Support Manager</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-[var(--text-muted)] mb-2">Temporary Password</label>
+                    <input type="password" placeholder="••••••••" className="w-full bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl px-4 py-2.5 focus:border-blue-500 focus:outline-none" />
+                  </div>
+                </div>
+              </div>
+              <div className="p-5 border-t border-[var(--border-color)] bg-[var(--bg-card)] flex justify-end gap-4 shrink-0">
+                <button onClick={() => setAddModal(false)} className="px-6 py-2.5 rounded-xl font-bold text-[var(--text-muted)] hover:bg-[var(--bg-dark)] transition-colors">
+                  Cancel
+                </button>
+                <button onClick={() => {setAddModal(false); showToast('New Admin account successfully created!');}} className="px-8 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-bold shadow-lg transition-all">
+                  Create Account
                 </button>
               </div>
             </motion.div>
