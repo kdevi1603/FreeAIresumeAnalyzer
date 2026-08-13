@@ -847,9 +847,16 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
         resumeData={activeResume}
         onUpdateResume={handleUpdateResumeFromBuilder}
         selectedTemplate={selectedTemplate}
-        onSelectTemplate={(tmplId) => {
+        onSelectTemplate={async (tmplId) => {
           setSelectedTemplate(tmplId);
-          setActiveResume(prev => ({ ...prev, templateUsed: tmplId, template: tmplId }));
+          setActiveResume(prev => ({ ...prev, templateStyle: tmplId, templateUsed: tmplId, template: tmplId }));
+          if (activeResume?.id && activeResume.id !== 'demo-123') {
+            try {
+              await resumeService.updateResume(activeResume.id, { templateStyle: tmplId, templateUsed: tmplId, template: tmplId });
+            } catch (err) {
+              console.error('Failed to save template to backend:', err);
+            }
+          }
         }}
         accentColor={accentColor}
         onSelectAccentColor={(col) => setAccentColor(col)}

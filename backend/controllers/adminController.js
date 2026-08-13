@@ -60,7 +60,7 @@ export async function getDashboardStats(req, res) {
     const templateUsage = [];
     const templateCounts = {};
     resumes.forEach(r => {
-      const t = r.template || 'Modern';
+      const t = r.templateStyle || r.template || 'Modern';
       templateCounts[t] = (templateCounts[t] || 0) + 1;
     });
     for (const [name, value] of Object.entries(templateCounts)) {
@@ -261,11 +261,13 @@ export async function getTemplates(req, res) {
     const resumes = await db.resumes.find() || [];
     const mappedTemplates = templates.map(t => {
       const count = resumes.filter(r => {
-        const rT = (r.template || r.templateUsed || '').toLowerCase();
-        if (!rT || rT === 'unknown') return false;
+        let rT = (r.templateStyle || r.template || r.templateUsed || '').toLowerCase();
+        if (!rT) rT = 'modern';
+        if (rT === 'unknown') return false;
         const tName = (t.name || '').toLowerCase();
         const tId = String(t.id || '').toLowerCase();
-        return rT === tName || rT === tId || tName.includes(rT);
+        const internalStyle = (t.style || '').toLowerCase();
+        return rT === tName || rT === tId || tName.includes(rT) || (internalStyle && rT === internalStyle);
       }).length;
       return { ...t, usageCount: count };
     });
