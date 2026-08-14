@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Sparkles, Check } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { ArrowLeft, Sparkles, Check, Eye, LayoutTemplate } from 'lucide-react';
 import ResumeContentRenderer from './studio/ResumeContentRenderer.jsx';
 
 const MOCK_RESUME_DATA = {
@@ -53,7 +54,7 @@ export const TEMPLATES = [
     name: '3. Software Engineer',
     description: 'Technical skills section, projects highlighted',
     image: '/mockups/software.png?v=2',
-    tags: ['Two column', 'With photo', 'ATS'],
+    tags: ['Single column', 'With photo', 'ATS'],
     displayTags: ['Technical skills section', 'Projects highlighted', 'GitHub & portfolio links', 'Best for developers']
   },
   {
@@ -117,6 +118,18 @@ export const TEMPLATES = [
 export default function TemplateGallery({ onSelectTemplate, onBack }) {
   const [hoveredTemplate, setHoveredTemplate] = useState(null);
   const [displayTemplates, setDisplayTemplates] = useState(TEMPLATES);
+  const [selectedPreview, setSelectedPreview] = useState(null); // Modal state for preview
+
+  useEffect(() => {
+    if (selectedPreview) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [selectedPreview]);
 
   useEffect(() => {
     fetch('http://localhost:5000/api/admin/templates')
@@ -152,102 +165,167 @@ export default function TemplateGallery({ onSelectTemplate, onBack }) {
   }, []);
 
   return (
-    <div className="animate-fade-in font-sans" style={{ padding: '40px 20px', maxWidth: '1400px', margin: '0 auto' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '40px' }}>
-        <button
-          onClick={onBack}
-          className="transition-all flex items-center gap-2 cursor-pointer"
-          style={{ 
-            padding: '10px 20px', 
-            borderRadius: '12px', 
-            background: 'rgba(0, 242, 254, 0.1)', 
-            color: 'var(--accent-cyan)', 
-            border: '1px solid rgba(0, 242, 254, 0.3)',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
-          }}
-          onMouseOver={(e) => e.currentTarget.style.background = 'rgba(0, 242, 254, 0.2)'}
-          onMouseOut={(e) => e.currentTarget.style.background = 'rgba(0, 242, 254, 0.1)'}
-        >
-          <ArrowLeft size={20} />
-          <span className="font-medium">Back</span>
-        </button>
-        <div>
-          <h2 style={{ fontSize: '2.2rem', fontWeight: 800, margin: '0 0 6px 0', display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
-            <Sparkles size={28} className="text-cyan-400 drop-shadow-[0_0_10px_rgba(0,242,254,0.5)]" />
-            Recommended Free Resume Templates
-          </h2>
-          <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '1.05rem' }}>
-            Select a starting template to launch the AI Resume Analyzer Studio. You can change this later.
-          </p>
+    <div className="animate-fade-in font-sans min-h-screen bg-gray-50/50" style={{ padding: '40px 20px' }}>
+      <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={onBack}
+              className="flex items-center justify-center w-12 h-12 rounded-full bg-white border border-gray-200 shadow-sm text-gray-600 hover:text-blue-600 hover:border-blue-200 hover:shadow-md transition-all duration-300"
+              title="Go Back"
+            >
+              <ArrowLeft size={22} />
+            </button>
+            <div>
+              <h2 className="text-3xl font-extrabold text-gray-900 flex items-center gap-3 tracking-tight">
+                <Sparkles size={28} className="text-blue-500" />
+                Premium Resume Templates
+              </h2>
+              <p className="text-gray-500 mt-1 text-lg">
+                Select a professionally designed template to stand out from the crowd.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Responsive Grid: 1 col on mobile, 2 on tablet, 3 on desktop */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {displayTemplates.map(template => {
+            const isHovered = hoveredTemplate === template.id;
+            const isAtsFriendly = template.tags?.includes('ATS');
+            const layoutType = template.tags?.includes('Two column') ? 'Two Column' : template.tags?.includes('Single column') ? 'Single Column' : '';
+
+            return (
+              <div
+                key={template.id}
+                onMouseEnter={() => setHoveredTemplate(template.id)}
+                onMouseLeave={() => setHoveredTemplate(null)}
+                className="group flex flex-col bg-white rounded-2xl overflow-hidden transition-all duration-300 border border-gray-100 hover:border-blue-200 hover:shadow-2xl hover:-translate-y-1 relative"
+                style={{ boxShadow: isHovered ? '0 20px 40px -10px rgba(37,99,235,0.15)' : '0 4px 6px -1px rgba(0,0,0,0.05)' }}
+              >
+                {/* Preview Area */}
+                <div className="relative w-full bg-gray-50 overflow-hidden flex justify-center items-start pt-6 border-b border-gray-100" style={{ height: '400px' }}>
+                  
+                  {/* The Resume Renderer for true accuracy */}
+                  <div style={{ transform: 'scale(0.33)', transformOrigin: 'top center', width: '794px', height: '1123px', pointerEvents: 'none' }} className="shadow-[0_10px_30px_rgba(0,0,0,0.1)] rounded-sm bg-white">
+                      <ResumeContentRenderer 
+                          resumeData={MOCK_RESUME_DATA} 
+                          templateStyle={template.id} 
+                          zoom={100}
+                      />
+                  </div>
+
+                  {/* Badges Overlay */}
+                  <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
+                    {isAtsFriendly && (
+                      <span className="bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm flex items-center gap-1.5 backdrop-blur-sm bg-emerald-100/90 border border-emerald-200">
+                        <Check size={14} /> ATS Friendly
+                      </span>
+                    )}
+                    {layoutType && (
+                      <span className="bg-slate-800 text-slate-100 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm flex items-center gap-1.5 backdrop-blur-sm bg-slate-800/90 border border-slate-700">
+                        <LayoutTemplate size={14} /> {layoutType}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Hover Overlay with Action Buttons */}
+                  <div 
+                    className={`absolute inset-0 bg-gray-900/40 backdrop-blur-[2px] flex items-center justify-center gap-4 transition-all duration-300 z-20 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
+                  >
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); setSelectedPreview(template); }}
+                      className="flex items-center gap-2 bg-white text-gray-800 font-semibold px-5 py-2.5 rounded-xl shadow-lg hover:bg-gray-50 transform hover:scale-105 transition-all"
+                    >
+                      <Eye size={18} /> Preview
+                    </button>
+                    <button 
+                      onClick={() => onSelectTemplate(template.id)}
+                      className="flex items-center gap-2 bg-blue-600 text-white font-semibold px-5 py-2.5 rounded-xl shadow-lg hover:bg-blue-700 transform hover:scale-105 transition-all"
+                    >
+                      <Sparkles size={18} /> Use Template
+                    </button>
+                  </div>
+                </div>
+
+                {/* Text Area */}
+                <div className="flex flex-col flex-1 p-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-xl font-bold text-gray-900 leading-tight">
+                      {template.name}
+                    </h3>
+                    {template.badge && (
+                      <span className="bg-blue-50 text-blue-600 border border-blue-100 text-[0.7rem] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider">
+                        {template.badge}
+                      </span>
+                    )}
+                  </div>
+                  
+                  <p className="text-gray-500 text-sm mb-4 leading-relaxed line-clamp-2">
+                    {template.description}
+                  </p>
+
+                  {/* Optional: We can still show displayTags if needed, but styling them nicely */}
+                  {/* <div className="flex flex-wrap gap-2 mt-auto pt-4 border-t border-gray-100">
+                    {template.displayTags.slice(0, 3).map(tag => (
+                      <span key={tag} className="text-[0.75rem] font-medium text-gray-600 bg-gray-100 px-2.5 py-1 rounded-md">
+                        {tag}
+                      </span>
+                    ))}
+                  </div> */}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      <div className="grid grid-cols-3" style={{ gap: '32px' }}>
-        {displayTemplates.map(template => {
-          const isHovered = hoveredTemplate === template.id;
-          return (
-            <div
-              key={template.id}
-              onClick={() => onSelectTemplate(template.id)}
-              onMouseEnter={() => setHoveredTemplate(template.id)}
-              onMouseLeave={() => setHoveredTemplate(null)}
-              className={`group cursor-pointer flex flex-col bg-white border rounded-xl overflow-hidden p-4 transition-all duration-300 ${isHovered
-                  ? 'border-blue-500 shadow-xl ring-1 ring-blue-500 transform -translate-y-1'
-                  : 'border-gray-200 hover:shadow-lg hover:border-gray-300'
-                }`}
-            >
-              {/* Preview Area */}
-              <div
-                className="border border-gray-200 rounded-lg mb-4 bg-gray-50 flex justify-center items-start overflow-hidden relative shadow-inner"
-                style={{ width: '100%', height: '380px', overflow: 'hidden', boxSizing: 'border-box', position: 'relative', paddingTop: '16px' }}
-              >
-                <div style={{ transform: 'scale(0.31)', transformOrigin: 'top center', width: '794px', height: '1123px', pointerEvents: 'none' }} className="shadow-2xl">
-                    <ResumeContentRenderer 
-                        resumeData={MOCK_RESUME_DATA} 
-                        templateStyle={template.id} 
-                        zoom={100}
-                    />
-                </div>
-                {/* Hover Overlay Button */}
-                {isHovered && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-white/40 backdrop-blur-[1px] rounded-lg z-20 transition-all duration-300">
-                    <div className="bg-blue-600 text-white text-[0.9rem] font-bold px-6 py-2.5 rounded-lg shadow-lg flex items-center gap-1.5">
-                      Use Template <ArrowLeft size={16} className="rotate-180" />
-                    </div>
-                  </div>
-                )}
+      {/* Full Screen Preview Modal via Portal to escape parent transforms */}
+      {selectedPreview && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-start justify-center p-4 pt-8 sm:p-6 sm:pt-10" style={{ background: 'rgba(15, 23, 42, 0.7)', backdropFilter: 'blur(8px)' }}>
+          <div className="bg-white w-full max-w-5xl h-[90vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-scale-in">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">{selectedPreview.name}</h3>
+                <p className="text-sm text-gray-500">{selectedPreview.description}</p>
               </div>
-
-              {/* Text Area */}
-              <div className="flex flex-col flex-1">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <h3 className="text-[1.05rem] font-bold text-gray-900 m-0 leading-tight">
-                    {template.name}
-                  </h3>
-                  {template.badge && (
-                    <span className="bg-blue-50 text-blue-600 border border-blue-100 text-[0.65rem] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
-                      {template.badge}
-                    </span>
-                  )}
-                </div>
-                <p className="text-gray-500 text-[0.85rem] leading-snug m-0 mb-4 line-clamp-1">
-                  {template.description}
-                </p>
-
-                {/* Tags */}
-                <div className="flex items-center gap-2 flex-wrap mt-auto">
-                  {template.displayTags.map(tag => (
-                    <span key={tag} className="text-[0.7rem] font-medium text-blue-600 bg-blue-50 border border-blue-100 px-2.5 py-0.5 rounded text-center">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => {
+                    onSelectTemplate(selectedPreview.id);
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl font-bold flex items-center gap-2 transition-colors shadow-md shadow-blue-600/20"
+                >
+                  <Sparkles size={18} /> Use This Template
+                </button>
+                <button 
+                  onClick={() => setSelectedPreview(null)}
+                  className="bg-gray-200 hover:bg-gray-300 text-gray-700 w-10 h-10 rounded-xl flex items-center justify-center transition-colors"
+                >
+                  <span className="text-xl font-bold leading-none">&times;</span>
+                </button>
               </div>
             </div>
-          );
-        })}
-      </div>
+            
+            {/* Modal Body with Scaled Preview */}
+            <div className="flex-1 bg-gray-100 overflow-y-auto p-4 sm:p-8">
+               <div style={{ display: 'flex', justifyContent: 'center', minWidth: 'min-content' }}>
+                 <div style={{ width: '794px', height: '1123px' }} className="shadow-2xl bg-white scale-[0.6] sm:scale-75 md:scale-90 lg:scale-100 transform origin-top mb-12 rounded-sm overflow-hidden">
+                    <ResumeContentRenderer 
+                      resumeData={MOCK_RESUME_DATA} 
+                      templateStyle={selectedPreview.id} 
+                      zoom={100}
+                  />
+                 </div>
+               </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }
+

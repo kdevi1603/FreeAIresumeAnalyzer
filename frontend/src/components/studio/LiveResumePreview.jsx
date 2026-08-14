@@ -335,7 +335,7 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'fresher
             ref={resumeContentRef}
             className="a4-print-container"
             style={{
-              transform: `scale(${zoom / 100})`, transformOrigin: 'top center', transition: 'transform 0.2s ease',
+              zoom: `${zoom}%`, transition: 'zoom 0.2s ease',
               width: '794px', height: '1123px', overflow: 'hidden', backgroundColor: '#ffffff', color: '#1a1a1a',
               boxShadow: '0 20px 60px rgba(0,0,0,0.6)', borderRadius: '4px',
               fontFamily: "'Inter', sans-serif",

@@ -27,11 +27,32 @@ export default function AdminTemplates() {
   const [formData, setFormData] = useState(initialForm);
 
   const dummyResume = {
-    personalInfo: { name: 'John Doe', jobTitle: 'Developer', email: 'john@example.com' },
-    summary: 'A short professional summary.',
-    experienceList: [{ company: 'Company', role: 'Dev', period: '2020-2022', bullets: '• Developed features' }],
-    education: 'B.S. CS',
-    skills: 'React, Node'
+    personalInfo: {
+      name: 'Sarah Johnson',
+      jobTitle: 'Senior Software Engineer',
+      email: 'sarah.j@example.com',
+      phone: '+1 (555) 123-4567',
+      city: 'San Francisco, CA',
+      linkedin: 'linkedin.com/in/sarahj',
+      github: 'github.com/sarahj',
+      profilePicture: 'https://i.pravatar.cc/150?u=sarah'
+    },
+    summary: 'Creative and detail-oriented professional with over 5 years of experience in delivering high-impact solutions. Proven track record of leading cross-functional teams and improving operational efficiency by 30%.',
+    experienceList: [
+      {
+        company: 'Tech Innovations Inc.',
+        role: 'Senior Project Lead',
+        bullets: '• Directed a team of 10 developers to launch a flagship product 2 months ahead of schedule.\n• Optimized internal processes, reducing deployment time by 40%.'
+      },
+      {
+        company: 'Creative Solutions',
+        role: 'Product Specialist',
+        bullets: '• Managed client relationships and increased retention rate by 25%.\n• Designed and implemented automated reporting dashboards.'
+      }
+    ],
+    education: 'Master of Business Administration\nStanford University - 2020\n\nBachelor of Science in Computer Science\nUniversity of California, Berkeley - 2018',
+    skills: 'Project Management, Agile Methodologies, Data Analysis, Python, SQL, Cross-functional Leadership, Strategic Planning',
+    atsScore: 98
   };
 
   const getRendererStyle = (name) => {
@@ -42,10 +63,10 @@ export default function AdminTemplates() {
     if (n.includes('software') || n.includes('tech')) return 'software';
     if (n.includes('fresh') || n.includes('student')) return 'fresher';
     if (n.includes('exec')) return 'executive';
-    if (n.includes('corporat') || n.includes('business')) return 'corporate';
+    if (n.includes('corporat')) return 'corporate';
     if (n.includes('academic')) return 'academic';
     if (n.includes('creativ')) return 'creative';
-    if (n.includes('one')) return 'onepage';
+    if (n.includes('business') || n.includes('onepage')) return 'onepage';
     return 'modern';
   };
 
@@ -400,25 +421,8 @@ export default function AdminTemplates() {
                 {/* A4 Paper Real Preview using ResumeContentRenderer */}
                 <div style={{ transform: 'scale(0.8)', transformOrigin: 'top center' }} className="w-[794px]">
                   <ResumeContentRenderer 
-                    resumeData={{
-                      personalInfo: { 
-                        name: 'John Doe',
-                        jobTitle: 'Senior Software Engineer',
-                        email: 'john.doe@example.com',
-                        phone: '+1 234 567 8900'
-                      },
-                      summary: previewModal.description || 'Experienced professional with a track record of delivering high-quality results.',
-                    }} 
-                    templateStyle={
-                      (previewModal.name || '').toLowerCase().includes('elegant') ? 'elegant' :
-                      (previewModal.name || '').toLowerCase().includes('creative') ? 'creative' :
-                      (previewModal.name || '').toLowerCase().includes('business') ? 'corporate' :
-                      (previewModal.name || '').toLowerCase().includes('academic') ? 'academic' :
-                      (previewModal.name || '').toLowerCase().includes('software') ? 'software' :
-                      (previewModal.name || '').toLowerCase().includes('executive') ? 'executive' :
-                      (previewModal.name || '').toLowerCase().includes('minimal') ? 'minimalist' :
-                      'modern'
-                    } 
+                    resumeData={dummyResume}
+                    templateStyle={getRendererStyle(previewModal.name)}
                     accentColor={previewModal.theme === 'Blue' ? '#3b82f6' : previewModal.theme === 'Dark' ? '#1f2937' : previewModal.theme === 'Purple' ? '#8b5cf6' : previewModal.theme === 'Green' ? '#10b981' : previewModal.theme === 'Red' ? '#ef4444' : '#3b82f6'}
                     zoom={100}
                     contentEditable={true}

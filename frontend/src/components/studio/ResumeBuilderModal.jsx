@@ -96,6 +96,10 @@ export default function ResumeBuilderModal({
     resumeData?.fixedSkills || 'C, C++, Java, Oracle, SQL Server, MS Office, HTML, Tally, Python, Operating Systems, Agile Methodology, Git/GitHub'
   );
 
+  const [certifications, setCertifications] = useState(
+    resumeData?.certifications || ''
+  );
+
   useEffect(() => {
     if (isOpen && resumeData) {
       setPersonalInfo({
@@ -113,19 +117,13 @@ export default function ResumeBuilderModal({
       setExperience(resumeData.experienceList?.length > 0 ? resumeData.experienceList : []);
       setEducation(cleanEducation(resumeData.education));
       setSkills(resumeData.fixedSkills || resumeData.skills || resumeData.skillsFound?.map(s => typeof s === 'string' ? s : s.skill).filter(Boolean).join(', ') || '');
+      setCertifications(resumeData.certifications || '');
     }
   }, [isOpen]);
 
   const [isGenerating, setIsGenerating] = useState(false);
 
   const allTemplates = [
-    {
-      id: 'original',
-      name: '0. Original PDF',
-      description: 'Your original uploaded resume without AI formatting.',
-      image: '/mockups/minimal.png?v=2',
-      displayTags: ['Original Layout']
-    },
     {
       id: 'modern',
       name: '1. Modern Professional',
@@ -244,7 +242,8 @@ export default function ResumeBuilderModal({
       education,
       experienceList: experience,
       fixedProjects: null, // Clear old AI changes
-      fixedSkills: null // Clear old AI changes
+      fixedSkills: null, // Clear old AI changes
+      certifications
     });
     onClose();
   };
@@ -411,6 +410,21 @@ export default function ResumeBuilderModal({
               <GraduationCap size={18} />
               <span>Education Details</span>
             </button>
+
+            <button
+              onClick={() => setActiveTab('certifications')}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '10px',
+                padding: '12px 16px', borderRadius: '12px', border: 'none',
+                background: activeTab === 'certifications' ? '#2563eb' : 'transparent',
+                color: activeTab === 'certifications' ? '#fff' : '#475569',
+                fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              <FileText size={18} />
+              <span>Certifications</span>
+            </button>
           </div>
 
           {/* Builder Form Content Area */}
@@ -444,13 +458,23 @@ export default function ResumeBuilderModal({
                       >
                         {/* Preview Image Area */}
                         <div style={{ border: '1px solid #f1f5f9', borderRadius: '12px', marginBottom: '16px', background: '#f8fafc', height: '280px', position: 'relative', overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'flex-start' }}>
-                            <div style={{ transform: 'scale(0.24)', transformOrigin: 'top center', width: '794px', height: '1123px', pointerEvents: 'none' }} className="shadow-2xl mt-4">
-                               <ResumeContentRenderer 
-                                  resumeData={MOCK_RESUME_DATA} 
-                                  templateStyle={tmpl.id === 'original' ? 'modern' : tmpl.id} 
-                                  zoom={100}
-                               />
-                            </div>
+                            {tmpl.id === 'original' && resumeData?.fileUrl ? (
+                                <div style={{ width: '190px', height: '269px', pointerEvents: 'none', background: '#fff', borderRadius: '4px', overflow: 'hidden' }} className="shadow-2xl mt-4">
+                                  <iframe
+                                    src={`${resumeData.fileUrl}${resumeData.fileUrl.toLowerCase().endsWith('.pdf') ? '#view=Fit&toolbar=0&navpanes=0&scrollbar=0' : ''}`}
+                                    style={{ width: '100%', height: '100%', border: 'none' }}
+                                    title="Original PDF Preview"
+                                  />
+                                </div>
+                            ) : (
+                                <div style={{ transform: 'scale(0.24)', transformOrigin: 'top center', width: '794px', height: '1123px', pointerEvents: 'none', background: '#fff' }} className="shadow-2xl mt-4">
+                                  <ResumeContentRenderer 
+                                     resumeData={MOCK_RESUME_DATA} 
+                                     templateStyle={tmpl.id === 'original' ? 'modern' : tmpl.id} 
+                                     zoom={100}
+                                  />
+                                </div>
+                            )}
                            {/* Hover / Active Overlay */}
                            {(isHovered || isSelected) && (
                              <div style={{ position: 'absolute', inset: 0, background: isSelected ? 'transparent' : 'rgba(255,255,255,0.5)', backdropFilter: isSelected ? 'none' : 'blur(1px)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', zIndex: 10 }}>
@@ -716,6 +740,28 @@ export default function ResumeBuilderModal({
                     className="form-input"
                     style={{ height: '220px', resize: 'vertical', fontFamily: 'monospace', fontSize: '0.9rem', lineHeight: 1.6, background: '#fff', color: '#0f172a' }}
                     placeholder={`BCA — College Name (2021) | 88%\nHSC — School Name (2018) | 81%`}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* TAB 7: CERTIFICATIONS */}
+            {activeTab === 'certifications' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                  <h3 style={{ fontSize: '1.2rem', color: '#0f172a', margin: 0 }}>📜 Certifications</h3>
+                </div>
+                <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                  <p style={{ color: '#64748b', fontSize: '0.85rem', margin: '0 0 12px 0', lineHeight: 1.5 }}>
+                    List your professional certifications and courses.<br/>
+                    <strong>Certification Name — Issuer (Year)</strong>
+                  </p>
+                  <textarea
+                    value={certifications}
+                    onChange={(e) => setCertifications(e.target.value)}
+                    className="form-input"
+                    style={{ height: '220px', resize: 'vertical', fontFamily: 'monospace', fontSize: '0.9rem', lineHeight: 1.6, background: '#fff', color: '#0f172a' }}
+                    placeholder={`AWS Certified Solutions Architect — Amazon (2023)\nReact Native Complete Guide — Udemy (2022)`}
                   />
                 </div>
               </div>

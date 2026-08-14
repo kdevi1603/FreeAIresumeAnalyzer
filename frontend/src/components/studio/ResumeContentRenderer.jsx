@@ -11,12 +11,34 @@ export default function ResumeContentRenderer({
   onManualEdit = null,
   customTemplateHtml = null
 }) {
-  const candidateName = resumeData?.personalInfo?.name === 'Untitled Resume' ? '' : (resumeData?.personalInfo?.name || resumeData?.fileName?.replace(/\.pdf$/i, '') || 'John Doe');
-  const email = resumeData?.personalInfo?.email || 'john.doe@example.com';
-  const phone = resumeData?.personalInfo?.phone || '+1 234 567 890';
-  const city = resumeData?.personalInfo?.city || 'New York, NY';
-  const linkedin = resumeData?.personalInfo?.linkedin || 'linkedin.com/in/johndoe';
-  const github = resumeData?.personalInfo?.github || 'github.com/johndoe';
+  const candidateName = resumeData?.personalInfo?.name === 'Untitled Resume' ? '' : (resumeData?.personalInfo?.name || resumeData?.fileName?.replace(/\.pdf$/i, '') || '');
+  const rawText = resumeData?.rawText || resumeData?.summary || '';
+  
+  let email = resumeData?.personalInfo?.email || '';
+  if (!email && rawText) {
+    const emailMatch = rawText.match(/[a-zA-Z0-9._-]+(?:\s*)?@(?:\s*)?[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+/i);
+    if (emailMatch) email = emailMatch[0].replace(/\s+/g, '');
+  }
+
+  let phone = resumeData?.personalInfo?.phone || '';
+  if (!phone && rawText) {
+    const phoneMatch = rawText.match(/(?:\+?\d{1,3}[\s-]?)?\(?\d{3}\)?[\s-]?\d{3}[\s-]?\d{4}/);
+    if (phoneMatch) phone = phoneMatch[0];
+  }
+
+  const city = resumeData?.personalInfo?.city || '';
+  
+  let linkedin = resumeData?.personalInfo?.linkedin || '';
+  if (!linkedin && rawText) {
+    const liMatch = rawText.match(/linkedin\.com\/in\/[a-zA-Z0-9_-]+/i);
+    if (liMatch) linkedin = liMatch[0];
+  }
+
+  let github = resumeData?.personalInfo?.github || '';
+  if (!github && rawText) {
+    const ghMatch = rawText.match(/github\.com\/[a-zA-Z0-9_-]+/i);
+    if (ghMatch) github = ghMatch[0];
+  }
   const profilePicture = resumeData?.personalInfo?.profilePicture || null;
   const score = resumeData?.atsScore || 95;
 
@@ -98,19 +120,22 @@ export default function ResumeContentRenderer({
     );
   };
 
+  const certificationsText = (showDiff && resumeData?.fixedCertifications) ? resumeData.fixedCertifications : resumeData?.certifications;
+
   const sections = [
     { title: 'Executive Summary', content: formatText(summaryText, false), isModified: !!resumeData?.fixedSummary },
     { title: 'Work & Project Experience', content: formatText(projectsText), isModified: !!resumeData?.fixedProjects },
     { title: 'Education & Academic Details', content: formatText(educationText), isModified: !!resumeData?.fixedEducation },
+    { title: 'Certifications', content: formatText(certificationsText, false), isModified: !!resumeData?.fixedCertifications },
     { title: 'Technical Skills & Tools', content: formatText(skillsText, false), isModified: !!resumeData?.fixedSkills },
     { title: 'Languages', content: 'Tamil (Native), English (Professional Working Proficiency)' }
   ].filter(sec => sec.content);
 
   return (
     <div className="a4-print-container" style={{
-      transform: `scale(${zoom / 100})`, transformOrigin: 'top center', transition: 'transform 0.2s ease',
-      width: '794px', height: '1123px', overflow: 'hidden', backgroundColor: '#ffffff', color: '#1a1a1a',
-      padding: (templateStyle === 'sidebar' || templateStyle === 'executive') ? '0' : '56px 56px',
+      zoom: `${zoom}%`,
+      width: '794px', minHeight: '1123px', backgroundColor: '#ffffff', color: '#1a1a1a',
+      padding: (templateStyle === 'sidebar' || templateStyle === 'executive' || templateStyle === 'modern' || templateStyle === 'fresher' || templateStyle === 'corporate' || templateStyle === 'creative' || templateStyle === 'onepage') ? '0' : '56px 56px',
       boxShadow: zoom < 100 ? 'none' : '0 20px 60px rgba(0,0,0,0.6)', 
       borderRadius: '4px',
       fontFamily: ['academic', 'corporate', 'serif'].includes(templateStyle) ? "'Times New Roman', serif"
@@ -140,25 +165,128 @@ export default function ResumeContentRenderer({
       ) : (
       <>
       {/* 1. Modern Professional (formerly modern) */}
-      {templateStyle === 'modern' && (
-        <>
-          <div style={{ borderBottom: `2px solid ${accentColor}`, paddingBottom: '16px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <h1 style={{ fontSize: '26px', fontWeight: 800, color: '#0f172a', margin: '0 0 6px 0' }}>{candidateName.toUpperCase()}</h1>
-              <ContactRow color="#475569" style={{ fontSize: '12px' }} />
-            </div>
-            {profilePicture && <img src={profilePicture} style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }} />}
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-            {sections.map((sec, idx) => (
-              <div key={idx}>
-                <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: accentColor, borderBottom: '1px solid #e2e8f0', paddingBottom: '4px', textTransform: 'uppercase' }}>{sec.title}</h3>
-                <div style={{ fontSize: '12px', lineHeight: 1.8, color: '#334155', whiteSpace: 'pre-line', textAlign: 'justify' }}>{sec.content}</div>
+      {templateStyle === 'modern' && (() => {
+        // Strict Data Binding for Modern Template (Filter out Smart Demo dummy fallbacks)
+        const isDemoName = resumeData?.personalInfo?.name === 'Parsed Resume' || resumeData?.personalInfo?.name === 'Untitled Resume';
+        const mName = isDemoName ? (resumeData?.fileName?.replace(/\.pdf$/i, '') || '') : (resumeData?.personalInfo?.name || '');
+        const mJobTitle = resumeData?.personalInfo?.jobTitle;
+        const mEmail = email;
+        const mPhone = phone;
+        const mCity = city;
+        const mLinkedin = linkedin;
+        const mGithub = github;
+        
+        let mSummary = (showDiff && resumeData?.fixedSummary) ? resumeData.fixedSummary : resumeData?.summary;
+        if (mSummary === '...') mSummary = ''; // Remove Smart Demo placeholder
+
+        const mEducation = (showDiff && resumeData?.fixedEducation) ? resumeData.fixedEducation : resumeData?.education;
+        
+        let mSkills = (showDiff && resumeData?.fixedSkills) ? resumeData.fixedSkills : (resumeData?.skills || resumeData?.skillsFound?.map(s => typeof s === 'string' ? s : s.skill).filter(Boolean).join(', '));
+        const demoSkills = 'Communication, Problem Solving, Project Management, Teamwork, Data Analysis';
+        if (mSkills === demoSkills) mSkills = ''; // Remove Smart Demo placeholder
+
+        const mLanguages = resumeData?.languages;
+        
+        const mProjects = (showDiff && resumeData?.fixedProjects) ? resumeData.fixedProjects : (resumeData?.experienceList?.length > 0 ? resumeData.experienceList.map(exp => {
+          let header = '';
+          const isPlaceholder = exp.company === 'Extracted Experience' || exp.company === 'Original Content' || exp.company === 'Resume Experience Section';
+          if (!isPlaceholder && exp.company) header += exp.company;
+          if (exp.role) header += (header ? ' - ' : '') + exp.role;
+          return header ? `${header}\n${exp.bullets}` : exp.bullets;
+        }).join('\n\n') : null);
+
+        const hasContact = mEmail || mPhone || mCity || mLinkedin || mGithub;
+
+        return (
+        <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', minHeight: '100%', width: '100%' }}>
+          {/* Left Sidebar */}
+          <div style={{ background: '#f8fafc', padding: '40px 30px', borderRight: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '28px' }}>
+            {profilePicture && (
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <img src={profilePicture} style={{ width: '120px', height: '120px', borderRadius: '50%', objectFit: 'cover', border: `3px solid ${accentColor}` }} />
               </div>
-            ))}
+            )}
+            
+            {hasContact && (
+              <div>
+                <h3 style={{ fontSize: '13px', fontWeight: 800, color: accentColor, borderBottom: '2px solid #e2e8f0', paddingBottom: '6px', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Contact</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '11px', color: '#475569' }}>
+                  {mEmail && <span style={{ display: 'flex', alignItems: 'center', gap: '8px', wordBreak: 'break-all' }}><Mail size={14} style={{ color: accentColor }} /> {mEmail}</span>}
+                  {mPhone && <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Phone size={14} style={{ color: accentColor }} /> {mPhone}</span>}
+                  {mCity && <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={accentColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                    {mCity}
+                  </span>}
+                  {mLinkedin && <span style={{ display: 'flex', alignItems: 'center', gap: '8px', wordBreak: 'break-all' }}><Linkedin size={14} style={{ color: accentColor }} /> {mLinkedin.replace('https://', '')}</span>}
+                  {mGithub && <span style={{ display: 'flex', alignItems: 'center', gap: '8px', wordBreak: 'break-all' }}><Github size={14} style={{ color: accentColor }} /> {mGithub.replace('https://', '')}</span>}
+                </div>
+              </div>
+            )}
+
+            {mSkills && (
+               <div>
+                 <h3 style={{ fontSize: '13px', fontWeight: 800, color: accentColor, borderBottom: '2px solid #e2e8f0', paddingBottom: '6px', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Skills</h3>
+                 <div style={{ fontSize: '11px', lineHeight: 1.6, color: '#334155' }}>
+                   {formatText(mSkills, false)}
+                 </div>
+               </div>
+            )}
+
+            {mLanguages && (
+              <div>
+                 <h3 style={{ fontSize: '13px', fontWeight: 800, color: accentColor, borderBottom: '2px solid #e2e8f0', paddingBottom: '6px', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Languages</h3>
+                 <div style={{ fontSize: '11px', lineHeight: 1.6, color: '#334155' }}>
+                   {formatText(mLanguages, false)}
+                 </div>
+              </div>
+            )}
           </div>
-        </>
-      )}
+
+          {/* Right Main Content */}
+          <div style={{ padding: '40px 48px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+             <div style={{ borderBottom: `3px solid ${accentColor}`, paddingBottom: '20px' }}>
+                <h1 style={{ fontSize: '36px', fontWeight: 900, color: '#0f172a', margin: '0 0 8px 0', lineHeight: 1.1, letterSpacing: '-0.02em' }}>{mName.toUpperCase()}</h1>
+                {mJobTitle && <h2 style={{ fontSize: '18px', color: accentColor, margin: 0, fontWeight: 700, letterSpacing: '0.02em' }}>{mJobTitle}</h2>}
+             </div>
+
+             <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+               {mSummary && (
+                 <div>
+                    <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#0f172a', marginBottom: '10px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                       <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: accentColor }} /> Executive Summary
+                    </h3>
+                    <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>
+                      {formatText(mSummary, false)}
+                    </div>
+                 </div>
+               )}
+
+               {mProjects && (
+                 <div>
+                    <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#0f172a', marginBottom: '10px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                       <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: accentColor }} /> Experience
+                    </h3>
+                    <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>
+                      {formatText(mProjects)}
+                    </div>
+                 </div>
+               )}
+
+               {mEducation && (
+                 <div>
+                    <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#0f172a', marginBottom: '10px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                       <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: accentColor }} /> Education
+                    </h3>
+                    <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>
+                      {formatText(mEducation)}
+                    </div>
+                 </div>
+               )}
+             </div>
+          </div>
+        </div>
+        );
+      })()}
 
       {/* 2. Minimal ATS (formerly minimalist) */}
       {templateStyle === 'minimalist' && (
@@ -184,23 +312,107 @@ export default function ResumeContentRenderer({
       )}
 
       {/* 3. Fresher / Student (Education First) */}
-      {templateStyle === 'fresher' && (
-        <>
-          <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-            {profilePicture && <img src={profilePicture} style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover', marginBottom: '12px', display: 'inline-block' }} />}
-            <h1 style={{ fontSize: '28px', fontWeight: 700, color: accentColor, margin: '0 0 5px 0' }}>{candidateName}</h1>
-            <ContactRow justify="center" color="#475569" style={{ fontSize: '12px' }} />
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-            {sections.map((sec, idx) => sec && (
-              <div key={idx}>
-                <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#111', background: '#f1f5f9', padding: '4px 8px', borderRadius: '4px', textTransform: 'uppercase' }}>{sec.title}</h3>
-                <div style={{ fontSize: '12px', lineHeight: 1.8, color: '#334155', whiteSpace: 'pre-line', padding: '4px 8px', textAlign: 'justify' }}>{sec.content}</div>
+      {templateStyle === 'fresher' && (() => {
+        const isDemoName = resumeData?.personalInfo?.name === 'Parsed Resume' || resumeData?.personalInfo?.name === 'Untitled Resume';
+        const mName = isDemoName ? (resumeData?.fileName?.replace(/\.pdf$/i, '') || '') : (resumeData?.personalInfo?.name || '');
+        const mJobTitle = resumeData?.personalInfo?.jobTitle;
+        const mEmail = email;
+        const mPhone = phone;
+        const mCity = city;
+        const mLinkedin = linkedin;
+        const mGithub = github;
+        
+        let mSummary = (showDiff && resumeData?.fixedSummary) ? resumeData.fixedSummary : resumeData?.summary;
+        if (mSummary === '...') mSummary = '';
+
+        const mEducation = (showDiff && resumeData?.fixedEducation) ? resumeData.fixedEducation : resumeData?.education;
+        
+        let mSkills = (showDiff && resumeData?.fixedSkills) ? resumeData.fixedSkills : (resumeData?.skills || resumeData?.skillsFound?.map(s => typeof s === 'string' ? s : s.skill).filter(Boolean).join(', '));
+        const demoSkills = 'Communication, Problem Solving, Project Management, Teamwork, Data Analysis';
+        if (mSkills === demoSkills) mSkills = '';
+
+        const mLanguages = resumeData?.languages;
+        
+        const mProjects = (showDiff && resumeData?.fixedProjects) ? resumeData.fixedProjects : (resumeData?.experienceList?.length > 0 ? resumeData.experienceList.map(exp => {
+          let header = '';
+          const isPlaceholder = exp.company === 'Extracted Experience' || exp.company === 'Original Content' || exp.company === 'Resume Experience Section';
+          if (!isPlaceholder && exp.company) header += exp.company;
+          if (exp.role) header += (header ? ' - ' : '') + exp.role;
+          return header ? `${header}\n${exp.bullets}` : exp.bullets;
+        }).join('\n\n') : null);
+
+        const hasContact = mEmail || mPhone || mCity || mLinkedin || mGithub;
+
+        return (
+          <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', minHeight: '100%', width: '100%' }}>
+            {/* Left Sidebar */}
+            <div style={{ background: '#f8fafc', padding: '40px 24px', borderRight: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              {profilePicture && (
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                  <img src={profilePicture} style={{ width: '120px', height: '120px', borderRadius: '50%', objectFit: 'cover' }} />
+                </div>
+              )}
+              
+              {hasContact && (
+                <div>
+                  <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#111', marginBottom: '12px', borderBottom: '2px solid #e2e8f0', paddingBottom: '6px' }}>Contact</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '11px', color: '#475569' }}>
+                    {mEmail && <span style={{ display: 'flex', alignItems: 'center', gap: '8px', wordBreak: 'break-all' }}><Mail size={14} style={{ color: accentColor }} /> {mEmail}</span>}
+                    {mPhone && <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Phone size={14} style={{ color: accentColor }} /> {mPhone}</span>}
+                    {mCity && <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={accentColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> {mCity}</span>}
+                    {mLinkedin && <span style={{ display: 'flex', alignItems: 'center', gap: '8px', wordBreak: 'break-all' }}><Linkedin size={14} style={{ color: accentColor }} /> {mLinkedin.replace('https://', '')}</span>}
+                    {mGithub && <span style={{ display: 'flex', alignItems: 'center', gap: '8px', wordBreak: 'break-all' }}><Github size={14} style={{ color: accentColor }} /> {mGithub.replace('https://', '')}</span>}
+                  </div>
+                </div>
+              )}
+
+              {mSkills && (
+                 <div>
+                   <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#111', marginBottom: '12px', borderBottom: '2px solid #e2e8f0', paddingBottom: '6px' }}>Skills</h3>
+                   <div style={{ fontSize: '11px', lineHeight: 1.6, color: '#334155' }}>{formatText(mSkills, false)}</div>
+                 </div>
+              )}
+
+              {mLanguages && (
+                <div>
+                   <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#111', marginBottom: '12px', borderBottom: '2px solid #e2e8f0', paddingBottom: '6px' }}>Languages</h3>
+                   <div style={{ fontSize: '11px', lineHeight: 1.6, color: '#334155' }}>{formatText(mLanguages, false)}</div>
+                </div>
+              )}
+            </div>
+
+            {/* Main Content */}
+            <div style={{ padding: '40px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <div style={{ borderBottom: `2px solid ${accentColor}`, paddingBottom: '16px' }}>
+                <h1 style={{ fontSize: '32px', fontWeight: 800, color: '#111', margin: '0 0 8px 0' }}>{mName}</h1>
+                {mJobTitle && <h2 style={{ fontSize: '18px', color: '#334155', margin: 0, fontWeight: 600 }}>{mJobTitle}</h2>}
               </div>
-            ))}
+
+              {mSummary && (
+                <div>
+                   <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#111', background: '#f1f5f9', padding: '6px 10px', borderRadius: '4px', textTransform: 'uppercase', marginBottom: '10px' }}>Objective</h3>
+                   <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>{formatText(mSummary, false)}</div>
+                </div>
+              )}
+
+              {/* Education First for Fresher */}
+              {mEducation && (
+                <div>
+                   <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#111', background: '#f1f5f9', padding: '6px 10px', borderRadius: '4px', textTransform: 'uppercase', marginBottom: '10px' }}>Education</h3>
+                   <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>{formatText(mEducation)}</div>
+                </div>
+              )}
+
+              {mProjects && (
+                <div>
+                   <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#111', background: '#f1f5f9', padding: '6px 10px', borderRadius: '4px', textTransform: 'uppercase', marginBottom: '10px' }}>Projects & Experience</h3>
+                   <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>{formatText(mProjects)}</div>
+                </div>
+              )}
+            </div>
           </div>
-        </>
-      )}
+        );
+      })()}
 
       {/* 4. Software Engineer */}
       {templateStyle === 'software' && (
@@ -210,7 +422,7 @@ export default function ResumeContentRenderer({
               {profilePicture && <img src={profilePicture} style={{ width: '56px', height: '56px', borderRadius: '8px', objectFit: 'cover' }} />}
               <div>
                 <h1 style={{ fontSize: '26px', fontWeight: 800, color: '#0f172a', margin: '0 0 4px 0' }}>{candidateName}</h1>
-                <span style={{ fontSize: '14px', color: accentColor, fontWeight: 700 }}>Software Engineer</span>
+                {resumeData?.personalInfo?.jobTitle && <span style={{ fontSize: '14px', color: accentColor, fontWeight: 700 }}>{resumeData.personalInfo.jobTitle}</span>}
               </div>
             </div>
               <ContactRow justify="flex-end" color="#475569" style={{ fontSize: '11px', maxWidth: '300px' }} />
@@ -252,54 +464,209 @@ export default function ResumeContentRenderer({
       )}
 
       {/* 6. Creative */}
-      {templateStyle === 'creative' && (
-        <>
-          <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-            {profilePicture ? (
-              <img src={profilePicture} style={{ width: '80px', height: '80px', borderRadius: '40px', objectFit: 'cover', margin: '0 auto 16px', border: `3px solid ${accentColor}` }} />
-            ) : (
-              <div style={{ width: '80px', height: '80px', borderRadius: '40px', background: accentColor, color: getContrastColor(accentColor), fontSize: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontWeight: 800 }}>
-                {candidateName.charAt(0)}
-              </div>
-            )}
-            <h1 style={{ fontSize: '28px', fontWeight: 800, color: '#111', margin: '0 0 8px 0' }}>{candidateName}</h1>
-            <ContactRow justify="center" color="#666" style={{ fontSize: '12px', background: '#f8fafc', padding: '8px 16px', borderRadius: '30px', display: 'inline-flex' }} />
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-            {sections.map((sec, idx) => sec && (
-              <div key={idx} style={{ background: '#f8fafc', padding: '16px', borderRadius: '16px', border: idx % 2 !== 0 ? `1px solid ${accentColor}30` : 'none' }}>
-                <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: accentColor, textTransform: 'uppercase', marginBottom: '8px' }}>{sec.title}</h3>
-                <div style={{ fontSize: '12px', lineHeight: 1.8, color: '#334155', whiteSpace: 'pre-line' }}>{sec.content}</div>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
+      {templateStyle === 'creative' && (() => {
+        const isDemoName = resumeData?.personalInfo?.name === 'Parsed Resume' || resumeData?.personalInfo?.name === 'Untitled Resume';
+        const mName = isDemoName ? (resumeData?.fileName?.replace(/\.pdf$/i, '') || '') : (resumeData?.personalInfo?.name || '');
+        const mJobTitle = resumeData?.personalInfo?.jobTitle;
+        const mEmail = email;
+        const mPhone = phone;
+        const mCity = city;
+        const mLinkedin = linkedin;
+        const mGithub = github;
+        
+        let mSummary = (showDiff && resumeData?.fixedSummary) ? resumeData.fixedSummary : resumeData?.summary;
+        if (mSummary === '...') mSummary = '';
+        
+        const mEducation = (showDiff && resumeData?.fixedEducation) ? resumeData.fixedEducation : resumeData?.education;
+        
+        let mSkills = (showDiff && resumeData?.fixedSkills) ? resumeData.fixedSkills : (resumeData?.skills || resumeData?.skillsFound?.map(s => typeof s === 'string' ? s : s.skill).filter(Boolean).join(', '));
+        const demoSkills = 'Communication, Problem Solving, Project Management, Teamwork, Data Analysis';
+        if (mSkills === demoSkills) mSkills = '';
+        
+        const mLanguages = resumeData?.languages;
+        
+        const mProjects = (showDiff && resumeData?.fixedProjects) ? resumeData.fixedProjects : (resumeData?.experienceList?.length > 0 ? resumeData.experienceList.map(exp => {
+          let header = '';
+          const isPlaceholder = exp.company === 'Extracted Experience' || exp.company === 'Original Content' || exp.company === 'Resume Experience Section';
+          if (!isPlaceholder && exp.company) header += exp.company;
+          if (exp.role) header += (header ? ' - ' : '') + exp.role;
+          return header ? `${header}\n${exp.bullets}` : exp.bullets;
+        }).join('\n\n') : null);
+        
+        const hasContact = mEmail || mPhone || mCity || mLinkedin || mGithub;
 
-      {/* 7. Corporate */}
-      {templateStyle === 'corporate' && (
-        <>
-          <div style={{ borderBottom: '3px solid #1e293b', paddingBottom: '16px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h1 style={{ fontSize: '28px', fontWeight: 700, color: '#000', margin: 0, fontFamily: "'Times New Roman', serif" }}>{candidateName.toUpperCase()}</h1>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{ fontSize: '11px', color: '#333', textAlign: 'right' }}>
-                <div>{email}</div>
-                <div>{phone}</div>
-                <div>{linkedin}</div>
+        return (
+          <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', minHeight: '100%', width: '100%' }}>
+            {/* Left Sidebar */}
+            <div style={{ background: `${accentColor}10`, padding: '40px 24px', display: 'flex', flexDirection: 'column', gap: '30px' }}>
+              <div style={{ textAlign: 'center' }}>
+                {profilePicture ? (
+                  <img src={profilePicture} style={{ width: '120px', height: '120px', borderRadius: '40px', objectFit: 'cover', margin: '0 auto 16px', border: `3px solid ${accentColor}` }} />
+                ) : (
+                  <div style={{ width: '120px', height: '120px', borderRadius: '40px', background: accentColor, color: getContrastColor(accentColor), fontSize: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontWeight: 800 }}>
+                    {mName ? mName.charAt(0).toUpperCase() : 'C'}
+                  </div>
+                )}
+                <h1 style={{ fontSize: '24px', fontWeight: 900, color: '#111', margin: '0 0 4px 0', lineHeight: 1.1 }}>{mName}</h1>
+                {mJobTitle && <h2 style={{ fontSize: '13px', color: accentColor, margin: 0, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}>{mJobTitle}</h2>}
               </div>
-              {profilePicture && <img src={profilePicture} style={{ width: '60px', height: '75px', objectFit: 'cover', border: '1px solid #1e293b' }} />}
+              
+              {hasContact && (
+                <div>
+                  <h3 style={{ fontSize: '13px', fontWeight: 900, color: accentColor, borderBottom: `2px solid ${accentColor}30`, paddingBottom: '6px', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '2px' }}>Contact</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '11px', color: '#475569' }}>
+                    {mEmail && <span style={{ display: 'flex', alignItems: 'center', gap: '12px', wordBreak: 'break-all' }}><Mail size={16} style={{ color: accentColor }} /> {mEmail}</span>}
+                    {mPhone && <span style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><Phone size={16} style={{ color: accentColor }} /> {mPhone}</span>}
+                    {mCity && <span style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={accentColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> {mCity}</span>}
+                    {mLinkedin && <span style={{ display: 'flex', alignItems: 'center', gap: '12px', wordBreak: 'break-all' }}><Linkedin size={16} style={{ color: accentColor }} /> {mLinkedin.replace('https://', '')}</span>}
+                    {mGithub && <span style={{ display: 'flex', alignItems: 'center', gap: '12px', wordBreak: 'break-all' }}><Github size={16} style={{ color: accentColor }} /> {mGithub.replace('https://', '')}</span>}
+                  </div>
+                </div>
+              )}
+
+              {mSkills && (
+                 <div>
+                   <h3 style={{ fontSize: '13px', fontWeight: 900, color: accentColor, borderBottom: `2px solid ${accentColor}30`, paddingBottom: '6px', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '2px' }}>Skills</h3>
+                   <div style={{ fontSize: '11px', lineHeight: 1.6, color: '#334155' }}>{formatText(mSkills, false)}</div>
+                 </div>
+              )}
+              
+              {mLanguages && (
+                 <div>
+                   <h3 style={{ fontSize: '13px', fontWeight: 900, color: accentColor, borderBottom: `2px solid ${accentColor}30`, paddingBottom: '6px', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '2px' }}>Languages</h3>
+                   <div style={{ fontSize: '11px', lineHeight: 1.6, color: '#334155' }}>{formatText(mLanguages, false)}</div>
+                 </div>
+              )}
+            </div>
+
+            {/* Main Content */}
+            <div style={{ padding: '40px 48px', display: 'flex', flexDirection: 'column', gap: '28px' }}>
+              {mSummary && (
+                <div style={{ background: '#f8fafc', padding: '20px', borderRadius: '16px', border: `1px solid ${accentColor}30` }}>
+                   <h3 style={{ fontSize: '14px', fontWeight: 900, color: accentColor, textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '1px' }}>Profile</h3>
+                   <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>{formatText(mSummary, false)}</div>
+                </div>
+              )}
+
+              {mProjects && (
+                <div style={{ background: '#fff', padding: '10px 0' }}>
+                   <h3 style={{ fontSize: '14px', fontWeight: 900, color: accentColor, textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '1px' }}>Experience</h3>
+                   <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>{formatText(mProjects)}</div>
+                </div>
+              )}
+
+              {mEducation && (
+                <div style={{ background: '#fff', padding: '10px 0' }}>
+                   <h3 style={{ fontSize: '14px', fontWeight: 900, color: accentColor, textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '1px' }}>Education</h3>
+                   <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>{formatText(mEducation)}</div>
+                </div>
+              )}
             </div>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-            {sections.map((sec, idx) => (
-              <div key={idx}>
-                <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff', background: '#1e293b', padding: '4px 8px', textTransform: 'uppercase', marginBottom: '8px' }}>{sec.title}</h3>
-                <div style={{ fontSize: '12px', lineHeight: 1.8, color: '#111', whiteSpace: 'pre-line', padding: '0 8px', textAlign: 'justify' }}>{sec.content}</div>
+        );
+      })()}
+
+      {/* 7. Corporate */}
+      {templateStyle === 'corporate' && (() => {
+        const isDemoName = resumeData?.personalInfo?.name === 'Parsed Resume' || resumeData?.personalInfo?.name === 'Untitled Resume';
+        const mName = isDemoName ? (resumeData?.fileName?.replace(/\.pdf$/i, '') || '') : (resumeData?.personalInfo?.name || '');
+        const mJobTitle = resumeData?.personalInfo?.jobTitle;
+        const mEmail = email;
+        const mPhone = phone;
+        const mCity = city;
+        const mLinkedin = linkedin;
+        const mGithub = github;
+        
+        let mSummary = (showDiff && resumeData?.fixedSummary) ? resumeData.fixedSummary : resumeData?.summary;
+        if (mSummary === '...') mSummary = '';
+        
+        const mEducation = (showDiff && resumeData?.fixedEducation) ? resumeData.fixedEducation : resumeData?.education;
+        
+        let mSkills = (showDiff && resumeData?.fixedSkills) ? resumeData.fixedSkills : (resumeData?.skills || resumeData?.skillsFound?.map(s => typeof s === 'string' ? s : s.skill).filter(Boolean).join(', '));
+        const demoSkills = 'Communication, Problem Solving, Project Management, Teamwork, Data Analysis';
+        if (mSkills === demoSkills) mSkills = '';
+        
+        const mLanguages = resumeData?.languages;
+        
+        const mProjects = (showDiff && resumeData?.fixedProjects) ? resumeData.fixedProjects : (resumeData?.experienceList?.length > 0 ? resumeData.experienceList.map(exp => {
+          let header = '';
+          const isPlaceholder = exp.company === 'Extracted Experience' || exp.company === 'Original Content' || exp.company === 'Resume Experience Section';
+          if (!isPlaceholder && exp.company) header += exp.company;
+          if (exp.role) header += (header ? ' - ' : '') + exp.role;
+          return header ? `${header}\n${exp.bullets}` : exp.bullets;
+        }).join('\n\n') : null);
+        
+        const hasContact = mEmail || mPhone || mCity || mLinkedin || mGithub;
+
+        return (
+          <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', minHeight: '100%', width: '100%' }}>
+            {/* Left Sidebar */}
+            <div style={{ background: '#1e293b', color: '#f8fafc', padding: '40px 24px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+              {profilePicture && (
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                  <img src={profilePicture} style={{ width: '120px', height: '120px', borderRadius: '50%', objectFit: 'cover', border: '3px solid #334155' }} />
+                </div>
+              )}
+              
+              {hasContact && (
+                <div>
+                  <h3 style={{ fontSize: '13px', fontWeight: 'bold', color: '#94a3b8', borderBottom: '1px solid #334155', paddingBottom: '8px', marginBottom: '16px', textTransform: 'uppercase' }}>Contact</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '11px', color: '#cbd5e1' }}>
+                    {mEmail && <span style={{ display: 'flex', alignItems: 'center', gap: '8px', wordBreak: 'break-all' }}><Mail size={14} style={{ color: '#94a3b8' }} /> {mEmail}</span>}
+                    {mPhone && <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Phone size={14} style={{ color: '#94a3b8' }} /> {mPhone}</span>}
+                    {mCity && <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> {mCity}</span>}
+                    {mLinkedin && <span style={{ display: 'flex', alignItems: 'center', gap: '8px', wordBreak: 'break-all' }}><Linkedin size={14} style={{ color: '#94a3b8' }} /> {mLinkedin.replace('https://', '')}</span>}
+                    {mGithub && <span style={{ display: 'flex', alignItems: 'center', gap: '8px', wordBreak: 'break-all' }}><Github size={14} style={{ color: '#94a3b8' }} /> {mGithub.replace('https://', '')}</span>}
+                  </div>
+                </div>
+              )}
+
+              {mSkills && (
+                 <div>
+                   <h3 style={{ fontSize: '13px', fontWeight: 'bold', color: '#94a3b8', borderBottom: '1px solid #334155', paddingBottom: '8px', marginBottom: '16px', textTransform: 'uppercase' }}>Expertise</h3>
+                   <div style={{ fontSize: '11px', lineHeight: 1.6, color: '#cbd5e1' }}>{formatText(mSkills, false)}</div>
+                 </div>
+              )}
+
+              {mLanguages && (
+                <div>
+                   <h3 style={{ fontSize: '13px', fontWeight: 'bold', color: '#94a3b8', borderBottom: '1px solid #334155', paddingBottom: '8px', marginBottom: '16px', textTransform: 'uppercase' }}>Languages</h3>
+                   <div style={{ fontSize: '11px', lineHeight: 1.6, color: '#cbd5e1' }}>{formatText(mLanguages, false)}</div>
+                </div>
+              )}
+            </div>
+
+            {/* Main Content */}
+            <div style={{ padding: '40px', display: 'flex', flexDirection: 'column', gap: '30px' }}>
+              <div style={{ borderBottom: '3px solid #1e293b', paddingBottom: '20px' }}>
+                <h1 style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b', margin: '0 0 8px 0', fontFamily: "'Times New Roman', serif" }}>{mName.toUpperCase()}</h1>
+                {mJobTitle && <h2 style={{ fontSize: '18px', color: '#475569', margin: 0, fontWeight: 600 }}>{mJobTitle}</h2>}
               </div>
-            ))}
+
+              {mSummary && (
+                <div>
+                   <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff', background: '#1e293b', padding: '4px 8px', textTransform: 'uppercase', marginBottom: '12px', display: 'inline-block' }}>Professional Summary</h3>
+                   <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>{formatText(mSummary, false)}</div>
+                </div>
+              )}
+
+              {mProjects && (
+                <div>
+                   <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff', background: '#1e293b', padding: '4px 8px', textTransform: 'uppercase', marginBottom: '12px', display: 'inline-block' }}>Experience</h3>
+                   <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>{formatText(mProjects)}</div>
+                </div>
+              )}
+
+              {mEducation && (
+                <div>
+                   <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff', background: '#1e293b', padding: '4px 8px', textTransform: 'uppercase', marginBottom: '12px', display: 'inline-block' }}>Education</h3>
+                   <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>{formatText(mEducation)}</div>
+                </div>
+              )}
+            </div>
           </div>
-        </>
-      )}
+        );
+      })()}
 
       {/* 8. Academic (formerly serif) */}
       {templateStyle === 'academic' && (
@@ -318,26 +685,110 @@ export default function ResumeContentRenderer({
         </div>
       )}
 
-      {/* 9. One-Page ATS */}
-      {templateStyle === 'onepage' && (
-        <>
-          <div style={{ textAlign: 'center', marginBottom: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', marginBottom: '4px' }}>
-              {profilePicture && <img src={profilePicture} style={{ width: '32px', height: '32px', borderRadius: '16px', objectFit: 'cover' }} />}
-              <h1 style={{ fontSize: '24px', fontWeight: 800, color: '#000', margin: 0 }}>{candidateName}</h1>
-            </div>
-            <div style={{ fontSize: '11px', color: '#444' }}>{email} | {phone} | {linkedin} | {github}</div>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {sections.map((sec, idx) => (
-              <div key={idx}>
-                <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: accentColor, textTransform: 'uppercase', borderBottom: '1px solid #ccc', margin: '0 0 4px 0' }}>{sec.title}</h3>
-                <div style={{ fontSize: '12px', lineHeight: 1.4, color: '#222', whiteSpace: 'pre-line', textAlign: 'justify' }}>{sec.content}</div>
+      {/* 9. One-Page ATS (Business Analyst) */}
+      {templateStyle === 'onepage' && (() => {
+        const isDemoName = resumeData?.personalInfo?.name === 'Parsed Resume' || resumeData?.personalInfo?.name === 'Untitled Resume';
+        const mName = isDemoName ? (resumeData?.fileName?.replace(/\.pdf$/i, '') || '') : (resumeData?.personalInfo?.name || '');
+        const mJobTitle = resumeData?.personalInfo?.jobTitle;
+        const mEmail = email;
+        const mPhone = phone;
+        const mCity = city;
+        const mLinkedin = linkedin;
+        const mGithub = github;
+        
+        let mSummary = (showDiff && resumeData?.fixedSummary) ? resumeData.fixedSummary : resumeData?.summary;
+        if (mSummary === '...') mSummary = '';
+        
+        const mEducation = (showDiff && resumeData?.fixedEducation) ? resumeData.fixedEducation : resumeData?.education;
+        
+        let mSkills = (showDiff && resumeData?.fixedSkills) ? resumeData.fixedSkills : (resumeData?.skills || resumeData?.skillsFound?.map(s => typeof s === 'string' ? s : s.skill).filter(Boolean).join(', '));
+        const demoSkills = 'Communication, Problem Solving, Project Management, Teamwork, Data Analysis';
+        if (mSkills === demoSkills) mSkills = '';
+        
+        const mLanguages = resumeData?.languages;
+        const mCertifications = (showDiff && resumeData?.fixedCertifications) ? resumeData.fixedCertifications : resumeData?.certifications;
+        
+        const mProjects = (showDiff && resumeData?.fixedProjects) ? resumeData.fixedProjects : (resumeData?.experienceList?.length > 0 ? resumeData.experienceList.map(exp => {
+          let header = '';
+          const isPlaceholder = exp.company === 'Extracted Experience' || exp.company === 'Original Content' || exp.company === 'Resume Experience Section';
+          if (!isPlaceholder && exp.company) header += exp.company;
+          if (exp.role) header += (header ? ' - ' : '') + exp.role;
+          return header ? `${header}\n${exp.bullets}` : exp.bullets;
+        }).join('\n\n') : null);
+        
+        const hasContact = mEmail || mPhone || mCity || mLinkedin || mGithub;
+
+        return (
+          <div style={{ display: 'grid', gridTemplateColumns: '230px 1fr', minHeight: '100%', width: '100%' }}>
+            {/* Left Sidebar */}
+            <div style={{ background: '#f1f5f9', padding: '30px 20px', borderRight: '2px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <div style={{ textAlign: 'center', marginBottom: '8px' }}>
+                {profilePicture && <img src={profilePicture} style={{ width: '100px', height: '100px', borderRadius: '8px', objectFit: 'cover', margin: '0 auto 12px', border: '1px solid #94a3b8' }} />}
+                <h1 style={{ fontSize: '24px', fontWeight: 800, color: '#0f172a', margin: '0 0 4px 0', lineHeight: 1.1 }}>{mName}</h1>
+                {mJobTitle && <h2 style={{ fontSize: '13px', color: accentColor, margin: 0, fontWeight: 700 }}>{mJobTitle}</h2>}
               </div>
-            ))}
+              
+              {hasContact && (
+                <div>
+                  <h3 style={{ fontSize: '12px', fontWeight: 800, color: '#0f172a', textTransform: 'uppercase', borderBottom: '1px solid #cbd5e1', paddingBottom: '4px', marginBottom: '10px' }}>Contact Info</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '11px', color: '#334155' }}>
+                    {mEmail && <span style={{ display: 'flex', alignItems: 'center', gap: '6px', wordBreak: 'break-all' }}><Mail size={12} /> {mEmail}</span>}
+                    {mPhone && <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Phone size={12} /> {mPhone}</span>}
+                    {mCity && <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> {mCity}</span>}
+                    {mLinkedin && <span style={{ display: 'flex', alignItems: 'center', gap: '6px', wordBreak: 'break-all' }}><Linkedin size={12} /> {mLinkedin.replace('https://', '')}</span>}
+                    {mGithub && <span style={{ display: 'flex', alignItems: 'center', gap: '6px', wordBreak: 'break-all' }}><Github size={12} /> {mGithub.replace('https://', '')}</span>}
+                  </div>
+                </div>
+              )}
+
+              {mSkills && (
+                 <div>
+                   <h3 style={{ fontSize: '12px', fontWeight: 800, color: '#0f172a', textTransform: 'uppercase', borderBottom: '1px solid #cbd5e1', paddingBottom: '4px', marginBottom: '10px' }}>Core Competencies</h3>
+                   <div style={{ fontSize: '11px', lineHeight: 1.6, color: '#334155' }}>{formatText(mSkills, false)}</div>
+                 </div>
+              )}
+
+              {mLanguages && (
+                 <div>
+                   <h3 style={{ fontSize: '12px', fontWeight: 800, color: '#0f172a', textTransform: 'uppercase', borderBottom: '1px solid #cbd5e1', paddingBottom: '4px', marginBottom: '10px' }}>Languages</h3>
+                   <div style={{ fontSize: '11px', lineHeight: 1.6, color: '#334155' }}>{formatText(mLanguages, false)}</div>
+                 </div>
+              )}
+
+              {mCertifications && (
+                 <div>
+                   <h3 style={{ fontSize: '12px', fontWeight: 800, color: '#0f172a', textTransform: 'uppercase', borderBottom: '1px solid #cbd5e1', paddingBottom: '4px', marginBottom: '10px' }}>Certifications</h3>
+                   <div style={{ fontSize: '11px', lineHeight: 1.6, color: '#334155' }}>{formatText(mCertifications, false)}</div>
+                 </div>
+              )}
+            </div>
+
+            {/* Main Content */}
+            <div style={{ padding: '30px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {mSummary && (
+                <div>
+                   <h3 style={{ fontSize: '13px', fontWeight: 800, color: accentColor, textTransform: 'uppercase', borderBottom: `1px solid ${accentColor}`, paddingBottom: '4px', marginBottom: '10px' }}>Professional Summary</h3>
+                   <div style={{ fontSize: '12px', lineHeight: 1.6, color: '#1e293b', textAlign: 'justify' }}>{formatText(mSummary, false)}</div>
+                </div>
+              )}
+
+              {mProjects && (
+                <div>
+                   <h3 style={{ fontSize: '13px', fontWeight: 800, color: accentColor, textTransform: 'uppercase', borderBottom: `1px solid ${accentColor}`, paddingBottom: '4px', marginBottom: '10px' }}>Work Experience</h3>
+                   <div style={{ fontSize: '12px', lineHeight: 1.6, color: '#1e293b', textAlign: 'justify' }}>{formatText(mProjects)}</div>
+                </div>
+              )}
+
+              {mEducation && (
+                <div>
+                   <h3 style={{ fontSize: '13px', fontWeight: 800, color: accentColor, textTransform: 'uppercase', borderBottom: `1px solid ${accentColor}`, paddingBottom: '4px', marginBottom: '10px' }}>Education</h3>
+                   <div style={{ fontSize: '12px', lineHeight: 1.6, color: '#1e293b', textAlign: 'justify' }}>{formatText(mEducation)}</div>
+                </div>
+              )}
+            </div>
           </div>
-        </>
-      )}
+        );
+      })()}
 
       {/* 10. Elegant */}
       {templateStyle === 'elegant' && (
