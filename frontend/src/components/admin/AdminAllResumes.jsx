@@ -42,7 +42,7 @@ export default function AdminAllResumes() {
   };
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/admin/templates')
+    fetch('/api/admin/templates')
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) setCustomTemplates(data);
@@ -129,7 +129,7 @@ export default function AdminAllResumes() {
   const fetchResumes = async () => {
     try {
       setLoading(true);
-      const res = await fetch('http://localhost:5000/api/admin/resumes', {
+      const res = await fetch('/api/admin/resumes', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       if (res.ok) {
@@ -151,7 +151,7 @@ export default function AdminAllResumes() {
   const confirmDelete = async () => {
     if (!deleteConfirmModal) return;
     try {
-      await fetch(`http://localhost:5000/api/admin/resumes/${deleteConfirmModal.id}`, {
+      await fetch(`/api/admin/resumes/${deleteConfirmModal.id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });

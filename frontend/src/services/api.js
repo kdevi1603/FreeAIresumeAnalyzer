@@ -100,6 +100,10 @@ export const resumeService = {
   agentChat: async (resumeId, message, chatHistory) => {
     const response = await api.post(`/resumes/${resumeId}/chat`, { message, chatHistory });
     return response.data;
+  },
+  reanalyzeResume: async (resumeId) => {
+    const response = await api.post(`/resumes/${resumeId}/reanalyze`);
+    return response.data;
   }
 };
 

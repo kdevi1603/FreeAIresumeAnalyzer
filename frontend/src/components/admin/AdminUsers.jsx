@@ -61,7 +61,7 @@ export default function AdminUsers() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const res = await fetch('http://localhost:5000/api/admin/users', {
+      const res = await fetch('/api/admin/users', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       if (res.ok) {
@@ -83,7 +83,7 @@ export default function AdminUsers() {
   const confirmDelete = async () => {
     if (!deleteConfirmModal) return;
     try {
-      await fetch(`http://localhost:5000/api/admin/users/${deleteConfirmModal.id}`, {
+      await fetch(`/api/admin/users/${deleteConfirmModal.id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
@@ -99,7 +99,7 @@ export default function AdminUsers() {
     if (!blockModal) return;
     try {
       // Normally we'd send the reason in the body, but the backend patch just toggles it currently
-      await fetch(`http://localhost:5000/api/admin/users/${blockModal.id}/block`, {
+      await fetch(`/api/admin/users/${blockModal.id}/block`, {
         method: 'PATCH',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });

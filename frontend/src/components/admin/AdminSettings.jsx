@@ -92,7 +92,7 @@ export default function AdminSettings() {
   const getHeaders = () => ({ 'Authorization': `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json' });
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/admin/settings', { headers: getHeaders() })
+    fetch('/api/admin/settings', { headers: getHeaders() })
       .then(res => res.json())
       .then(data => {
         if (data) {
@@ -128,7 +128,7 @@ export default function AdminSettings() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const response = await fetch('http://localhost:5000/api/admin/settings', {
+      const response = await fetch('/api/admin/settings', {
         method: 'PUT',
         headers: getHeaders(),
         body: JSON.stringify(settings)

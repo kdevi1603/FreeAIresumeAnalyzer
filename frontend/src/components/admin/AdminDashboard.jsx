@@ -33,7 +33,7 @@ export default function AdminDashboard({ setActiveTab, isLightMode, setIsLightMo
 
   useEffect(() => {
     const fetchData = () => {
-      fetch('http://localhost:5000/api/admin/stats', {
+      fetch('/api/admin/stats', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       })
         .then(res => res.json())

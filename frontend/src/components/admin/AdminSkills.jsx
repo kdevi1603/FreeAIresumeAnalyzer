@@ -59,9 +59,9 @@ export default function AdminSkills() {
     setLoading(true);
     try {
       const [resSkills, resCerts, resLangs] = await Promise.all([
-        fetch('http://localhost:5000/api/admin/skills', { headers: getHeaders() }).then(res => res.json()),
-        fetch('http://localhost:5000/api/admin/certifications', { headers: getHeaders() }).then(res => res.json()),
-        fetch('http://localhost:5000/api/admin/languages', { headers: getHeaders() }).then(res => res.json())
+        fetch('/api/admin/skills', { headers: getHeaders() }).then(res => res.json()),
+        fetch('/api/admin/certifications', { headers: getHeaders() }).then(res => res.json()),
+        fetch('/api/admin/languages', { headers: getHeaders() }).then(res => res.json())
       ]);
       
       const skills = Array.isArray(resSkills) ? resSkills : [];
@@ -114,9 +114,9 @@ export default function AdminSkills() {
   };
 
   const getEndpoint = (type = activeTab) => {
-    if (type === 'skills') return 'http://localhost:5000/api/admin/skills';
-    if (type === 'certifications') return 'http://localhost:5000/api/admin/certifications';
-    return 'http://localhost:5000/api/admin/languages';
+    if (type === 'skills') return '/api/admin/skills';
+    if (type === 'certifications') return '/api/admin/certifications';
+    return '/api/admin/languages';
   };
 
   const getTypeLabel = (type = activeTab) => {

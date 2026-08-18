@@ -26,7 +26,7 @@ export default function AdminResumes() {
   const [pdfLoading, setPdfLoading] = useState(false);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/admin/templates')
+    fetch('/api/admin/templates')
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) setCustomTemplates(data);
@@ -85,7 +85,7 @@ export default function AdminResumes() {
 
   const fetchResumes = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/admin/resumes', {
+      const res = await fetch('/api/admin/resumes', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       if (res.ok) {
@@ -119,7 +119,7 @@ export default function AdminResumes() {
   const handleDelete = async (id) => {
     if (!confirm('Are you sure you want to delete this AI analysis?')) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/resumes/${id}`, {
+      const res = await fetch(`/api/admin/resumes/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });

@@ -92,6 +92,37 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
     }
   }, [resumeData]);
 
+  const reanalyzedIds = React.useRef(new Set());
+
+  // Auto-reanalyze existing resumes that have empty/corrupted data from old demo mode
+  useEffect(() => {
+    const resume = resumeData;
+    if (!resume || resume.isScratch) return;
+    if (!resume.id || resume.id === 'demo-123') return;
+    if (reanalyzedIds.current.has(resume.id)) return; // already attempted
+
+    const hasEmptyData =
+      (!resume.summary || resume.summary.trim().length < 5) &&
+      (!resume.education || resume.education.trim().length < 5) &&
+      (!resume.skills || resume.skills.trim().length < 5) &&
+      (!resume.experienceList || resume.experienceList.length === 0);
+
+    const hasBadName =
+      !resume.personalInfo?.name ||
+      /^(resume|parsed resume|untitled)$/i.test((resume.personalInfo?.name || '').trim());
+
+    if (hasEmptyData || hasBadName) {
+      reanalyzedIds.current.add(resume.id); // mark before calling to prevent re-trigger
+      console.log('🔄 Auto-reanalyzing resume with empty/bad data...');
+      resumeService.reanalyzeResume(resume.id)
+        .then(fresh => {
+          setActiveResume(prev => ({ ...prev, ...fresh }));
+        })
+        .catch(err => console.warn('Auto-reanalyze failed:', err.message));
+    }
+  }, [resumeData?.id]);
+
+
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth <= 1100 && activeView === 'all') {

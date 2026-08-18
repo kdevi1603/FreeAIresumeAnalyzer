@@ -42,7 +42,7 @@ export default function AdminAnalytics() {
   const [dateRange, setDateRange] = useState('Last 30 Days');
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/admin/stats', {
+    fetch('/api/admin/stats', {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
     })
       .then(res => res.json())

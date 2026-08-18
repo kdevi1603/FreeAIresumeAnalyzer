@@ -34,7 +34,7 @@ export default function AdminSupport() {
   const fetchMessages = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/admin/messages', {
+      const res = await fetch('/api/admin/messages', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       if (res.ok) {
@@ -54,7 +54,7 @@ export default function AdminSupport() {
 
   const handleUpdateStatus = async (id, updates) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/messages/${id}/status`, {
+      const res = await fetch(`/api/admin/messages/${id}/status`, {
         method: 'PUT',
         headers: { 
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -77,7 +77,7 @@ export default function AdminSupport() {
     if (!replyText.trim()) return;
     setIsReplying(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/messages/${replyModal.id}/reply`, {
+      const res = await fetch(`/api/admin/messages/${replyModal.id}/reply`, {
         method: 'POST',
         headers: { 
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -103,7 +103,7 @@ export default function AdminSupport() {
   const handleDelete = async (id) => {
     if (!confirm('Are you sure you want to delete this message?')) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/messages/${id}`, {
+      const res = await fetch(`/api/admin/messages/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
@@ -119,7 +119,7 @@ export default function AdminSupport() {
   const handleDeleteSelected = async () => {
     if (!confirm(`Are you sure you want to delete ${selectedIds.length} messages?`)) return;
     for (const id of selectedIds) {
-      await fetch(`http://localhost:5000/api/admin/messages/${id}`, {
+      await fetch(`/api/admin/messages/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });

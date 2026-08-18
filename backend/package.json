@@ -9,6 +9,7 @@
     "dev": "node server.js"
   },
   "dependencies": {
+    "@napi-rs/canvas": "^1.0.7",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -21,6 +22,7 @@
     "nodemailer": "^9.0.4",
     "openai": "^4.52.0",
     "pdf-parse": "^1.1.1",
+    "pdfjs-dist": "^6.2.108",
     "tesseract.js": "^7.0.0",
     "uuid": "^10.0.0"
   },

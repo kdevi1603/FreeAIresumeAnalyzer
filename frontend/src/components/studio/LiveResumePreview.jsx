@@ -27,7 +27,7 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'fresher
 
   useEffect(() => {
     if (templateStyle === 'original') return;
-    fetch('http://localhost:5000/api/admin/templates')
+    fetch('/api/admin/templates')
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -160,7 +160,7 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'fresher
     }
   };
 
-  const candidateName = resumeData?.personalInfo?.name === 'Untitled Resume' ? '' : (resumeData?.personalInfo?.name || resumeData?.fileName?.replace(/\.pdf$/i, '') || '');
+  const candidateName = resumeData?.personalInfo?.name === 'Untitled Resume' ? '' : (resumeData?.personalInfo?.name || resumeData?.fileName?.replace(/\.pdf$/i, '')?.replace(/-/g, ' ')?.replace(/_/g, ' ') || '');
   const email = resumeData?.personalInfo?.email || '';
   const phone = resumeData?.personalInfo?.phone || '';
   const city = resumeData?.personalInfo?.city || '';
@@ -247,7 +247,7 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'fresher
     { title: 'Work & Project Experience', content: formatText(projectsText), isModified: !!resumeData?.fixedProjects },
     { title: 'Education & Academic Details', content: formatText(educationText), isModified: !!resumeData?.fixedEducation },
     { title: 'Technical Skills & Tools', content: formatText(skillsText, false), isModified: !!resumeData?.fixedSkills },
-    { title: 'Languages', content: 'Tamil (Native), English (Professional Working Proficiency)' }
+    { title: 'Languages', content: resumeData?.languages || resumeData?.personalInfo?.languages || '' }
   ].filter(sec => sec.content);
 
   const hasChanges = !!(resumeData?.fixedSummary || resumeData?.fixedProjects || resumeData?.fixedEducation || resumeData?.fixedSkills);

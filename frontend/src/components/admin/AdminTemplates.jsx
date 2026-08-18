@@ -73,7 +73,7 @@ export default function AdminTemplates() {
   const fetchTemplates = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/admin/templates', {
+      const res = await fetch('/api/admin/templates', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       if (res.ok) setTemplates(await res.json());
@@ -118,8 +118,8 @@ export default function AdminTemplates() {
     const isEditing = editModal !== 'add';
     const method = isEditing ? 'PUT' : 'POST';
     const url = isEditing 
-      ? `http://localhost:5000/api/admin/templates/${editModal}`
-      : `http://localhost:5000/api/admin/templates`;
+      ? `/api/admin/templates/${editModal}`
+      : `/api/admin/templates`;
 
     try {
       const res = await fetch(url, {
@@ -148,7 +148,7 @@ export default function AdminTemplates() {
       usageCount: 0
     };
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/templates`, {
+      const res = await fetch(`/api/admin/templates`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -165,7 +165,7 @@ export default function AdminTemplates() {
   const handleDelete = async (id) => {
     if (!confirm('Are you sure you want to delete this template?')) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/templates/${id}`, {
+      const res = await fetch(`/api/admin/templates/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
@@ -177,7 +177,7 @@ export default function AdminTemplates() {
 
   const handleSetDefault = async (id) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/templates/${id}/default`, {
+      const res = await fetch(`/api/admin/templates/${id}/default`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
@@ -396,7 +396,7 @@ export default function AdminTemplates() {
                                  .replace(/\+1 234 567 8900/g, '{{phone}}');
                       try {
                         const token = localStorage.getItem('token');
-                        await fetch(`http://localhost:5000/api/admin/templates/${previewModal.id}`, {
+                        await fetch(`/api/admin/templates/${previewModal.id}`, {
                           method: 'PUT',
                           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                           body: JSON.stringify({ ...previewModal, customHtml: html })

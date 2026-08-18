@@ -10,7 +10,7 @@ export async function registerUser(req, res) {
       return res.status(400).json({ message: 'Please provide name, email, and password.' });
     }
 
-    const userExists = await db.users.findOne({ email: email.toLowerCase() });
+    const userExists = await db.users.findOne({ email: email.trim().toLowerCase() });
     if (userExists) {
       return res.status(400).json({ message: 'User already exists with this email address.' });
     }
@@ -20,7 +20,7 @@ export async function registerUser(req, res) {
 
     const user = await db.users.create({
       name,
-      email: email.toLowerCase(),
+      email: email.trim().toLowerCase(),
       password: hashedPassword,
       lastLogin: new Date().toISOString()
     });
@@ -56,7 +56,7 @@ export async function loginUser(req, res) {
       return res.status(400).json({ message: 'Please provide email and password.' });
     }
 
-    const user = await db.users.findOne({ email: email.toLowerCase() });
+    const user = await db.users.findOne({ email: email.trim().toLowerCase() });
     if (!user) {
       return res.status(401).json({ message: 'Invalid email or password.' });
     }

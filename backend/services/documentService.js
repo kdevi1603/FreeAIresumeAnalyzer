@@ -40,7 +40,7 @@ export async function extractTextFromFile(filePath, originalname) {
       return { text: cleanedText, pages: 1, info: {} };
     }
 
-    // 4. PDF (Default)
+    // 4. PDF (Default) - try text extraction first
     const dataBuffer = await fs.readFile(filePath);
     const data = await pdfParse(dataBuffer);
     
@@ -50,7 +50,61 @@ export async function extractTextFromFile(filePath, originalname) {
       .replace(/\n{3,}/g, '\n\n')
       .trim();
 
-    // Removed strict length check to prevent blocking image-based or short PDFs
+    // 5. OCR fallback for image-based/scanned PDFs — render PDF page to PNG then OCR
+    if (cleanedText.length < 50) {
+      console.log('PDF has minimal text — attempting OCR fallback for scanned/image-based PDF...');
+      try {
+        const { createCanvas } = await import('@napi-rs/canvas');
+        const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
+
+        // Provide the worker source path explicitly
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdfjs-dist/legacy/build/pdf.worker.mjs';
+
+        const pdfData = new Uint8Array(await fs.readFile(filePath));
+        const pdfDocument = await pdfjsLib.getDocument({
+          data: pdfData,
+          useSystemFonts: true,
+          disableFontFace: true,
+          standardFontDataUrl: 'node_modules/pdfjs-dist/standard_fonts/'
+        }).promise;
+
+        let ocrText = '';
+        const worker = await createWorker('eng');
+
+        for (let pageNum = 1; pageNum <= Math.min(pdfDocument.numPages, 3); pageNum++) {
+          const page = await pdfDocument.getPage(pageNum);
+          const viewport = page.getViewport({ scale: 2.0 });
+          const canvas = createCanvas(viewport.width, viewport.height);
+          const context = canvas.getContext('2d');
+
+          const canvasFactory = {
+            create: (w, h) => {
+              const c = createCanvas(w, h);
+              return { canvas: c, context: c.getContext('2d') };
+            },
+            reset: (obj, w, h) => { obj.canvas.width = w; obj.canvas.height = h; },
+            destroy: () => {}
+          };
+
+          await page.render({ canvasContext: context, viewport, canvasFactory }).promise;
+
+          const imgBuffer = canvas.toBuffer('image/png');
+          const { data: { text } } = await worker.recognize(imgBuffer);
+          ocrText += text + '\n';
+        }
+
+        await worker.terminate();
+        const ocrCleaned = ocrText.replace(/\r\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+
+        if (ocrCleaned.length > cleanedText.length) {
+          console.log(`✅ OCR extracted ${ocrCleaned.length} chars from scanned PDF.`);
+          cleanedText = ocrCleaned;
+        }
+      } catch (ocrErr) {
+        console.warn('OCR fallback failed:', ocrErr.message);
+      }
+    }
+
 
     return {
       text: cleanedText,
@@ -62,3 +116,4 @@ export async function extractTextFromFile(filePath, originalname) {
     throw new Error(`Failed to extract text: ${error.message}`);
   }
 }
+

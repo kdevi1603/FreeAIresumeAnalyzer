@@ -113,7 +113,7 @@ export default function TemplateSelectionModal({ isOpen, onClose, onApply }) {
   const [displayTemplates, setDisplayTemplates] = useState(TEMPLATES);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/admin/templates')
+    fetch('/api/admin/templates')
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {

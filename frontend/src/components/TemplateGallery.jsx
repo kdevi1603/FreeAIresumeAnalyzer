@@ -132,7 +132,7 @@ export default function TemplateGallery({ onSelectTemplate, onBack }) {
   }, [selectedPreview]);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/admin/templates')
+    fetch('/api/admin/templates')
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {

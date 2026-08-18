@@ -54,6 +54,54 @@ export async function uploadResume(req, res) {
   }
 }
 
+export async function reanalyzeResume(req, res) {
+  try {
+    const { id } = req.params;
+    const resume = await db.resumes.findById(id);
+
+    if (!resume) {
+      return res.status(404).json({ message: 'Resume not found.' });
+    }
+    if (resume.userId !== req.user.id) {
+      return res.status(403).json({ message: 'Not authorized.' });
+    }
+
+    let rawText = resume.rawText || '';
+
+    // If rawText is empty or very short, try to re-extract from the uploaded file
+    if (rawText.length < 10 && resume.fileUrl) {
+      try {
+        const fileName = path.basename(resume.fileUrl);
+        const filePath = path.join(process.cwd(), 'uploads', fileName);
+        const extracted = await extractTextFromFile(filePath, fileName);
+        rawText = extracted.text || '';
+        console.log(`📄 Re-extracted ${rawText.length} chars from file: ${fileName}`);
+      } catch (extractErr) {
+        console.warn('Could not re-extract from file:', extractErr.message);
+      }
+    }
+
+    if (!rawText || rawText.length < 10) {
+      return res.status(400).json({ message: 'No text available to re-analyze. Please re-upload the resume.' });
+    }
+
+    console.log(`🔄 Re-analyzing resume ${id} (${rawText.length} chars)...`);
+    const aiAnalysis = await analyzeResume(rawText);
+
+    const updatedResume = await db.resumes.update(id, {
+      ...resume,
+      ...aiAnalysis,
+      rawText
+    });
+
+    console.log(`✅ Re-analysis complete! ATS Score: ${updatedResume.atsScore}`);
+    return res.json(updatedResume);
+  } catch (error) {
+    console.error('Reanalyze Error:', error);
+    return res.status(500).json({ message: error.message || 'Server error re-analyzing resume.' });
+  }
+}
+
 export async function getUserResumes(req, res) {
   try {
     const resumes = await db.resumes.find({ userId: req.user.id });

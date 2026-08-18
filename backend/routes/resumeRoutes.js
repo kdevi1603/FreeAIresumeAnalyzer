@@ -9,7 +9,8 @@ import {
   generateCoverLetterEndpoint,
   generateInterviewQuestionsEndpoint,
   fixSectionEndpoint,
-  agentChatEndpoint
+  agentChatEndpoint,
+  reanalyzeResume
 } from '../controllers/resumeController.js';
 import { protect } from '../middleware/auth.js';
 import { upload } from '../middleware/upload.js';
@@ -24,6 +25,7 @@ router.get('/', getUserResumes);
 router.get('/:id', getResumeById);
 router.put('/:id', updateResume);
 router.delete('/:id', deleteResume);
+router.post('/:id/reanalyze', reanalyzeResume);
 
 // Bonus AI features & Studio actions
 router.post('/match-job', matchJob);
@@ -33,3 +35,4 @@ router.post('/:id/fix', fixSectionEndpoint);
 router.post('/:id/chat', agentChatEndpoint);
 
 export default router;
+

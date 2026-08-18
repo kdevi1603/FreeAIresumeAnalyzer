@@ -41,6 +41,12 @@ export default function App() {
   });
 
   useEffect(() => {
+    if (window.location.pathname === '/admin' && viewMode !== 'admin') {
+      setViewMode('admin');
+    }
+  }, []);
+
+  useEffect(() => {
     if (viewMode === 'admin') {
       window.history.pushState({}, '', '/admin');
     } else if (viewMode === 'landing' || viewMode === 'sidebar_dashboard') {
@@ -62,27 +68,88 @@ export default function App() {
   const [savedResumes, setSavedResumes] = usePersistentState('app_savedResumes', []);
   const [selectedTemplateId, setSelectedTemplateId] = usePersistentState('app_selectedTemplateId', 'modern');
 
-  const handleApplyTemplate = (templateId) => {
+  const handleApplyTemplate = async (templateId) => {
     setIsTemplateModalOpen(false);
     setSelectedTemplateId(templateId);
 
-    // Check if we need to create a new scratch resume
-    if (!currentAnalysis) {
-      const newRes = { id: 'scratch-' + Date.now(), isScratch: true, personalInfo: { name: 'Untitled Resume' } };
-      setSavedResumes(prev => [newRes, ...prev]);
-      setCurrentAnalysis(newRes);
+    let updatedAnalysis = currentAnalysis;
+    if (!updatedAnalysis) {
+      updatedAnalysis = { 
+        id: 'scratch-' + Date.now(), 
+        isScratch: true, 
+        personalInfo: { name: 'Untitled Resume' },
+        template: templateId,
+        templateStyle: templateId,
+        templateUsed: templateId
+      };
+      setSavedResumes(prev => [updatedAnalysis, ...prev]);
+    } else {
+      updatedAnalysis = {
+        ...updatedAnalysis,
+        template: templateId,
+        templateStyle: templateId,
+        templateUsed: templateId
+      };
+      setSavedResumes(prev => prev.map(r => r.id === updatedAnalysis.id ? updatedAnalysis : r));
+      
+      // Save to backend if it's a real resume
+      if (updatedAnalysis.id && !updatedAnalysis.id.startsWith('scratch-') && !updatedAnalysis.id.startsWith('upload-')) {
+        try {
+          const { resumeService } = await import('./services/api.js');
+          await resumeService.updateResume(updatedAnalysis.id, { 
+            template: templateId,
+            templateStyle: templateId, 
+            templateUsed: templateId 
+          });
+        } catch (err) {
+          console.error('Failed to save template to backend:', err);
+        }
+      }
     }
-
+    
+    setCurrentAnalysis(updatedAnalysis);
     setViewMode('studio');
   };
 
-  const handleTemplateSelectFromGallery = (templateId) => {
+  const handleTemplateSelectFromGallery = async (templateId) => {
     setSelectedTemplateId(templateId);
-    if (!currentAnalysis) {
-      const newRes = { id: 'scratch-' + Date.now(), isScratch: true, personalInfo: { name: 'Untitled Resume' } };
-      setSavedResumes(prev => [newRes, ...prev]);
-      setCurrentAnalysis(newRes);
+    let updatedAnalysis = currentAnalysis;
+
+    if (!updatedAnalysis) {
+      updatedAnalysis = { 
+        id: 'scratch-' + Date.now(), 
+        isScratch: true, 
+        personalInfo: { name: 'Untitled Resume' },
+        template: templateId,
+        templateStyle: templateId,
+        templateUsed: templateId
+      };
+      setSavedResumes(prev => [updatedAnalysis, ...prev]);
+    } else {
+      updatedAnalysis = {
+        ...updatedAnalysis,
+        template: templateId,
+        templateStyle: templateId,
+        templateUsed: templateId
+      };
+      setSavedResumes(prev => prev.map(r => r.id === updatedAnalysis.id ? updatedAnalysis : r));
+      
+      // Save to backend if it's a real resume
+      if (updatedAnalysis.id && !updatedAnalysis.id.startsWith('scratch-') && !updatedAnalysis.id.startsWith('upload-')) {
+        try {
+          const { resumeService } = await import('./services/api.js');
+          await resumeService.updateResume(updatedAnalysis.id, { 
+            template: templateId,
+            templateStyle: templateId, 
+            templateUsed: templateId 
+          });
+        } catch (err) {
+          console.error('Failed to save template to backend:', err);
+        }
+      }
     }
+    
+    setCurrentAnalysis(updatedAnalysis);
     setViewMode('studio');
   };
 

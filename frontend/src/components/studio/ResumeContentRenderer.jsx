@@ -2,7 +2,7 @@ import React from 'react';
 import { Mail, Phone, Linkedin, Github } from 'lucide-react';
 
 export default function ResumeContentRenderer({ 
-  resumeData, 
+  resumeData: originalResumeData, 
   templateStyle, 
   accentColor = '#2563EB', 
   showDiff = false,
@@ -11,7 +11,19 @@ export default function ResumeContentRenderer({
   onManualEdit = null,
   customTemplateHtml = null
 }) {
-  const candidateName = resumeData?.personalInfo?.name === 'Untitled Resume' ? '' : (resumeData?.personalInfo?.name || resumeData?.fileName?.replace(/\.pdf$/i, '') || '');
+  const hasStructuredData = Boolean(
+    originalResumeData?.summary || 
+    originalResumeData?.education || 
+    originalResumeData?.skills || 
+    (originalResumeData?.experienceList && originalResumeData.experienceList.length > 0)
+  );
+
+  const resumeData = {
+    ...originalResumeData,
+    summary: hasStructuredData ? originalResumeData?.summary : (originalResumeData?.rawText || originalResumeData?.summary)
+  };
+
+  const candidateName = resumeData?.personalInfo?.name === 'Untitled Resume' ? '' : (resumeData?.personalInfo?.name || resumeData?.fileName?.replace(/\.pdf$/i, '')?.replace(/-/g, ' ')?.replace(/_/g, ' ') || '');
   const rawText = resumeData?.rawText || resumeData?.summary || '';
   
   let email = resumeData?.personalInfo?.email || '';
@@ -51,9 +63,7 @@ export default function ResumeContentRenderer({
     </div>
   );
 
-  const summaryText = (showDiff && resumeData?.fixedSummary) ? resumeData.fixedSummary : (resumeData?.summary || 'Experienced professional with a track record of delivering high-quality results. Strong background in project management and team leadership. Passionate about leveraging technology to solve complex business problems.');
-  
-  let defaultProjects = "TechCorp Inc. - Senior Developer\n• Led the development of a scalable microservices architecture.\n• Improved system performance by 40% through optimization.\n\nWebSolutions LLC - Software Engineer\n• Built responsive web applications using React and Node.js.\n• Mentored junior developers and conducted code reviews.";
+  const summaryText = (showDiff && resumeData?.fixedSummary) ? resumeData.fixedSummary : (resumeData?.summary || '');
   
   const projectsText = (showDiff && resumeData?.fixedProjects) ? resumeData.fixedProjects : (resumeData?.experienceList?.length > 0 ? resumeData.experienceList.map(exp => {
     let header = '';
@@ -61,11 +71,11 @@ export default function ResumeContentRenderer({
     if (!isPlaceholder && exp.company) header += exp.company;
     if (exp.role) header += (header ? ' - ' : '') + exp.role;
     return header ? `${header}\n${exp.bullets}` : exp.bullets;
-  }).join('\n\n') : defaultProjects);
+  }).join('\n\n') : '');
   
-  const skillsText = (showDiff && resumeData?.fixedSkills) ? resumeData.fixedSkills : (resumeData?.skills || resumeData?.skillsFound?.map(s => typeof s === 'string' ? s : s.skill).filter(Boolean).join(', ') || 'JavaScript, React, Node.js, Python, SQL, Git, Docker, Agile Methodologies');
+  const skillsText = (showDiff && resumeData?.fixedSkills) ? resumeData.fixedSkills : (resumeData?.skills || resumeData?.skillsFound?.map(s => typeof s === 'string' ? s : s.skill).filter(Boolean).join(', ') || '');
   
-  const educationText = (showDiff && resumeData?.fixedEducation) ? resumeData.fixedEducation : (resumeData?.education || 'Master of Science in Computer Science\nUniversity of Technology - 2020\n\nBachelor of Science in Information Technology\nState University - 2018');
+  const educationText = (showDiff && resumeData?.fixedEducation) ? resumeData.fixedEducation : (resumeData?.education || '');
 
   const getContrastColor = (hexcolor) => {
     if (!hexcolor) return '#ffffff';
@@ -128,7 +138,7 @@ export default function ResumeContentRenderer({
     { title: 'Education & Academic Details', content: formatText(educationText), isModified: !!resumeData?.fixedEducation },
     { title: 'Certifications', content: formatText(certificationsText, false), isModified: !!resumeData?.fixedCertifications },
     { title: 'Technical Skills & Tools', content: formatText(skillsText, false), isModified: !!resumeData?.fixedSkills },
-    { title: 'Languages', content: 'Tamil (Native), English (Professional Working Proficiency)' }
+    { title: 'Languages', content: resumeData?.languages || resumeData?.personalInfo?.languages || '' }
   ].filter(sec => sec.content);
 
   return (
@@ -390,7 +400,7 @@ export default function ResumeContentRenderer({
 
               {mSummary && (
                 <div>
-                   <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#111', background: '#f1f5f9', padding: '6px 10px', borderRadius: '4px', textTransform: 'uppercase', marginBottom: '10px' }}>Objective</h3>
+                   <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#111', background: '#f1f5f9', padding: '6px 10px', borderRadius: '4px', textTransform: 'uppercase', marginBottom: '10px' }}>Career Objective</h3>
                    <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>{formatText(mSummary, false)}</div>
                 </div>
               )}
@@ -439,29 +449,60 @@ export default function ResumeContentRenderer({
       )}
 
       {/* 5. Executive */}
-      {templateStyle === 'executive' && (
-        <div>
-          <div style={{ background: '#0f172a', color: '#fff', padding: '40px 40px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <h1 style={{ fontSize: '32px', fontWeight: 400, margin: '0 0 10px 0', letterSpacing: '2px', color: '#fff' }}>{candidateName.toUpperCase()}</h1>
-              <ContactRow color="#94a3b8" style={{ fontSize: '12px' }} />
-            </div>
-            {profilePicture && <img src={profilePicture} style={{ width: '80px', height: '80px', objectFit: 'cover', border: '2px solid #fff' }} />}
-          </div>
-          <div style={{ padding: '30px 40px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
-            {sections.map((sec, idx) => (
-              <div key={idx} style={{ display: 'flex', gap: '32px' }}>
-                <div style={{ width: '140px', flexShrink: 0 }}>
-                  <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: accentColor, textTransform: 'uppercase', textAlign: 'right' }}>{sec.title}</h3>
-                </div>
-                <div style={{ fontSize: '12px', lineHeight: 1.8, color: '#334155', whiteSpace: 'pre-line', flex: 1, borderLeft: '1px solid #e2e8f0', paddingLeft: '24px', textAlign: 'justify' }}>
-                  {sec.content}
-                </div>
+      {templateStyle === 'executive' && (() => {
+        const isDemoName = resumeData?.personalInfo?.name === 'Parsed Resume' || resumeData?.personalInfo?.name === 'Untitled Resume';
+        const mName = isDemoName ? (resumeData?.fileName?.replace(/\.pdf$/i, '') || '') : (resumeData?.personalInfo?.name || '');
+        
+        let mSummary = (showDiff && resumeData?.fixedSummary) ? resumeData.fixedSummary : resumeData?.summary;
+        if (mSummary === '...') mSummary = '';
+
+        const mEducation = (showDiff && resumeData?.fixedEducation) ? resumeData.fixedEducation : resumeData?.education;
+        
+        let mSkills = (showDiff && resumeData?.fixedSkills) ? resumeData.fixedSkills : (resumeData?.skills || resumeData?.skillsFound?.map(s => typeof s === 'string' ? s : s.skill).filter(Boolean).join(', '));
+        const demoSkills = 'Communication, Problem Solving, Project Management, Teamwork, Data Analysis';
+        if (mSkills === demoSkills) mSkills = '';
+
+        const mProjects = (showDiff && resumeData?.fixedProjects) ? resumeData.fixedProjects : (resumeData?.experienceList?.length > 0 ? resumeData.experienceList.map(exp => {
+          let header = '';
+          const isPlaceholder = exp.company === 'Extracted Experience' || exp.company === 'Original Content' || exp.company === 'Resume Experience Section';
+          if (!isPlaceholder && exp.company) header += exp.company;
+          if (exp.role) header += (header ? ' - ' : '') + exp.role;
+          return header ? `${header}\n${exp.bullets}` : exp.bullets;
+        }).join('\n\n') : null);
+
+        const execSections = [
+          { title: 'Executive Summary', content: formatText(mSummary, false) },
+          { title: 'Work & Project Experience', content: formatText(mProjects) },
+          { title: 'Education & Academic Details', content: formatText(mEducation) },
+          { title: 'Certifications', content: formatText(certificationsText, false) },
+          { title: 'Technical Skills & Tools', content: formatText(mSkills, false) },
+          { title: 'Languages', content: resumeData?.languages || resumeData?.personalInfo?.languages || '' }
+        ].filter(sec => sec.content);
+
+        return (
+          <div>
+            <div style={{ background: '#0f172a', color: '#fff', padding: '40px 40px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h1 style={{ fontSize: '32px', fontWeight: 400, margin: '0 0 10px 0', letterSpacing: '2px', color: '#fff' }}>{(mName || candidateName).toUpperCase()}</h1>
+                <ContactRow color="#94a3b8" style={{ fontSize: '12px' }} />
               </div>
-            ))}
+              {profilePicture && <img src={profilePicture} style={{ width: '80px', height: '80px', objectFit: 'cover', border: '2px solid #fff' }} />}
+            </div>
+            <div style={{ padding: '30px 40px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+              {execSections.map((sec, idx) => (
+                <div key={idx} style={{ display: 'flex', gap: '32px' }}>
+                  <div style={{ width: '140px', flexShrink: 0 }}>
+                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: accentColor, textTransform: 'uppercase', textAlign: 'right' }}>{sec.title}</h3>
+                  </div>
+                  <div style={{ fontSize: '12px', lineHeight: 1.8, color: '#334155', whiteSpace: 'pre-line', flex: 1, borderLeft: '1px solid #e2e8f0', paddingLeft: '24px', textAlign: 'justify' }}>
+                    {sec.content}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* 6. Creative */}
       {templateStyle === 'creative' && (() => {
