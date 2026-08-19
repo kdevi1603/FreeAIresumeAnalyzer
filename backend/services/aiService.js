@@ -17,7 +17,7 @@ async function callGemini(prompt, systemInstruction = '') {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error('GEMINI_API_KEY not found');
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`;
   const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -77,7 +77,7 @@ async function callOpenAI(prompt, systemInstruction = '') {
 }
 
 // Smart Demo Mode: Generates high quality analysis based on actual resume content when API key is missing
-function runSmartDemoAnalysis(resumeText) {
+export function runSmartDemoAnalysis(resumeText) {
   console.log('⚡ Running Smart Demo Mode AI Analysis...');
   const textLower = resumeText.toLowerCase();
   const wordCount = resumeText.split(/\s+/).length;
@@ -148,11 +148,11 @@ function runSmartDemoAnalysis(resumeText) {
 
   // Section extraction using heading detection
   const sectionHeaders = [
-    { key: 'experience', patterns: [/(?:^|\n)\s*(?:projects\s*&\s*experience|professional\s+experience|work\s+experience|employment\s+history|experience)\s*[:\n]/i] },
-    { key: 'education', patterns: [/(?:^|\n)\s*(?:education\s*&\s*academic\s*details|educational\s+qualification|academic\s+details|academic\s+background|education)\s*[:\n]/i] },
-    { key: 'skills', patterns: [/(?:^|\n)\s*(?:technical\s+skills|core\s+competencies|key\s+skills|skills\s*&\s*tools|technical\s+qualification|skills)\s*[:\n]/i] },
+    { key: 'experience', patterns: [/(?:^|\n)\s*(?:professional\s+experience|work\s+experience|employment\s+history|experience)\s*[:\n]/i, /\b(?:work\s*(?:&|8)\s*project\s+experience|projects\s*(?:&|8)\s*experience)\b/i] },
+    { key: 'education', patterns: [/(?:^|\n)\s*(?:educational\s+qualification|academic\s+details|academic\s+background|education)\s*[:\n]/i, /\b(?:education\s*(?:&|8)\s*academic\s*details)\b/i] },
+    { key: 'skills', patterns: [/(?:^|\n)\s*(?:technical\s+skills|core\s+competencies|key\s+skills|skills\s*(?:&|8)\s*tools|technical\s+qualification|skills|expertise|packages)\s*[:\n]/i, /\b(?:technical\s+skills\s*(?:&|8)\s*tools)\b/i] },
     { key: 'summary', patterns: [/(?:^|\n)\s*(?:professional\s+summary|executive\s+summary|career\s+objective|objective|summary|about\s+me|professional\s+profile)\s*[:\n]/i] },
-    { key: 'projects', patterns: [/(?:^|\n)\s*(?:academic\s+projects|personal\s+projects|projects|project\s+title)\s*[:\n]/i] },
+    { key: 'projects', patterns: [/(?:^|\n)\s*(?:academic\s+projects|personal\s+projects|projects|project|project\s+title)\s*[:\n]/i] },
     { key: 'certifications', patterns: [/(?:^|\n)\s*(?:certifications|certificates|licenses)\s*[:\n]/i] },
     { key: 'languages', patterns: [/(?:^|\n)\s*languages?\s*[:\n]/i] },
     { key: 'personal', patterns: [/(?:^|\n)\s*(?:personal\s+profile|personal\s+details|area\s+of\s+interest|father's\s+name)\s*[:\n]/i] }
@@ -325,13 +325,13 @@ function runSmartDemoAnalysis(resumeText) {
 }
 
 export async function analyzeResume(resumeText) {
-  const prompt = `You are an expert ATS (Applicant Tracking System) algorithm and data extractor. Analyze the following candidate resume text and extract the information into the corresponding JSON sections. 
+  const prompt = `You are an expert data extractor. Analyze the following candidate resume text and extract the information into the corresponding JSON sections. 
 CRITICAL RULES:
-1. Clean up the raw text! Remove floating headers (like "SUMMARY", "PROJECTS", "CERTIFICATES"), page numbers, weird formatting artifacts, or raw labels like "Description:", "Technologies Used:".
-2. Format ALL experience and project details as clean, professional bullet points starting with the '•' character. DO NOT output massive raw paragraphs. 
-3. Ensure technical skills do not bleed into the education section.
-4. Remove contact info (address, email, phone, web links) from the summary section.
-5. When identifying "missingSkills", ONLY suggest alternative or related keywords that the candidate is highly likely to already know based on their existing experience. NEVER suggest completely unrelated or fake skills just to boost the ATS score.
+1. DO NOT summarize, rewrite, or modify the original text. You must extract the EXACT original text as it appears in the resume.
+2. Map the content strictly based on the headings in the resume. Ensure that content under a specific heading is placed ONLY in its corresponding JSON section.
+3. Preserve all original bullet points, formatting, and labels (e.g., 'Description:', 'Technologies Used:'). Do not clean them up.
+4. Ensure technical skills do not bleed into the experience or project sections.
+5. Identify "missingSkills" by suggesting industry-standard skills related to their experience.
 
 Resume Text:
 """
@@ -340,6 +340,7 @@ ${resumeText.slice(0, 10000)}
 
 Required JSON Schema:
 {
+  "isResume": boolean (Return true if the document appears to be a genuine resume/CV, false if it is a completely unrelated document like a recipe, random article, etc.),
   "atsScore": number (0 to 100),
   "personalInfo": {
     "name": string,

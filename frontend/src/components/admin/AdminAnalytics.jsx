@@ -42,7 +42,8 @@ export default function AdminAnalytics() {
   const [dateRange, setDateRange] = useState('Last 30 Days');
 
   useEffect(() => {
-    fetch('/api/admin/stats', {
+    setLoading(true);
+    fetch(`/api/admin/stats?range=${encodeURIComponent(dateRange)}`, {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
     })
       .then(res => res.json())
@@ -54,7 +55,7 @@ export default function AdminAnalytics() {
         console.error(err);
         setLoading(false);
       });
-  }, []);
+  }, [dateRange]);
 
   const simulateExport = (type) => {
     alert(`Generating ${type} report for ${dateRange}...`);
@@ -97,11 +98,7 @@ export default function AdminAnalytics() {
               <option>This Year</option>
             </select>
           </div>
-          <div className="flex gap-2">
-            <button onClick={() => simulateExport('PDF')} className="p-2 border border-[var(--border-color)] rounded-xl hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/30 transition-colors text-sm font-medium flex items-center gap-2"><FileText size={16} /> PDF</button>
-            <button onClick={() => simulateExport('CSV')} className="p-2 border border-[var(--border-color)] rounded-xl hover:bg-green-500/10 hover:text-green-500 hover:border-green-500/30 transition-colors text-sm font-medium flex items-center gap-2"><Download size={16} /> CSV</button>
-            <button onClick={() => simulateExport('Print')} className="p-2 border border-[var(--border-color)] rounded-xl hover:bg-blue-500/10 hover:text-blue-500 hover:border-blue-500/30 transition-colors text-sm font-medium flex items-center gap-2"><Printer size={16} /> Print</button>
-          </div>
+
         </div>
       </div>
 

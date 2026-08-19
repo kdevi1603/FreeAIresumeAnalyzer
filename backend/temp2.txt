@@ -1,0 +1,113 @@
+{
+  "id": "b2f82b1c-b59a-46ff-a4ec-6c99ca5c4e5f",
+  "createdAt": "2026-08-12T04:41:50.554Z",
+  "userId": "eee93475-69d2-4823-a818-ac1a7cdea6af",
+  "fileName": "Lalith_velarasi_S.pdf",
+  "fileUrl": "/uploads/dc53ad3d-59fe-4186-9377-2cf0448df661.pdf",
+  "rawText": "LALITH VELARASI S\nProgrammer / Web Developer\nEmail: lalitharasi496@gmail.com | Phone: +91 8667215019 | Location: Cuddallore, TamilNadu\nLinkedIn: www.linkedin.com/in/lalithvelarasi | GitHub: github.com/lalithvelarasi",
+  "pages": 1,
+  "atsScore": 100,
+  "personalInfo": {
+    "name": "LALITH VELARASI S",
+    "jobTitle": "Programmer / Web Developer",
+    "email": "lalitharasi496@gmail.com",
+    "phone": "+91 8667215019",
+    "city": "Cuddallore, TamilNadu",
+    "linkedin": "www.linkedin.com/in/lalithvelarasi",
+    "portfolio": "",
+    "github": "",
+    "profilePicture": null
+  },
+  "summary": "Versatile and detail-driven programmer with strong proficiency in JavaScript, HTML, CSS, C, Python, and Java, passionate about developing responsive web applications and robust software solutions with optimized performance.",
+  "education": "MCA Computer Application | 2025\nANNA UNIVERSITY | Coimbatore, Tamil Nadu\n\nBCA Computer Application | 2023\nTHIRUVALLUVAR UNIVERSITY | Tiruvannamalai, Tamil Nadu\n\nHSC | 2020\nJohn Dewey Matric Hr Sec School | Panruti, Tamil Nadu",
+  "experienceList": [
+    {
+      "company": "Blood Donor Directory",
+      "role": "HTML, CSS, Database, Python",
+      "period": "",
+      "bullets": "The Blood Donor Directory, built using HTML, CSS, Python, and a secure database, streamlines the process of connecting recipients with potential blood donors through an intuitive, efficient, and user-friendly platform."
+    },
+    {
+      "company": "Portfolio",
+      "role": "HTML, CSS, Bootstrap, JavaScript, Animation",
+      "period": "",
+      "bullets": "A dynamic portfolio website built with HTML, CSS, and Bootstrap, featuring interactive JavaScript elements and smooth animations for an engaging user experience."
+    },
+    {
+      "company": "Login Page",
+      "role": "HTML, CSS, Bootstrap, Node.js, Express.js",
+      "period": "",
+      "bullets": "The User Login System is a secure and interactive web application designed for user authentication."
+    },
+    {
+      "company": "Craft and Lore",
+      "role": "HTML, CSS, Bootstrap, JavaScript",
+      "period": "",
+      "bullets": "Craft and Lore is a dynamic website designed for showcasing and selling handcrafted items, featuring a modern, responsive layout built with HTML, CSS, Bootstrap, and interactive elements powered by JavaScript."
+    }
+  ],
+  "sectionScores": {
+    "structure": 80,
+    "experience": 30,
+    "education": 90,
+    "projects": 75,
+    "skills": 85
+  },
+  "grammar": {
+    "score": 90,
+    "readability": "A",
+    "passiveSentences": 2
+  },
+  "formatting": [
+    {
+      "label": "ATS Friendly Layout",
+      "passed": true
+    },
+    {
+      "label": "Proper Headings",
+      "passed": true
+    },
+    {
+      "label": "Font Size",
+      "passed": true
+    },
+    {
+      "label": "Bullet Points",
+      "passed": false
+    },
+    {
+      "label": "No Large Tables",
+      "passed": true
+    }
+  ],
+  "skills": "Git, Github, R",
+  "skillsFound": [
+    "JavaScript",
+    "React.js",
+    "Bootstrap",
+    "HTML5",
+    "CSS3",
+    "C",
+    "C++",
+    "SQL",
+    "Python",
+    "MS Office Word",
+    "Excel",
+    "PowerPoint",
+    "Node.js",
+    "Express.js"
+  ],
+  "missingSkills": [
+    "Git / GitHub",
+    "REST APIs",
+    "MongoDB",
+    "TypeScript",
+    "Data Structures & Algorithms",
+    "Docker"
+  ],
+  "suggestions": [],
+  "fixedSummary": "Results-driven MCA graduate and Web Developer proficient in JavaScript, React.js, Node.js, Python, and SQL. Passionate about building responsive, full-stack web applications and optimizing software performance to deliver seamless user experiences.",
+  "fixedProjects": "Blood Donor Directory | Web Application\n• Engineered a responsive web portal using Python, SQL, HTML, and CSS to connect blood donors with recipients, improving donor search speed by 40%.\n• Designed and optimized relational database schemas to securely manage and process confidential donor registration records.\n\nUser Authentication System | Full-Stack Web Application\n• Developed a secure user authentication system using Node.js, Express.js, and Bootstrap with encrypted sessions and input validation.\n• Streamlined backend API routing, reducing authentication latency by 25% and improving overall platform stability.\n\nCraft & Lore | E-Commerce Web Platform\n• Architected a responsive e-commerce web platform using HTML5, CSS3, Bootstrap, and JavaScript to showcase handcrafted goods.\n• Increased prospective user engagement by 30% by integrating dynamic product filtering and interactive UI animations.\n\nPersonal Portfolio | Web Application\n• Designed and deployed an interactive portfolio showcasing technical projects with optimized assets, achieving sub-1.5-second load times.\n• Built cross-browser compatible layouts using modular CSS and JavaScript to ensure a seamless mobile-first user experience.",
+  "fixedSkills": "JavaScript | React.js | Bootstrap | HTML5 | CSS3 | C | C++ | SQL | Python | Packages: MS Office Word, Excel, PowerPoint",
+  "customHtml": "<style></style><div style=\"text-align: center; margin-bottom: 20px;\"><h1 style=\"font-size: 28px; font-weight: 700; color: rgb(37, 99, 235); margin: 0px 0px 5px;\">LALITH VELARASI S</h1><div style=\"display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; color: rgb(71, 85, 105); font-size: 12px;\"><span style=\"display: flex; align-items: center; gap: 4px;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-mail\"><rect width=\"20\" height=\"16\" x=\"2\" y=\"4\" rx=\"2\"></rect><path d=\"m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7\"></path></svg> lalitharasi496@gmail.com</span><span style=\"display: flex; align-items: center; gap: 4px;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-phone\"><path d=\"M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z\"></path></svg> +91 8667215019</span><span style=\"display: flex; align-items: center; gap: 4px;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-linkedin\"><path d=\"M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z\"></path><rect width=\"4\" height=\"12\" x=\"2\" y=\"9\"></rect><circle cx=\"4\" cy=\"4\" r=\"2\"></circle></svg> www.linkedin.com/in/lalithvelarasi</span></div></div><div style=\"display: flex; flex-direction: column; gap: 32px;\"><div><h3 style=\"font-size: 14px; font-weight: bold; color: rgb(17, 17, 17); background: rgb(241, 245, 249); padding: 4px 8px; border-radius: 4px; text-transform: uppercase;\">Executive Summary</h3><div style=\"font-size: 12px; line-height: 1.8; color: rgb(51, 65, 85); white-space: pre-line; padding: 4px 8px; text-align: justify;\"><div style=\"display: flex; flex-direction: column; gap: 12px;\"><div style=\"text-align: left;\">Results-driven MCA graduate and Web Developer proficient in JavaScript, React.js, Node.js, Python, and SQL. Passionate about building responsive, full-stack web applications and optimizing software performance to deliver seamless user experiences.</div></div></div></div><div><h3 style=\"font-size: 14px; font-weight: bold; color: rgb(17, 17, 17); background: rgb(241, 245, 249); padding: 4px 8px; border-radius: 4px; text-transform: uppercase;\">Work &amp; Project Experience</h3><div style=\"font-size: 12px; line-height: 1.8; color: rgb(51, 65, 85); white-space: pre-line; padding: 4px 8px; text-align: justify;\"><div style=\"display: flex; flex-direction: column; gap: 12px;\"><div style=\"text-align: left;\">Blood Donor Directory | Web Application</div><div style=\"display: flex; align-items: flex-start; gap: 8px;\"><span style=\"flex-shrink: 0; width: 12px; text-align: center; font-size: 14px; line-height: 1.4;\">•</span><span style=\"flex: 1 1 0%; text-align: left;\">Engineered a responsive web portal using Python, SQL, HTML, and CSS to connect blood donors with recipients, improving donor search speed by 40%.</span></div><div style=\"display: flex; align-items: flex-start; gap: 8px;\"><span style=\"flex-shrink: 0; width: 12px; text-align: center; font-size: 14px; line-height: 1.4;\">•</span><span style=\"flex: 1 1 0%; text-align: left;\">Designed and optimized relational database schemas to securely manage and process confidential donor registration records.</span></div><div style=\"text-align: left;\">User Authentication System | Full-Stack Web Application</div><div style=\"display: flex; align-items: flex-start; gap: 8px;\"><span style=\"flex-shrink: 0; width: 12px; text-align: center; font-size: 14px; line-height: 1.4;\">•</span><span style=\"flex: 1 1 0%; text-align: left;\">Developed a secure user authentication system using Node.js, Express.js, and Bootstrap with encrypted sessions and input validation.</span></div><div style=\"display: flex; align-items: flex-start; gap: 8px;\"><span style=\"flex-shrink: 0; width: 12px; text-align: center; font-size: 14px; line-height: 1.4;\">•</span><span style=\"flex: 1 1 0%; text-align: left;\">Streamlined backend API routing, reducing authentication latency by 25% and improving overall platform stability.</span></div><div style=\"text-align: left;\">Craft &amp; Lore | E-Commerce Web Platform</div><div style=\"display: flex; align-items: flex-start; gap: 8px;\"><span style=\"flex-shrink: 0; width: 12px; text-align: center; font-size: 14px; line-height: 1.4;\">•</span><span style=\"flex: 1 1 0%; text-align: left;\">Architected a responsive e-commerce web platform using HTML5, CSS3, Bootstrap, and JavaScript to showcase handcrafted goods.</span></div><div style=\"display: flex; align-items: flex-start; gap: 8px;\"><span style=\"flex-shrink: 0; width: 12px; text-align: center; font-size: 14px; line-height: 1.4;\">•</span><span style=\"flex: 1 1 0%; text-align: left;\">Increased prospective user engagement by 30% by integrating dynamic product filtering and interactive UI animations.</span></div><div style=\"text-align: left;\">Personal Portfolio | Web Application</div><div style=\"display: flex; align-items: flex-start; gap: 8px;\"><span style=\"flex-shrink: 0; width: 12px; text-align: center; font-size: 14px; line-height: 1.4;\">•</span><span style=\"flex: 1 1 0%; text-align: left;\">Designed and deployed an interactive portfolio showcasing technical projects with optimized assets, achieving sub-1.5-second load times.</span></div><div style=\"display: flex; align-items: flex-start; gap: 8px;\"><span style=\"flex-shrink: 0; width: 12px; text-align: center; font-size: 14px; line-height: 1.4;\">•</span><span style=\"flex: 1 1 0%; text-align: left;\">Built cross-browser compatible layouts using modular CSS and JavaScript to ensure a seamless mobile-first user experience.</span></div></div></div></div><div><h3 style=\"font-size: 14px; font-weight: bold; color: rgb(17, 17, 17); background: rgb(241, 245, 249); padding: 4px 8px; border-radius: 4px; text-transform: uppercase;\">Education &amp; Academic Details</h3><div style=\"font-size: 12px; line-height: 1.8; color: rgb(51, 65, 85); white-space: pre-line; padding: 4px 8px; text-align: justify;\"><div style=\"display: flex; flex-direction: column; gap: 12px;\"><div style=\"text-align: left;\">MCA Computer Application | 2025 ANNA UNIVERSITY | Coimbatore, Tamil Nadu</div><div style=\"height: 8px;\"></div><div style=\"text-align: left;\">BCA Computer Application | 2023 THIRUVALLUVAR UNIVERSITY | Tiruvannamalai, Tamil Nadu</div><div style=\"height: 8px;\"></div><div style=\"text-align: left;\">HSC | 2020 John Dewey Matric Hr Sec School | Panruti, Tamil Nadu</div></div></div></div><div><h3 style=\"font-size: 14px; font-weight: bold; color: rgb(17, 17, 17); background: rgb(241, 245, 249); padding: 4px 8px; border-radius: 4px; text-transform: uppercase;\">Technical Skills &amp; Tools</h3><div style=\"font-size: 12px; line-height: 1.8; color: rgb(51, 65, 85); white-space: pre-line; padding: 4px 8px; text-align: justify;\"><div style=\"display: flex; flex-direction: column; gap: 12px;\"><div style=\"text-align: left;\">JavaScript | React.js | Bootstrap | HTML5 | CSS3 | C | C++ | SQL | Python | Packages: MS Office Word, Excel, PowerPoint</div></div></div></div><div><h3 style=\"font-size: 14px; font-weight: bold; color: rgb(17, 17, 17); background: rgb(241, 245, 249); padding: 4px 8px; border-radius: 4px; text-transform: uppercase;\">Languages</h3><div style=\"font-size: 12px; line-height: 1.8; color: rgb(51, 65, 85); white-space: pre-line; padding: 4px 8px; text-align: justify;\">Tamil (Native), English (Professional Working Proficiency)</div></div></div><div style=\"position: absolute; bottom: 15px; left: 40px; right: 40px; font-size: 10px; color: rgb(148, 163, 184); border-top: 1px solid rgb(241, 245, 249); padding-top: 8px; display: flex; justify-content: space-between;\"><span>Generated by AI Resume Analyzer</span><span>Score: 100/100</span></div>"
+}

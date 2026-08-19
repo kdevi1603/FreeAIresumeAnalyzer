@@ -66,7 +66,13 @@ export default function Navbar({ onOpenAuth, viewMode, setViewMode, onOpenContac
           <div className="hidden-on-tablet" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             {isAuthenticated ? (
               <>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 14px', background: 'rgba(255,255,255,0.04)', borderRadius: '30px', border: '1px solid var(--border-color)' }}>
+                <div 
+                  onClick={() => setViewMode('profile')}
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 14px', background: 'rgba(255,255,255,0.04)', borderRadius: '30px', border: '1px solid var(--border-color)', cursor: 'pointer', transition: 'background 0.2s' }}
+                  onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                  onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+                  title="View Profile Settings"
+                >
                   <User size={16} color="var(--accent-cyan)" />
                   <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>{user?.name}</span>
                 </div>
@@ -121,6 +127,13 @@ export default function Navbar({ onOpenAuth, viewMode, setViewMode, onOpenContac
           
           {isAuthenticated ? (
             <>
+              <button onClick={() => {
+                setViewMode('profile');
+                setIsMobileMenuOpen(false);
+              }} className="btn btn-secondary" style={{ width: '100%', justifyContent: 'center' }}>
+                <User size={16} color="var(--accent-cyan)" />
+                <span>Profile Settings</span>
+              </button>
               <button onClick={() => {
                 logout();
                 setViewMode('landing');

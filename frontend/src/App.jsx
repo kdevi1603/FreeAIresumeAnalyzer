@@ -8,6 +8,7 @@ import AdminPanel from './pages/AdminPanel.jsx';
 import Footer from './components/Footer.jsx';
 import TemplateSelectionModal from './components/TemplateSelectionModal.jsx';
 import CoverLetterStudio from './components/studio/CoverLetterStudio.jsx';
+import Profile from './pages/Profile.jsx';
 import CreateResumeModal from './components/CreateResumeModal.jsx';
 import { Sparkles, Shield, Heart, Github } from 'lucide-react';
 
@@ -35,14 +36,31 @@ function usePersistentState(key, initialValue) {
 export default function App() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isContactOpen, setIsContactOpen] = useState(false);
-  const [viewMode, setViewMode] = usePersistentState('app_viewMode', () => {
-    if (window.location.pathname === '/admin') return 'admin';
-    return 'landing';
+  const [viewMode, setViewMode] = useState(() => {
+    if (window.location.pathname === '/admin' || window.location.pathname === '/admin/') {
+      return 'admin';
+    }
+    try {
+      const item = window.sessionStorage.getItem('app_viewMode');
+      return item ? JSON.parse(item) : 'landing';
+    } catch {
+      return 'landing';
+    }
   });
 
   useEffect(() => {
-    if (window.location.pathname === '/admin' && viewMode !== 'admin') {
-      setViewMode('admin');
+    try {
+      window.sessionStorage.setItem('app_viewMode', JSON.stringify(viewMode));
+    } catch (e) {}
+  }, [viewMode]);
+
+  useEffect(() => {
+    const isLightMode = localStorage.getItem('theme') === 'light';
+    if (isLightMode) {
+      document.body.classList.add('light-mode');
+    } else {
+      document.body.classList.remove('light-mode');
+      localStorage.setItem('theme', 'dark');
     }
   }, []);
 
@@ -155,6 +173,10 @@ export default function App() {
 
   if (viewMode === 'admin') {
     return <AdminPanel onLogout={() => setViewMode('landing')} onBackToLanding={() => setViewMode('sidebar_dashboard')} />;
+  }
+
+  if (viewMode === 'profile') {
+    return <Profile />;
   }
 
   if (viewMode === 'sidebar_dashboard') {

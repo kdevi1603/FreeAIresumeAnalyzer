@@ -214,12 +214,45 @@ export default function AdminTemplates() {
           <p className="text-[var(--text-muted)] mt-1 font-medium">Design, manage, and distribute professional resume templates.</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <button className="flex items-center gap-2 bg-[var(--bg-card)] border border-[var(--border-color)] hover:bg-[var(--bg-dark)] px-4 py-2 rounded-xl transition-all font-medium">
+          <input 
+            type="file" 
+            id="template-upload-input" 
+            accept=".json" 
+            style={{ display: 'none' }} 
+            onChange={async (e) => {
+              const file = e.target.files[0];
+              if (!file) return;
+              try {
+                const text = await file.text();
+                const data = JSON.parse(text);
+                const templatesToUpload = Array.isArray(data) ? data : [data];
+                for (const t of templatesToUpload) {
+                  delete t.id;
+                  delete t._id;
+                  await fetch('/api/admin/templates', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify(t)
+                  });
+                }
+                fetchTemplates();
+                alert('Templates uploaded successfully!');
+              } catch (err) {
+                alert('Error uploading templates: ' + err.message);
+              }
+              e.target.value = '';
+            }}
+          />
+          <button 
+            onClick={() => document.getElementById('template-upload-input').click()}
+            className="flex items-center gap-2 bg-[var(--bg-card)] border border-[var(--border-color)] hover:bg-[var(--bg-dark)] px-4 py-2 rounded-xl transition-all font-medium"
+          >
             <Upload size={16} /> Upload
           </button>
-          <button className="flex items-center gap-2 bg-[var(--bg-card)] border border-[var(--border-color)] hover:bg-[var(--bg-dark)] px-4 py-2 rounded-xl transition-all font-medium">
-            <Download size={16} /> Import
-          </button>
+
           <button onClick={openAdd} className="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-indigo-500/20 transition-all transform hover:scale-105">
             <Plus size={18} /> Add Template
           </button>

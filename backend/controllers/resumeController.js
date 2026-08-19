@@ -20,6 +20,10 @@ export async function uploadResume(req, res) {
     console.log(`🧠 Running AI Analysis on ${rawText.length} characters...`);
     const aiAnalysis = await analyzeResume(rawText);
 
+    if (aiAnalysis.isResume === false) {
+      throw new Error('The uploaded document does not appear to be a valid resume. Please upload a genuine resume.');
+    }
+
     // Create database record
     const resumeRecord = await db.resumes.create({
       userId: req.user.id,
@@ -87,6 +91,10 @@ export async function reanalyzeResume(req, res) {
 
     console.log(`🔄 Re-analyzing resume ${id} (${rawText.length} chars)...`);
     const aiAnalysis = await analyzeResume(rawText);
+
+    if (aiAnalysis.isResume === false) {
+      return res.status(400).json({ message: 'The uploaded document does not appear to be a valid resume. Please upload a genuine resume.' });
+    }
 
     const updatedResume = await db.resumes.update(id, {
       ...resume,

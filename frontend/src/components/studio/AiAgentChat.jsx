@@ -129,29 +129,31 @@ export default function AiAgentChat({ resumeData, chatMessages, onSendMessage, i
                     }}>
                       {msg.proposedFix.content || '/* Formatting updates */'}
                     </div>
-                    <button
-                      onClick={() => onApplyFix && onApplyFix(msg.proposedFix.section, msg.proposedFix.content)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        background: 'var(--accent-blue)',
-                        border: 'none',
-                        color: '#fff',
-                        padding: '10px 16px',
-                        borderRadius: '20px',
-                        fontSize: '0.85rem',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        transition: 'all 0.2s',
-                        boxShadow: '0 4px 10px rgba(37, 99, 235, 0.3)'
-                      }}
-                      onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)' }}
-                      onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)' }}
-                    >
-                      <Sparkles size={16} />
-                      Apply Fix to Resume
-                    </button>
+                    {!msg.proposedFix.applied && (
+                      <button
+                        onClick={() => onApplyFix && onApplyFix(msg.proposedFix.section, msg.proposedFix.content)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          background: 'var(--accent-blue)',
+                          border: 'none',
+                          color: '#fff',
+                          padding: '10px 16px',
+                          borderRadius: '20px',
+                          fontSize: '0.85rem',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                          boxShadow: '0 4px 10px rgba(37, 99, 235, 0.3)'
+                        }}
+                        onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)' }}
+                        onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)' }}
+                      >
+                        <Sparkles size={16} />
+                        Apply Fix to Resume
+                      </button>
+                    )}
                   </div>
                 )}
 

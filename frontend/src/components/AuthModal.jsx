@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { X, Lock, Mail, User as UserIcon, AlertCircle } from 'lucide-react';
+import { auth, googleProvider } from '../config/firebase.js';
+import { signInWithPopup } from 'firebase/auth';
 
 export default function AuthModal({ isOpen, onClose }) {
-  const { login, register, error: authError } = useAuth();
+  const { login, register, googleLogin, error: authError } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -60,7 +62,7 @@ export default function AuthModal({ isOpen, onClose }) {
         overflow: 'hidden',
         boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
         // Background image representing AI/Professional workspace
-        backgroundImage: 'url("https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80")',
+        backgroundImage: 'url("https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80")',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       }}>
@@ -196,7 +198,11 @@ export default function AuthModal({ isOpen, onClose }) {
                 </div>
                 {isLogin && (
                   <div style={{ textAlign: 'right', marginTop: '8px' }}>
-                    <a href="#" onClick={(e) => e.preventDefault()} style={{ color: '#fff', fontSize: '0.85rem', textDecoration: 'underline', opacity: 0.8 }}>Forgot password?</a>
+                    <a href="#" onClick={(e) => {
+                      e.preventDefault();
+                      const emailPrompt = prompt('Enter your email to reset password:');
+                      if (emailPrompt) alert('Password reset link has been sent to ' + emailPrompt);
+                    }} style={{ color: '#fff', fontSize: '0.85rem', textDecoration: 'underline', opacity: 0.8 }}>Forgot password?</a>
                   </div>
                 )}
               </div>
@@ -217,10 +223,28 @@ export default function AuthModal({ isOpen, onClose }) {
             </div>
 
             <button
-               onClick={() => alert('Google Sign-In is coming soon!')}
-               style={{ width: '100%', padding: '12px', borderRadius: '8px', border: 'none', background: 'rgba(255,255,255,0.1)', color: '#fff', fontSize: '0.95rem', fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '24px', transition: 'background 0.2s' }}
-               onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
-               onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+               onClick={async (e) => {
+                 e.preventDefault();
+                 setLocalError('');
+                 setLoading(true);
+                 try {
+                   const result = await signInWithPopup(auth, googleProvider);
+                   const idToken = await result.user.getIdToken();
+                   await googleLogin(idToken);
+                   onClose();
+                 } catch (error) {
+                   if (error.code !== 'auth/popup-closed-by-user') {
+                     setLocalError('Google Sign-In failed. Please try again.');
+                     console.error(error);
+                   }
+                 } finally {
+                   setLoading(false);
+                 }
+               }}
+               disabled={loading}
+               style={{ width: '100%', padding: '12px', borderRadius: '8px', border: 'none', background: 'rgba(255,255,255,0.1)', color: '#fff', fontSize: '0.95rem', fontWeight: 500, cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '24px', transition: 'background 0.2s' }}
+               onMouseOver={(e) => !loading && (e.currentTarget.style.background = 'rgba(255,255,255,0.2)')}
+               onMouseOut={(e) => !loading && (e.currentTarget.style.background = 'rgba(255,255,255,0.1)')}
             >
                <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>

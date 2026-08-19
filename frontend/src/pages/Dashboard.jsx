@@ -92,10 +92,12 @@ export default function Dashboard({ onOpenAuth, viewMode, setViewMode, onOpenTem
                   return [updatedResume, ...prev];
                 });
               }
-              try {
-                await resumeService.updateResume(updatedResume.id, updatedResume);
-              } catch (err) {
-                console.error("Failed to save resume updates to backend:", err);
+              if (updatedResume.id && !updatedResume.id.startsWith('scratch-') && !updatedResume.id.startsWith('upload-')) {
+                try {
+                  await resumeService.updateResume(updatedResume.id, updatedResume);
+                } catch (err) {
+                  console.error("Failed to save resume updates to backend:", err);
+                }
               }
               setCurrentAnalysis(updatedResume);
             }
@@ -111,12 +113,18 @@ export default function Dashboard({ onOpenAuth, viewMode, setViewMode, onOpenTem
                   return [updatedResume, ...prev];
                 });
               }
-              try {
-                await resumeService.updateResume(updatedResume.id, updatedResume);
-              } catch (e) { }
+              if (updatedResume.id && !updatedResume.id.startsWith('scratch-') && !updatedResume.id.startsWith('upload-')) {
+                try {
+                  await resumeService.updateResume(updatedResume.id, updatedResume);
+                } catch (e) { }
+              }
               setCurrentAnalysis(updatedResume);
             }
-            setViewMode('sidebar_dashboard');
+            if (updatedResume?.isScratch) {
+              setViewMode('sidebar_dashboard');
+            } else {
+              setViewMode('landing');
+            }
           }}
           initialTemplate={selectedTemplateId}
         />

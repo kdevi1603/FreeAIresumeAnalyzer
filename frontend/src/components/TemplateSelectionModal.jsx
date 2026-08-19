@@ -125,6 +125,7 @@ export default function TemplateSelectionModal({ isOpen, onClose, onApply }) {
                                 || TEMPLATES[0];
               
               return {
+                uniqueKey: t._id || `${staticMatch.id}-${Math.random()}`,
                 id: staticMatch.id,
                 name: t.name,
                 description: t.description || staticMatch.description,
@@ -220,7 +221,7 @@ export default function TemplateSelectionModal({ isOpen, onClose, onApply }) {
               const isSelected = selectedTemplateId === template.id;
               return (
                 <div
-                  key={template.id}
+                  key={template.uniqueKey}
                   onClick={() => setSelectedTemplateId(template.id)}
                   className={`group cursor-pointer flex flex-col bg-white border overflow-hidden transition-all duration-300 ${
                     isSelected

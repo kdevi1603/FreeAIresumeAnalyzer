@@ -70,7 +70,7 @@ export const TEMPLATES = [
     name: '5. Executive',
     description: 'Professional summary, leadership achievements',
     image: '/mockups/executive.png?v=2',
-    tags: ['Two column', 'With photo'],
+    tags: ['Single column', 'With photo'],
     displayTags: ['Professional summary', 'Leadership achievements', 'Work experience focus', 'Best for managers']
   },
   {

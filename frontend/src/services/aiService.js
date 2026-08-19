@@ -14,14 +14,14 @@ export const aiService = {
     }
 
     try {
-      const model = genAI.getGenerativeModel({ model: "gemini-3.6-flash" });
+      const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
       
       const systemPrompt = `You are an expert AI Resume Assistant.
 Your goal is to help the user improve their resume to bypass ATS and land a job.
 CRITICAL INSTRUCTIONS:
 1. If the user just says "hi", "hello", etc., ONLY respond with a short greeting like "Hello! How can I help you?". DO NOT analyze the resume unless they ask.
 2. Be concise. Avoid huge walls of text.
-3. If the user asks you to fix, rewrite, or add a section, you MUST output the COMPLETE new text (including any additions) wrapped inside a <fix section="[section_name]">...</fix> tag, where [section_name] is one of: 'projects', 'skills', 'summary', 'github', 'linkedin', 'email', 'phone', or 'rawText'. 
+3. If the user asks you to fix, rewrite, or add a section, you MUST output the COMPLETE new text (including any additions) wrapped inside a <fix section="[section_name]">...</fix> tag, where [section_name] is one of: 'projects', 'skills', 'summary', 'education', 'github', 'linkedin', 'email', 'phone', or 'rawText'. 
 24. CRITICAL: Any new content or rewritten text MUST be placed INSIDE the <fix> tag. Do not output the new content outside the tag! If they ask to add a Technical Summary or update technical skills, output it inside the <fix section="skills"> tag.
 25. If they just provided a keyword/skill, assume they want to add it to their skills, and output the updated full skills list in a <fix section="skills">...</fix> tag.
 26. FORMATTING: When outputting Projects or Experience, NEVER use a bullet point for the Title/Company name line. Only use bullet points for the achievement descriptions below the title.
@@ -70,7 +70,7 @@ ${JSON.stringify(resumeContext, null, 2)}`;
     }
 
     try {
-      const model = genAI.getGenerativeModel({ model: "gemini-3.6-flash" });
+      const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
       
       const systemPrompt = `You are an expert AI Resume Assistant.
 Your goal is to help the user improve their cover letter to stand out to employers.
@@ -131,6 +131,48 @@ const mockSimulateChat = async (message, resumeContext, chatHistory = []) => {
     };
   }
   
+  if (lowerMsg.includes('add') && (lowerMsg.includes('keyword') || lowerMsg.includes('skill') || lowerMsg.includes('to my'))) {
+    // Extract what they might want to add
+    let addedSkills = '';
+    const quoteMatch = message.match(/"([^"]+)"/);
+    if (quoteMatch) {
+      addedSkills = quoteMatch[1]; // Extracts "GitHub" from 'Please add the missing keyword "GitHub"...'
+    } else {
+      // Clean up manual inputs like "add Git & GitHub keyword in my technical skills & tools"
+      addedSkills = message.replace(/please/gi, '').replace(/add/gi, '').replace(/the missing/gi, '').replace(/keyword/gi, '').replace(/skills?/gi, '').replace(/in my.*/gi, '').replace(/to my.*/gi, '').replace(/and rewrite.*/gi, '').trim();
+    }
+    
+    if (!addedSkills || addedSkills.length > 50) {
+      const lastUserMsg = chatHistory.slice().reverse().find(m => m.sender === 'user')?.text || '';
+      if (lastUserMsg && lastUserMsg.length < 50 && !lastUserMsg.toLowerCase().includes('keyword')) {
+        addedSkills = lastUserMsg; 
+      } else {
+        addedSkills = 'Git, GitHub'; // Safe fallback
+      }
+    }
+    
+    let currentSkills = resumeContext?.skills || '';
+    if (!currentSkills && resumeContext?.skillsFound) {
+      currentSkills = Array.isArray(resumeContext.skillsFound) ? resumeContext.skillsFound.map(s => typeof s === 'string' ? s : s.skill).filter(Boolean).join(', ') : '';
+    }
+    
+    // Capitalize properly if it's lowercase
+    if (addedSkills === addedSkills.toLowerCase()) {
+       addedSkills = addedSkills.split(',').map(s => s.trim().charAt(0).toUpperCase() + s.trim().slice(1)).join(', ');
+    }
+    
+    const newSkills = currentSkills ? `${currentSkills}, ${addedSkills}` : addedSkills;
+
+    return {
+      reply: `✨ Done! I've automatically added **${addedSkills}** to your Technical Skills section. Look at your live document preview on the right!`,
+      proposedFix: {
+        section: 'skills',
+        content: newSkills
+      },
+      autoApply: true
+    };
+  }
+
   if (lowerMsg.includes('skill') || lowerMsg.includes('keyword') || lowerMsg.includes('what to add') || lowerMsg.includes('which keywords')) {
     const missing = resumeContext?.missingSkills?.length > 0 ? resumeContext.missingSkills.join(', ') : 'React, Node.js, AWS';
     return {
@@ -175,6 +217,31 @@ const mockSimulateChat = async (message, resumeContext, chatHistory = []) => {
 
   if (lowerMsg === 'fix' || lowerMsg.includes('fix with ai') || lowerMsg.includes('apply') || lowerMsg.includes('fix it') || lowerMsg.includes('fix this')) {
     
+    // Check if the conversation was about skills/keywords
+    const lastUserMsg = chatHistory.slice().reverse().find(m => m.sender === 'user')?.text || '';
+    const lastAssistantMsg = chatHistory.slice().reverse().find(m => m.sender === 'assistant' || m.sender === 'bot')?.text || '';
+    
+    if (lastUserMsg.toLowerCase().includes('keyword') || lastUserMsg.toLowerCase().includes('skill') || lastAssistantMsg.toLowerCase().includes('keyword') || lastAssistantMsg.toLowerCase().includes('skill')) {
+       let addedSkills = lastUserMsg.toLowerCase().replace(/add /g, '').replace(/ fix it/g, '').replace(/keyword/g, '').replace(/skill/g, '').replace(/in my/g, '').replace(/technical/g, '').replace(/tools/g, '').replace(/&/g, '').trim();
+       if (!addedSkills || addedSkills.length > 50) addedSkills = 'Git, GitHub'; // fallback
+       
+       let currentSkills = resumeContext?.skills || '';
+       if (!currentSkills && resumeContext?.skillsFound) {
+          currentSkills = Array.isArray(resumeContext.skillsFound) ? resumeContext.skillsFound.map(s => typeof s === 'string' ? s : s.skill).filter(Boolean).join(', ') : '';
+       }
+       
+       const newSkills = currentSkills ? `${currentSkills}, ${addedSkills}` : addedSkills;
+
+       return {
+         reply: `✨ Done! I've automatically added **${addedSkills}** to your Technical Skills section. Look at your live document preview on the right!`,
+         proposedFix: {
+           section: 'skills',
+           content: newSkills
+         },
+         autoApply: true
+       };
+    }
+
     // If the user clicked a formatting suggestion
     if (lowerMsg.includes('format') || lowerMsg.includes('space') || lowerMsg.includes('heading') || lowerMsg.includes('font')) {
       return {
@@ -221,11 +288,11 @@ const mockSimulateChat = async (message, resumeContext, chatHistory = []) => {
       };
     }
 
-    let rewrittenExperience = `Bank Transaction (Project) — Engineered an enterprise-grade banking transaction system, optimizing SQL queries to reduce processing latency by 20%.`;
+    let rewrittenExperience = `Bank Transaction (Project) — \n• Optimized system performance and improved API response time by 35% through scalable architecture.`;
     if (resumeContext?.experienceList && resumeContext.experienceList.length > 0) {
       const expCompany = resumeContext.experienceList[0].company;
       const companyName = expCompany === 'Extracted Experience' ? (resumeContext.personalInfo?.jobTitle || 'Professional Role') : expCompany;
-      rewrittenExperience = `${companyName} — Engineered an enterprise-grade system, optimizing SQL queries to reduce processing latency by 20%.`;
+      rewrittenExperience = `${companyName} — \n• Optimized system performance and improved API response time by 35% through scalable architecture.`;
     }
 
     if (resumeContext?.experience) {

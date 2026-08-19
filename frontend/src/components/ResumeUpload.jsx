@@ -36,11 +36,11 @@ export default function ResumeUpload({ onAnalysisComplete, requireAuth }) {
 
   const validateAndSetFile = (selectedFile) => {
     if (!selectedFile) return;
-    const allowedExtensions = ['.pdf', '.docx', '.doc', '.txt', '.jpg', '.jpeg', '.png'];
+    const allowedExtensions = ['.pdf', '.docx', '.doc'];
     const ext = selectedFile.name.substring(selectedFile.name.lastIndexOf('.')).toLowerCase();
     
     if (!allowedExtensions.includes(ext)) {
-      setError('Please upload a valid PDF, DOCX, TXT, or Image file.');
+      setError('Invalid file format. Please upload a valid PDF or DOCX resume.');
       return;
     }
     if (selectedFile.size > 10 * 1024 * 1024) {
@@ -107,7 +107,7 @@ export default function ResumeUpload({ onAnalysisComplete, requireAuth }) {
           Get Instant AI Resume Feedback
         </h2>
         <p style={{ color: 'var(--text-muted)', marginBottom: '32px' }}>
-          Upload your PDF, DOCX, TXT, or Image resume to receive your ATS compatibility score, keyword gap analysis, and tailored formatting recommendations.
+          Upload your PDF or DOCX resume to receive your ATS compatibility score, keyword gap analysis, and tailored formatting recommendations.
         </p>
 
         {error && (
@@ -149,7 +149,7 @@ export default function ResumeUpload({ onAnalysisComplete, requireAuth }) {
             type="file"
             ref={fileInputRef}
             onChange={handleFileChange}
-            accept=".pdf,.docx,.doc,.txt,.jpg,.jpeg,.png"
+            accept=".pdf,.docx,.doc"
             style={{ display: 'none' }}
           />
 

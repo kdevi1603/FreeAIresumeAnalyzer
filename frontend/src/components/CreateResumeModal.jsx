@@ -17,11 +17,11 @@ export default function CreateResumeModal({ isOpen, onClose, onBuild, onImportSu
     const file = e.target.files[0];
     if (!file) return;
 
-    const allowedExtensions = ['.pdf', '.docx', '.doc', '.txt', '.jpg', '.jpeg', '.png'];
+    const allowedExtensions = ['.pdf', '.docx', '.doc'];
     const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
     
     if (!allowedExtensions.includes(ext)) {
-      setError('Please upload a valid PDF, DOCX, TXT, or Image file.');
+      setError('Invalid file format. Please upload a valid PDF or DOCX resume.');
       return;
     }
 
@@ -121,7 +121,7 @@ export default function CreateResumeModal({ isOpen, onClose, onBuild, onImportSu
                   type="file" 
                   ref={fileInputRef} 
                   style={{ display: 'none' }} 
-                  accept=".pdf,.docx,.doc,.txt,.jpg,.jpeg,.png" 
+                  accept=".pdf,.docx,.doc" 
                   onChange={handleFileChange}
                 />
               </div>

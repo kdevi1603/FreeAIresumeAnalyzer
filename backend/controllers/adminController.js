@@ -3,14 +3,46 @@ import { db } from '../config/db.js';
 // --- Dashboard ---
 export async function getDashboardStats(req, res) {
   try {
-    const users = await db.users.find() || [];
-    const resumes = await db.resumes.find() || [];
-    const templates = await db.templates.find() || [];
-    const messages = await db.messages.find() || [];
+    const range = req.query.range || 'Last 30 Days';
+    
+    let users = await db.users.find() || [];
+    let resumes = await db.resumes.find() || [];
+    let templates = await db.templates.find() || [];
+    let messages = await db.messages.find() || [];
     
     let activities = [];
     if (db.activities) {
        activities = await db.activities.find() || [];
+    }
+
+    // Filter by range
+    const now = new Date();
+    let startDate = new Date();
+    
+    if (range === 'Today') {
+      startDate.setHours(0, 0, 0, 0);
+    } else if (range === 'Last 7 Days') {
+      startDate.setDate(now.getDate() - 7);
+    } else if (range === 'Last 30 Days') {
+      startDate.setDate(now.getDate() - 30);
+    } else if (range === 'Last 90 Days') {
+      startDate.setDate(now.getDate() - 90);
+    } else if (range === 'This Year') {
+      startDate.setMonth(0, 1);
+      startDate.setHours(0, 0, 0, 0);
+    } else {
+      // Default fallback (e.g. all time if something else is passed)
+      startDate = new Date(0); 
+    }
+
+    // Always keep today's users logic separate if it relies on overall users, but here we filter everything.
+    const allUsersCount = users.length; // store overall if needed
+    
+    if (range !== 'All Time') {
+      users = users.filter(u => new Date(u.createdAt) >= startDate);
+      resumes = resumes.filter(r => new Date(r.createdAt) >= startDate);
+      activities = activities.filter(a => new Date(a.createdAt) >= startDate);
+      messages = messages.filter(m => new Date(m.createdAt) >= startDate);
     }
     
     // Sort and get recent data (already sorted newest first by db.find)

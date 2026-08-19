@@ -83,8 +83,18 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
 
 
   const [activeView, setActiveView] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem('studio_activeView');
+      if (saved) return saved;
+    } catch (e) {}
     return (resumeData?.isScratch || !resumeData?.atsScore) ? 'Resume Preview' : 'Overview';
   });
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem('studio_activeView', activeView);
+    } catch (e) {}
+  }, [activeView]);
 
   useEffect(() => {
     if (resumeData) {
@@ -132,6 +142,34 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [activeView]);
+
+  const downloadAnalysisReport = () => {
+    const reportContent = `
+AI Resume Analysis Report
+-------------------------
+Name: ${activeResume?.personalInfo?.name || 'N/A'}
+Job Title: ${activeResume?.personalInfo?.jobTitle || 'N/A'}
+Overall ATS Score: ${activeResume?.atsScore || 0}/100
+
+Key Findings:
+- Missing Skills: ${(activeResume?.missingSkills || []).join(', ') || 'None'}
+- Found Skills: ${(activeResume?.skillsFound || []).map(s => typeof s === 'string' ? s : s.skill).join(', ') || 'None'}
+- Grammar Score: ${activeResume?.grammar?.score || 100}/100
+
+Actionable Feedback:
+Review the AI suggestions in the Studio to weave missing keywords into your experience bullet points, then download your optimized PDF!
+`;
+    
+    const blob = new Blob([reportContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${(activeResume?.personalInfo?.name || 'Candidate').replace(/\s+/g, '_')}_Analysis_Report.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   const handleTriggerFix = async (sectionName, itemIndex, instruction, item) => {
     setIsFixing(true);
@@ -229,7 +267,7 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
 
       setChatMessages(prev => [
         ...prev,
-        { sender: 'bot', text: res.reply, proposedFix: res.autoApply ? null : res.proposedFix, options: res.options }
+        { sender: 'bot', text: res.reply, proposedFix: res.autoApply ? { ...res.proposedFix, applied: true } : res.proposedFix, options: res.options }
       ]);
     } catch (err) {
       console.error('Chat error:', err);
@@ -398,24 +436,45 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
             
           </div>
         </div>
-        <button
-          onClick={() => setShowBuilderModal(true)}
-          className="btn btn-primary"
-          style={{
-            padding: '10px 20px',
-            fontSize: '0.9rem',
-            borderRadius: '12px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            background: 'linear-gradient(135deg, #00F2FE 0%, #4FACFE 100%)',
-            color: '#000',
-            fontWeight: 800,
-            boxShadow: '0 4px 15px rgba(0, 242, 254, 0.4)'
-          }}
-        >
-          <span>Resume Builder & 10 Free Templates</span>
-        </button>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button
+            onClick={downloadAnalysisReport}
+            className="btn btn-secondary"
+            style={{
+              padding: '10px 20px',
+              fontSize: '0.9rem',
+              borderRadius: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.05)',
+              color: 'var(--text-main)',
+              border: '1px solid rgba(255,255,255,0.1)'
+            }}
+          >
+            <Download size={16} />
+            <span>Download Analysis</span>
+          </button>
+          
+          <button
+            onClick={() => setShowBuilderModal(true)}
+            className="btn btn-primary"
+            style={{
+              padding: '10px 20px',
+              fontSize: '0.9rem',
+              borderRadius: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'linear-gradient(135deg, #00F2FE 0%, #4FACFE 100%)',
+              color: '#000',
+              fontWeight: 800,
+              boxShadow: '0 4px 15px rgba(0, 242, 254, 0.4)'
+            }}
+          >
+            <span>Resume Builder & 10 Free Templates</span>
+          </button>
+        </div>
       </div>
 
       {/* 6-Card ATS Dashboard */}
@@ -791,7 +850,7 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
                     const newMessages = [...prev];
                     const msgIndex = newMessages.findIndex(m => m.proposedFix?.content === content);
                     if (msgIndex !== -1) {
-                      newMessages[msgIndex] = { ...newMessages[msgIndex], proposedFix: null };
+                      newMessages[msgIndex] = { ...newMessages[msgIndex], proposedFix: { ...newMessages[msgIndex].proposedFix, applied: true } };
                     }
                     return [
                       ...newMessages,

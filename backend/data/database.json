@@ -51,14 +51,14 @@
         "github": "",
         "profilePicture": null
       },
-      "summary": "Results-driven Full Stack Developer with 5+ years of experience designing and scaling cloud-native web applications. Proficient in Python, Java, SQL, and system architecture. Proven track record of optimizing database performance, improving application efficiency, and mentoring cross-functional teams to boost sprint velocity by 25%.",
-      "education": "BCom — Palaniammal Arts College for Women (2021) | 88%\nHSC — Government Higher Secondary School (2018) | 81%\nSSLC — Government Higher Secondary School (2016) | 92%\n",
+      "summary": "Results-driven Junior Software Developer with proven expertise in developing scalable software solutions using Java, C++, and SQL. Adept at database optimization, agile methodologies, and delivering robust enterprise-grade applications. Passionate about leveraging cutting-edge AI and cloud technologies to solve complex user challenges.",
+      "education": "BCom — Palaniammal Arts College for Women (2021) | 88%\nHSC — Government Higher Secondary School (2018) | 81%\nSSLC — Government Higher Secondary School (2016) | 92%",
       "experienceList": [
         {
-          "company": "Resume Experience Section",
+          "company": "Work Experience",
           "role": "",
           "period": "",
-          "bullets": "• Engineered high-performance banking transaction modules using VB.Net and SQL Server 2005, supporting 5,000+ daily secure operations.\n• Spearheaded query optimization initiatives that slashed latency by 20% and improved database indexing efficiency by 35%."
+          "bullets": "Bank Transaction Systems (Software Developer Intern) — Applied and updated Bank Transaction modules in VB.Net with SQL Server 2005.\n\nOptimized database transaction queries reducing latency by 20%."
         }
       ],
       "sectionScores": {
@@ -140,7 +140,8 @@
       "fixedProjects": "Resume Experience Section () — • Engineered high-performance banking transaction modules using VB.Net and SQL Server 2005, supporting 5,000+ daily secure operations.\n• Spearheaded query optimization initiatives that slashed latency by 20% and improved database indexing efficiency by 35%.",
       "fixedSummary": "Results-driven Full Stack Developer with 5+ years of experience designing and scaling cloud-native web applications. Proficient in Python, Java, SQL, and system architecture. Proven track record of optimizing database performance, improving application efficiency, and mentoring cross-functional teams to boost sprint velocity by 25%.",
       "fixedSkills": "C, C++, Java, Oracle, SQL Server, MS Office, HTML, Tally, Python, Operating Systems, Agile Methodology, Git/GitHub.",
-      "customHtml": ""
+      "customHtml": "",
+      "skills": "C, C++, Java, Oracle, SQL Server, MS Office, HTML, Tally, Python, Operating Systems, Agile Methodology, Git/GitHub"
     },
     {
       "id": "ebb4a14c-6d22-4464-b7b8-45e0e0dac697",
@@ -212,7 +213,7 @@
           "passed": true
         }
       ],
-      "skills": "Programming Languages\n Java, Python, C, C++ \nDatabases\nSQL, MySQL, SQLite (Strong Knowledge) \nData Tools\nExcel, Power BI, Tableau\nWeb Technologies\nHTML, CSS, JavaScript (Frontend Development)\nFrameworks & Tools\n Flask, ReactJS (Intermediate), Visual Studio Code",
+      "skills": "R",
       "skillsFound": [
         "Java",
         "Python",
@@ -330,7 +331,7 @@
           "passed": true
         }
       ],
-      "skills": "JavaScript | React.js | Bootstrap | HTML5 | CSS3 | C | C++ | SQL | C | Python | Packages: MS Office Word, Excel, PowerPoint",
+      "skills": "Git, Github, R",
       "skillsFound": [
         "JavaScript",
         "React.js",

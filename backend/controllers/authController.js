@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import { db } from '../config/db.js';
 import { generateToken } from '../middleware/auth.js';
+import { adminAuth } from '../config/firebaseAdmin.js';
 
 export async function registerUser(req, res) {
   try {
@@ -135,5 +136,76 @@ export async function setupAdmin(req, res) {
   } catch (error) {
     console.error('Setup Admin Error:', error);
     return res.status(500).json({ message: 'Server error during admin setup.' });
+  }
+}
+
+export async function googleLogin(req, res) {
+  try {
+    const { idToken } = req.body;
+    if (!idToken) {
+      return res.status(400).json({ message: 'Missing Firebase ID Token.' });
+    }
+
+    if (!adminAuth) {
+      return res.status(500).json({ message: 'Firebase Admin SDK is not initialized.' });
+    }
+
+    // Verify token
+    const decodedToken = await adminAuth.verifyIdToken(idToken);
+    const { uid, email, name, picture } = decodedToken;
+
+    if (!email) {
+      return res.status(400).json({ message: 'Google account has no email address.' });
+    }
+
+    let user = await db.users.findOne({ email: email.trim().toLowerCase() });
+
+    if (!user) {
+      // Create a new user with a random placeholder password
+      const randomPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(randomPassword, salt);
+
+      user = await db.users.create({
+        name: name || 'Google User',
+        email: email.trim().toLowerCase(),
+        password: hashedPassword,
+        lastLogin: new Date().toISOString()
+      });
+
+      try {
+        await db.activities.create({
+          user: user.name,
+          action: 'New User Registered via Google',
+          status: 'success'
+        });
+      } catch (e) {
+        console.error('Failed to log activity', e);
+      }
+    } else {
+      // Update last login
+      await db.users.update(user.id, { lastLogin: new Date().toISOString() });
+
+      try {
+        await db.activities.create({
+          user: user.name,
+          action: 'Logged in via Google',
+          status: 'success'
+        });
+      } catch (e) {
+        console.error('Failed to log login activity', e);
+      }
+    }
+
+    return res.json({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      token: generateToken(user.id)
+    });
+  } catch (error) {
+    console.error('Google Login Error:', error);
+    return res.status(401).json({ message: 'Invalid or expired Google token.' });
   }
 }

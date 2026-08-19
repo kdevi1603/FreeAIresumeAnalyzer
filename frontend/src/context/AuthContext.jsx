@@ -45,6 +45,19 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const googleLogin = async (idToken) => {
+    setError(null);
+    try {
+      const data = await authService.googleLogin(idToken);
+      setUser(data);
+      return data;
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Failed to sign in with Google.';
+      setError(msg);
+      throw new Error(msg);
+    }
+  };
+
   const register = async (name, email, password) => {
     setError(null);
     try {
@@ -68,6 +81,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     error,
     login,
+    googleLogin,
     register,
     logout,
     isAuthenticated: !!user

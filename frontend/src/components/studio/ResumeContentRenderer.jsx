@@ -24,7 +24,7 @@ export default function ResumeContentRenderer({
   };
 
   const candidateName = resumeData?.personalInfo?.name === 'Untitled Resume' ? '' : (resumeData?.personalInfo?.name || resumeData?.fileName?.replace(/\.pdf$/i, '')?.replace(/-/g, ' ')?.replace(/_/g, ' ') || '');
-  const rawText = resumeData?.rawText || resumeData?.summary || '';
+  const rawText = String(resumeData?.rawText || resumeData?.summary || '');
   
   let email = resumeData?.personalInfo?.email || '';
   if (!email && rawText) {
@@ -40,13 +40,13 @@ export default function ResumeContentRenderer({
 
   const city = resumeData?.personalInfo?.city || '';
   
-  let linkedin = resumeData?.personalInfo?.linkedin || '';
+  let linkedin = resumeData?.personalInfo?.linkedin ? String(resumeData.personalInfo.linkedin) : '';
   if (!linkedin && rawText) {
     const liMatch = rawText.match(/linkedin\.com\/in\/[a-zA-Z0-9_-]+/i);
     if (liMatch) linkedin = liMatch[0];
   }
 
-  let github = resumeData?.personalInfo?.github || '';
+  let github = resumeData?.personalInfo?.github ? String(resumeData.personalInfo.github) : '';
   if (!github && rawText) {
     const ghMatch = rawText.match(/github\.com\/[a-zA-Z0-9_-]+/i);
     if (ghMatch) github = ghMatch[0];
@@ -63,19 +63,35 @@ export default function ResumeContentRenderer({
     </div>
   );
 
-  const summaryText = (showDiff && resumeData?.fixedSummary) ? resumeData.fixedSummary : (resumeData?.summary || '');
+    const isDemoName = originalResumeData?.personalInfo?.name === 'Parsed Resume' || originalResumeData?.personalInfo?.name === 'Untitled Resume';
+  const mName = String(isDemoName ? (originalResumeData?.fileName?.replace(/\.pdf$/i, '') || '') : (originalResumeData?.personalInfo?.name || candidateName || ''));
+  const mJobTitle = originalResumeData?.personalInfo?.jobTitle || '';
+  const mEmail = email; 
+  const mPhone = phone; 
+  const mCity = city; 
+  const mLinkedin = String(linkedin || ''); 
+  const mGithub = String(github || ''); 
+
+  let mSummary = (showDiff && originalResumeData?.fixedSummary) ? originalResumeData.fixedSummary : originalResumeData?.summary;
+  if (mSummary === '...') mSummary = '';
+
+  const mEducation = (showDiff && originalResumeData?.fixedEducation) ? originalResumeData.fixedEducation : originalResumeData?.education;
   
-  const projectsText = (showDiff && resumeData?.fixedProjects) ? resumeData.fixedProjects : (resumeData?.experienceList?.length > 0 ? resumeData.experienceList.map(exp => {
+  let mSkills = (showDiff && originalResumeData?.fixedSkills) ? originalResumeData.fixedSkills : (originalResumeData?.skills || (Array.isArray(originalResumeData?.skillsFound) ? originalResumeData.skillsFound.map(s => typeof s === 'string' ? s : s.skill).filter(Boolean).join(', ') : '') || '');
+  if (mSkills === 'Communication, Problem Solving, Project Management, Teamwork, Data Analysis') mSkills = '';
+
+  const mCertifications = (showDiff && originalResumeData?.fixedCertifications) ? originalResumeData.fixedCertifications : originalResumeData?.certifications;
+  const mLanguages = originalResumeData?.languages || originalResumeData?.personalInfo?.languages || '';
+
+  const mProjects = (showDiff && originalResumeData?.fixedProjects) ? originalResumeData.fixedProjects : (Array.isArray(originalResumeData?.experienceList) && originalResumeData.experienceList.length > 0 ? originalResumeData.experienceList.map(exp => {
     let header = '';
-    const isPlaceholder = exp.company === 'Extracted Experience' || exp.company === 'Original Content';
+    const isPlaceholder = exp.company === 'Extracted Experience' || exp.company === 'Original Content' || exp.company === 'Resume Experience Section';
     if (!isPlaceholder && exp.company) header += exp.company;
     if (exp.role) header += (header ? ' - ' : '') + exp.role;
-    return header ? `${header}\n${exp.bullets}` : exp.bullets;
-  }).join('\n\n') : '');
-  
-  const skillsText = (showDiff && resumeData?.fixedSkills) ? resumeData.fixedSkills : (resumeData?.skills || resumeData?.skillsFound?.map(s => typeof s === 'string' ? s : s.skill).filter(Boolean).join(', ') || '');
-  
-  const educationText = (showDiff && resumeData?.fixedEducation) ? resumeData.fixedEducation : (resumeData?.education || '');
+    return header ? header + '\n' + exp.bullets : exp.bullets;
+  }).join('\n\n') : null);
+
+  const hasContact = mEmail || mPhone || mCity || mLinkedin || mGithub;
 
   const getContrastColor = (hexcolor) => {
     if (!hexcolor) return '#ffffff';
@@ -130,15 +146,13 @@ export default function ResumeContentRenderer({
     );
   };
 
-  const certificationsText = (showDiff && resumeData?.fixedCertifications) ? resumeData.fixedCertifications : resumeData?.certifications;
-
-  const sections = [
-    { title: 'Executive Summary', content: formatText(summaryText, false), isModified: !!resumeData?.fixedSummary },
-    { title: 'Work & Project Experience', content: formatText(projectsText), isModified: !!resumeData?.fixedProjects },
-    { title: 'Education & Academic Details', content: formatText(educationText), isModified: !!resumeData?.fixedEducation },
-    { title: 'Certifications', content: formatText(certificationsText, false), isModified: !!resumeData?.fixedCertifications },
-    { title: 'Technical Skills & Tools', content: formatText(skillsText, false), isModified: !!resumeData?.fixedSkills },
-    { title: 'Languages', content: resumeData?.languages || resumeData?.personalInfo?.languages || '' }
+    const sections = [
+    { title: 'Executive Summary', content: formatText(mSummary, false), isModified: !!originalResumeData?.fixedSummary },
+    { title: 'Work & Project Experience', content: formatText(mProjects), isModified: !!originalResumeData?.fixedProjects },
+    { title: 'Education & Academic Details', content: formatText(mEducation), isModified: !!originalResumeData?.fixedEducation },
+    { title: 'Certifications', content: formatText(mCertifications, false), isModified: !!originalResumeData?.fixedCertifications },
+    { title: 'Technical Skills & Tools', content: formatText(mSkills, false), isModified: !!originalResumeData?.fixedSkills },
+    { title: 'Languages', content: formatText(mLanguages, false) }
   ].filter(sec => sec.content);
 
   return (
@@ -175,39 +189,7 @@ export default function ResumeContentRenderer({
       ) : (
       <>
       {/* 1. Modern Professional (formerly modern) */}
-      {templateStyle === 'modern' && (() => {
-        // Strict Data Binding for Modern Template (Filter out Smart Demo dummy fallbacks)
-        const isDemoName = resumeData?.personalInfo?.name === 'Parsed Resume' || resumeData?.personalInfo?.name === 'Untitled Resume';
-        const mName = isDemoName ? (resumeData?.fileName?.replace(/\.pdf$/i, '') || '') : (resumeData?.personalInfo?.name || '');
-        const mJobTitle = resumeData?.personalInfo?.jobTitle;
-        const mEmail = email;
-        const mPhone = phone;
-        const mCity = city;
-        const mLinkedin = linkedin;
-        const mGithub = github;
-        
-        let mSummary = (showDiff && resumeData?.fixedSummary) ? resumeData.fixedSummary : resumeData?.summary;
-        if (mSummary === '...') mSummary = ''; // Remove Smart Demo placeholder
-
-        const mEducation = (showDiff && resumeData?.fixedEducation) ? resumeData.fixedEducation : resumeData?.education;
-        
-        let mSkills = (showDiff && resumeData?.fixedSkills) ? resumeData.fixedSkills : (resumeData?.skills || resumeData?.skillsFound?.map(s => typeof s === 'string' ? s : s.skill).filter(Boolean).join(', '));
-        const demoSkills = 'Communication, Problem Solving, Project Management, Teamwork, Data Analysis';
-        if (mSkills === demoSkills) mSkills = ''; // Remove Smart Demo placeholder
-
-        const mLanguages = resumeData?.languages;
-        
-        const mProjects = (showDiff && resumeData?.fixedProjects) ? resumeData.fixedProjects : (resumeData?.experienceList?.length > 0 ? resumeData.experienceList.map(exp => {
-          let header = '';
-          const isPlaceholder = exp.company === 'Extracted Experience' || exp.company === 'Original Content' || exp.company === 'Resume Experience Section';
-          if (!isPlaceholder && exp.company) header += exp.company;
-          if (exp.role) header += (header ? ' - ' : '') + exp.role;
-          return header ? `${header}\n${exp.bullets}` : exp.bullets;
-        }).join('\n\n') : null);
-
-        const hasContact = mEmail || mPhone || mCity || mLinkedin || mGithub;
-
-        return (
+      {templateStyle === 'modern' && (
         <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', minHeight: '100%', width: '100%' }}>
           {/* Left Sidebar */}
           <div style={{ background: '#f8fafc', padding: '40px 30px', borderRight: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '28px' }}>
@@ -295,8 +277,7 @@ export default function ResumeContentRenderer({
              </div>
           </div>
         </div>
-        );
-      })()}
+        )}
 
       {/* 2. Minimal ATS (formerly minimalist) */}
       {templateStyle === 'minimalist' && (
@@ -322,38 +303,7 @@ export default function ResumeContentRenderer({
       )}
 
       {/* 3. Fresher / Student (Education First) */}
-      {templateStyle === 'fresher' && (() => {
-        const isDemoName = resumeData?.personalInfo?.name === 'Parsed Resume' || resumeData?.personalInfo?.name === 'Untitled Resume';
-        const mName = isDemoName ? (resumeData?.fileName?.replace(/\.pdf$/i, '') || '') : (resumeData?.personalInfo?.name || '');
-        const mJobTitle = resumeData?.personalInfo?.jobTitle;
-        const mEmail = email;
-        const mPhone = phone;
-        const mCity = city;
-        const mLinkedin = linkedin;
-        const mGithub = github;
-        
-        let mSummary = (showDiff && resumeData?.fixedSummary) ? resumeData.fixedSummary : resumeData?.summary;
-        if (mSummary === '...') mSummary = '';
-
-        const mEducation = (showDiff && resumeData?.fixedEducation) ? resumeData.fixedEducation : resumeData?.education;
-        
-        let mSkills = (showDiff && resumeData?.fixedSkills) ? resumeData.fixedSkills : (resumeData?.skills || resumeData?.skillsFound?.map(s => typeof s === 'string' ? s : s.skill).filter(Boolean).join(', '));
-        const demoSkills = 'Communication, Problem Solving, Project Management, Teamwork, Data Analysis';
-        if (mSkills === demoSkills) mSkills = '';
-
-        const mLanguages = resumeData?.languages;
-        
-        const mProjects = (showDiff && resumeData?.fixedProjects) ? resumeData.fixedProjects : (resumeData?.experienceList?.length > 0 ? resumeData.experienceList.map(exp => {
-          let header = '';
-          const isPlaceholder = exp.company === 'Extracted Experience' || exp.company === 'Original Content' || exp.company === 'Resume Experience Section';
-          if (!isPlaceholder && exp.company) header += exp.company;
-          if (exp.role) header += (header ? ' - ' : '') + exp.role;
-          return header ? `${header}\n${exp.bullets}` : exp.bullets;
-        }).join('\n\n') : null);
-
-        const hasContact = mEmail || mPhone || mCity || mLinkedin || mGithub;
-
-        return (
+      {templateStyle === 'fresher' && (
           <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', minHeight: '100%', width: '100%' }}>
             {/* Left Sidebar */}
             <div style={{ background: '#f8fafc', padding: '40px 24px', borderRight: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -421,8 +371,7 @@ export default function ResumeContentRenderer({
               )}
             </div>
           </div>
-        );
-      })()}
+        )}
 
       {/* 4. Software Engineer */}
       {templateStyle === 'software' && (
@@ -449,37 +398,7 @@ export default function ResumeContentRenderer({
       )}
 
       {/* 5. Executive */}
-      {templateStyle === 'executive' && (() => {
-        const isDemoName = resumeData?.personalInfo?.name === 'Parsed Resume' || resumeData?.personalInfo?.name === 'Untitled Resume';
-        const mName = isDemoName ? (resumeData?.fileName?.replace(/\.pdf$/i, '') || '') : (resumeData?.personalInfo?.name || '');
-        
-        let mSummary = (showDiff && resumeData?.fixedSummary) ? resumeData.fixedSummary : resumeData?.summary;
-        if (mSummary === '...') mSummary = '';
-
-        const mEducation = (showDiff && resumeData?.fixedEducation) ? resumeData.fixedEducation : resumeData?.education;
-        
-        let mSkills = (showDiff && resumeData?.fixedSkills) ? resumeData.fixedSkills : (resumeData?.skills || resumeData?.skillsFound?.map(s => typeof s === 'string' ? s : s.skill).filter(Boolean).join(', '));
-        const demoSkills = 'Communication, Problem Solving, Project Management, Teamwork, Data Analysis';
-        if (mSkills === demoSkills) mSkills = '';
-
-        const mProjects = (showDiff && resumeData?.fixedProjects) ? resumeData.fixedProjects : (resumeData?.experienceList?.length > 0 ? resumeData.experienceList.map(exp => {
-          let header = '';
-          const isPlaceholder = exp.company === 'Extracted Experience' || exp.company === 'Original Content' || exp.company === 'Resume Experience Section';
-          if (!isPlaceholder && exp.company) header += exp.company;
-          if (exp.role) header += (header ? ' - ' : '') + exp.role;
-          return header ? `${header}\n${exp.bullets}` : exp.bullets;
-        }).join('\n\n') : null);
-
-        const execSections = [
-          { title: 'Executive Summary', content: formatText(mSummary, false) },
-          { title: 'Work & Project Experience', content: formatText(mProjects) },
-          { title: 'Education & Academic Details', content: formatText(mEducation) },
-          { title: 'Certifications', content: formatText(certificationsText, false) },
-          { title: 'Technical Skills & Tools', content: formatText(mSkills, false) },
-          { title: 'Languages', content: resumeData?.languages || resumeData?.personalInfo?.languages || '' }
-        ].filter(sec => sec.content);
-
-        return (
+      {templateStyle === 'executive' && (
           <div>
             <div style={{ background: '#0f172a', color: '#fff', padding: '40px 40px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
@@ -489,7 +408,7 @@ export default function ResumeContentRenderer({
               {profilePicture && <img src={profilePicture} style={{ width: '80px', height: '80px', objectFit: 'cover', border: '2px solid #fff' }} />}
             </div>
             <div style={{ padding: '30px 40px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
-              {execSections.map((sec, idx) => (
+              {sections.map((sec, idx) => (
                 <div key={idx} style={{ display: 'flex', gap: '32px' }}>
                   <div style={{ width: '140px', flexShrink: 0 }}>
                     <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: accentColor, textTransform: 'uppercase', textAlign: 'right' }}>{sec.title}</h3>
@@ -501,42 +420,10 @@ export default function ResumeContentRenderer({
               ))}
             </div>
           </div>
-        );
-      })()}
+        )}
 
       {/* 6. Creative */}
-      {templateStyle === 'creative' && (() => {
-        const isDemoName = resumeData?.personalInfo?.name === 'Parsed Resume' || resumeData?.personalInfo?.name === 'Untitled Resume';
-        const mName = isDemoName ? (resumeData?.fileName?.replace(/\.pdf$/i, '') || '') : (resumeData?.personalInfo?.name || '');
-        const mJobTitle = resumeData?.personalInfo?.jobTitle;
-        const mEmail = email;
-        const mPhone = phone;
-        const mCity = city;
-        const mLinkedin = linkedin;
-        const mGithub = github;
-        
-        let mSummary = (showDiff && resumeData?.fixedSummary) ? resumeData.fixedSummary : resumeData?.summary;
-        if (mSummary === '...') mSummary = '';
-        
-        const mEducation = (showDiff && resumeData?.fixedEducation) ? resumeData.fixedEducation : resumeData?.education;
-        
-        let mSkills = (showDiff && resumeData?.fixedSkills) ? resumeData.fixedSkills : (resumeData?.skills || resumeData?.skillsFound?.map(s => typeof s === 'string' ? s : s.skill).filter(Boolean).join(', '));
-        const demoSkills = 'Communication, Problem Solving, Project Management, Teamwork, Data Analysis';
-        if (mSkills === demoSkills) mSkills = '';
-        
-        const mLanguages = resumeData?.languages;
-        
-        const mProjects = (showDiff && resumeData?.fixedProjects) ? resumeData.fixedProjects : (resumeData?.experienceList?.length > 0 ? resumeData.experienceList.map(exp => {
-          let header = '';
-          const isPlaceholder = exp.company === 'Extracted Experience' || exp.company === 'Original Content' || exp.company === 'Resume Experience Section';
-          if (!isPlaceholder && exp.company) header += exp.company;
-          if (exp.role) header += (header ? ' - ' : '') + exp.role;
-          return header ? `${header}\n${exp.bullets}` : exp.bullets;
-        }).join('\n\n') : null);
-        
-        const hasContact = mEmail || mPhone || mCity || mLinkedin || mGithub;
-
-        return (
+      {templateStyle === 'creative' && (
           <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', minHeight: '100%', width: '100%' }}>
             {/* Left Sidebar */}
             <div style={{ background: `${accentColor}10`, padding: '40px 24px', display: 'flex', flexDirection: 'column', gap: '30px' }}>
@@ -604,42 +491,10 @@ export default function ResumeContentRenderer({
               )}
             </div>
           </div>
-        );
-      })()}
+        )}
 
       {/* 7. Corporate */}
-      {templateStyle === 'corporate' && (() => {
-        const isDemoName = resumeData?.personalInfo?.name === 'Parsed Resume' || resumeData?.personalInfo?.name === 'Untitled Resume';
-        const mName = isDemoName ? (resumeData?.fileName?.replace(/\.pdf$/i, '') || '') : (resumeData?.personalInfo?.name || '');
-        const mJobTitle = resumeData?.personalInfo?.jobTitle;
-        const mEmail = email;
-        const mPhone = phone;
-        const mCity = city;
-        const mLinkedin = linkedin;
-        const mGithub = github;
-        
-        let mSummary = (showDiff && resumeData?.fixedSummary) ? resumeData.fixedSummary : resumeData?.summary;
-        if (mSummary === '...') mSummary = '';
-        
-        const mEducation = (showDiff && resumeData?.fixedEducation) ? resumeData.fixedEducation : resumeData?.education;
-        
-        let mSkills = (showDiff && resumeData?.fixedSkills) ? resumeData.fixedSkills : (resumeData?.skills || resumeData?.skillsFound?.map(s => typeof s === 'string' ? s : s.skill).filter(Boolean).join(', '));
-        const demoSkills = 'Communication, Problem Solving, Project Management, Teamwork, Data Analysis';
-        if (mSkills === demoSkills) mSkills = '';
-        
-        const mLanguages = resumeData?.languages;
-        
-        const mProjects = (showDiff && resumeData?.fixedProjects) ? resumeData.fixedProjects : (resumeData?.experienceList?.length > 0 ? resumeData.experienceList.map(exp => {
-          let header = '';
-          const isPlaceholder = exp.company === 'Extracted Experience' || exp.company === 'Original Content' || exp.company === 'Resume Experience Section';
-          if (!isPlaceholder && exp.company) header += exp.company;
-          if (exp.role) header += (header ? ' - ' : '') + exp.role;
-          return header ? `${header}\n${exp.bullets}` : exp.bullets;
-        }).join('\n\n') : null);
-        
-        const hasContact = mEmail || mPhone || mCity || mLinkedin || mGithub;
-
-        return (
+      {templateStyle === 'corporate' && (
           <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', minHeight: '100%', width: '100%' }}>
             {/* Left Sidebar */}
             <div style={{ background: '#1e293b', color: '#f8fafc', padding: '40px 24px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
@@ -706,8 +561,7 @@ export default function ResumeContentRenderer({
               )}
             </div>
           </div>
-        );
-      })()}
+        )}
 
       {/* 8. Academic (formerly serif) */}
       {templateStyle === 'academic' && (
@@ -718,7 +572,7 @@ export default function ResumeContentRenderer({
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginTop: '24px' }}>
             {sections.map((sec, idx) => (
               <div key={idx}>
-                <h3 style={{ fontSize: '14px', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '5px', fontWeight: 700 }}>{sec.title}</h3>
+                <h3 style={{ fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '5px' }}>{sec.title}</h3>
                 <div style={{ fontSize: '12px', textAlign: 'justify', whiteSpace: 'pre-line' }}>{sec.content}</div>
               </div>
             ))}
@@ -727,39 +581,7 @@ export default function ResumeContentRenderer({
       )}
 
       {/* 9. One-Page ATS (Business Analyst) */}
-      {templateStyle === 'onepage' && (() => {
-        const isDemoName = resumeData?.personalInfo?.name === 'Parsed Resume' || resumeData?.personalInfo?.name === 'Untitled Resume';
-        const mName = isDemoName ? (resumeData?.fileName?.replace(/\.pdf$/i, '') || '') : (resumeData?.personalInfo?.name || '');
-        const mJobTitle = resumeData?.personalInfo?.jobTitle;
-        const mEmail = email;
-        const mPhone = phone;
-        const mCity = city;
-        const mLinkedin = linkedin;
-        const mGithub = github;
-        
-        let mSummary = (showDiff && resumeData?.fixedSummary) ? resumeData.fixedSummary : resumeData?.summary;
-        if (mSummary === '...') mSummary = '';
-        
-        const mEducation = (showDiff && resumeData?.fixedEducation) ? resumeData.fixedEducation : resumeData?.education;
-        
-        let mSkills = (showDiff && resumeData?.fixedSkills) ? resumeData.fixedSkills : (resumeData?.skills || resumeData?.skillsFound?.map(s => typeof s === 'string' ? s : s.skill).filter(Boolean).join(', '));
-        const demoSkills = 'Communication, Problem Solving, Project Management, Teamwork, Data Analysis';
-        if (mSkills === demoSkills) mSkills = '';
-        
-        const mLanguages = resumeData?.languages;
-        const mCertifications = (showDiff && resumeData?.fixedCertifications) ? resumeData.fixedCertifications : resumeData?.certifications;
-        
-        const mProjects = (showDiff && resumeData?.fixedProjects) ? resumeData.fixedProjects : (resumeData?.experienceList?.length > 0 ? resumeData.experienceList.map(exp => {
-          let header = '';
-          const isPlaceholder = exp.company === 'Extracted Experience' || exp.company === 'Original Content' || exp.company === 'Resume Experience Section';
-          if (!isPlaceholder && exp.company) header += exp.company;
-          if (exp.role) header += (header ? ' - ' : '') + exp.role;
-          return header ? `${header}\n${exp.bullets}` : exp.bullets;
-        }).join('\n\n') : null);
-        
-        const hasContact = mEmail || mPhone || mCity || mLinkedin || mGithub;
-
-        return (
+      {templateStyle === 'onepage' && (
           <div style={{ display: 'grid', gridTemplateColumns: '230px 1fr', minHeight: '100%', width: '100%' }}>
             {/* Left Sidebar */}
             <div style={{ background: '#f1f5f9', padding: '30px 20px', borderRight: '2px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -828,8 +650,7 @@ export default function ResumeContentRenderer({
               )}
             </div>
           </div>
-        );
-      })()}
+        )}
 
       {/* 10. Elegant */}
       {templateStyle === 'elegant' && (
