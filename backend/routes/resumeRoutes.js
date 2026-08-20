@@ -9,7 +9,7 @@ import {
   generateCoverLetterEndpoint,
   generateInterviewQuestionsEndpoint,
   fixSectionEndpoint,
-  agentChatEndpoint,
+  agentChatEndpoint, agentChatStreamEndpoint,
   reanalyzeResume
 } from '../controllers/resumeController.js';
 import { protect } from '../middleware/auth.js';
@@ -33,6 +33,7 @@ router.post('/cover-letter', generateCoverLetterEndpoint);
 router.post('/interview-questions', generateInterviewQuestionsEndpoint);
 router.post('/:id/fix', fixSectionEndpoint);
 router.post('/:id/chat', agentChatEndpoint);
+router.post('/:id/chat/stream', agentChatStreamEndpoint);
 
 export default router;
 

@@ -15,7 +15,7 @@ import AdminLogin from '../components/admin/AdminLogin.jsx';
 
 export default function AdminPanel({ onLogout, onBackToLanding }) {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return localStorage.getItem('adminAuth') === 'true';
+    return sessionStorage.getItem('adminAuth') === 'true';
   });
   const [activeTab, setActiveTab] = useState(() => {
     return localStorage.getItem('adminTab') || 'dashboard';
@@ -23,9 +23,9 @@ export default function AdminPanel({ onLogout, onBackToLanding }) {
 
   useEffect(() => {
     if (isAuthenticated) {
-      localStorage.setItem('adminAuth', 'true');
+      sessionStorage.setItem('adminAuth', 'true');
     } else {
-      localStorage.removeItem('adminAuth');
+      sessionStorage.removeItem('adminAuth');
     }
   }, [isAuthenticated]);
 
@@ -209,7 +209,7 @@ export default function AdminPanel({ onLogout, onBackToLanding }) {
             <button
               onClick={() => {
                 setIsAuthenticated(false);
-                localStorage.removeItem('adminAuth');
+                sessionStorage.removeItem('adminAuth');
                 onLogout();
               }}
               style={{

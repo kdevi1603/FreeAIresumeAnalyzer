@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+const API_KEY = undefined /* API key moved to backend for security */;
 let genAI = null;
 
 if (API_KEY && API_KEY !== 'your_api_key_here') {

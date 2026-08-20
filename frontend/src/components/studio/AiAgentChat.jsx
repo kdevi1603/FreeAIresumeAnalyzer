@@ -199,7 +199,7 @@ export default function AiAgentChat({ resumeData, chatMessages, onSendMessage, i
           </div>
         )}
 
-        {isTyping && !autoFixMessage && (
+        {isTyping && !autoFixMessage && (!chatMessages.length || !chatMessages[chatMessages.length - 1].isStreaming) && (
           <div style={{ alignSelf: 'flex-start', background: 'var(--bg-card)', border: '1px solid var(--border-color)', padding: '12px 18px', borderRadius: '4px 16px 16px 16px', display: 'flex', gap: '6px' }}>
             <span className="animate-pulse" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent-blue)' }} />
             <span className="animate-pulse" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent-blue)', animationDelay: '0.2s' }} />

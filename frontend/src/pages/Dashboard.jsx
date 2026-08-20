@@ -71,7 +71,7 @@ export default function Dashboard({ onOpenAuth, viewMode, setViewMode, onOpenTem
       <div className="container" style={{ padding: '20px 15px' }}>
         <TemplateGallery
           onSelectTemplate={handleSelectTemplate}
-          onBack={() => setViewMode('sidebar_dashboard')}
+          onBack={() => setViewMode('landing')}
         />
       </div>
     );

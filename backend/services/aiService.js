@@ -13,34 +13,45 @@ function parseJSONResponse(text) {
 }
 
 // Call Google Gemini API directly via REST endpoint for maximum reliability
-async function callGemini(prompt, systemInstruction = '') {
+async function callGemini(prompt, systemInstruction = '', retries = 2) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error('GEMINI_API_KEY not found');
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`;
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{
-        parts: [{ text: `${systemInstruction}\n\n${prompt}` }]
-      }],
-      generationConfig: {
-        temperature: 0.2,
-        responseMimeType: 'application/json'
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent?key=${apiKey}`;
+  
+  for (let i = 0; i <= retries; i++) {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{ text: `${systemInstruction}\n\n${prompt}` }]
+        }],
+        generationConfig: {
+          temperature: 0.2,
+          responseMimeType: 'application/json'
+        }
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      if (response.status === 429 || response.status === 503) {
+        if (i < retries) {
+          const delay = (i + 1) * 3000;
+          console.warn(`⏳ Gemini API rate limit/503 hit. Retrying in ${delay/1000}s...`);
+          await new Promise(res => setTimeout(res, delay));
+          continue;
+        }
       }
-    })
-  });
+      throw new Error(`Gemini API Error (${response.status}): ${errorText}`);
+    }
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Gemini API Error (${response.status}): ${errorText}`);
+    const data = await response.json();
+    const textOutput = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!textOutput) throw new Error('Empty response from Gemini API');
+    return parseJSONResponse(textOutput);
   }
-
-  const data = await response.json();
-  const textOutput = data.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!textOutput) throw new Error('Empty response from Gemini API');
-  return parseJSONResponse(textOutput);
 }
 
 // Call OpenAI API
@@ -155,6 +166,7 @@ export function runSmartDemoAnalysis(resumeText) {
     { key: 'projects', patterns: [/(?:^|\n)\s*(?:academic\s+projects|personal\s+projects|projects|project|project\s+title)\s*[:\n]/i] },
     { key: 'certifications', patterns: [/(?:^|\n)\s*(?:certifications|certificates|licenses)\s*[:\n]/i] },
     { key: 'languages', patterns: [/(?:^|\n)\s*languages?\s*[:\n]/i] },
+    { key: 'achievements', patterns: [/(?:^|\n)\s*(?:achievements|awards|honors)\s*[:\n]/i] },
     { key: 'personal', patterns: [/(?:^|\n)\s*(?:personal\s+profile|personal\s+details|area\s+of\s+interest|father's\s+name)\s*[:\n]/i] }
   ];
 
@@ -195,13 +207,14 @@ export function runSmartDemoAnalysis(resumeText) {
     return text.trim().substring(0, maxLen);
   };
 
-  let summary = getSectionText('summary', 400);
-  let education = getSectionText('education', 400);
-  let experience = getSectionText('experience', 600);
-  let projects = getSectionText('projects', 600);
-  let skillsSection = getSectionText('skills', 400);
-  let certifications = getSectionText('certifications', 300);
-  let languagesText = getSectionText('languages', 200);
+  let summary = getSectionText('summary', 1200);
+  let education = getSectionText('education', 1200);
+  let experience = getSectionText('experience', 2500);
+  let projects = getSectionText('projects', 2500);
+  let skillsSection = getSectionText('skills', 1200);
+  let certifications = getSectionText('certifications', 1200);
+  let languagesText = getSectionText('languages', 500);
+  let achievements = getSectionText('achievements', 1200);
 
   // Fallback: If education is empty or heavily truncated due to jumbled 2-column PDF extraction
   if (!education || education.length < 20) {
@@ -233,25 +246,15 @@ export function runSmartDemoAnalysis(resumeText) {
     summary = resumeText.substring(0, firstSecIdx)
       .replace(name, '').replace(email, '').replace(phone, '')
       .replace(/[^\x20-\x7E\n]/g, ' ')
-      .trim().substring(0, 400);
+      .trim().substring(0, 1200);
   }
 
   // Build experience text combining experience + projects
   const combinedExperience = [experience, projects].filter(Boolean).join('\n\n').trim();
 
-  // Build skills text: prefer the actual skills section text, then fall back to detected skills
   let finalSkillsText = skillsSection || (foundSkills.length > 0 ? foundSkills.map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(', ') : '');
-  
-  if (finalSkillsText) {
-    finalSkillsText = finalSkillsText.replace(/Language Knowns\s*:/ig, 'Programming Languages :');
-  }
 
-  if (projects) {
-    projects = projects.replace(
-      /Description\s*:\s*To apply and update Bank Transaction in this Project which is developed\s*by VB\.Net with SQL SERVER 2005\.?/ig,
-      'Description : Developed and deployed a secure Bank Transaction application utilizing VB.Net and SQL Server 2005 to process and manage financial updates.'
-    );
-  }
+
 
   // Build missingSkills from detected skills
   const missingSkillPool = ['Cloud Architecture (AWS/GCP)', 'Unit Testing (Jest/Cypress)', 'CI/CD Pipelines', 'System Design', 'Microservices', 'GraphQL', 'Docker & Containerization'];
@@ -273,6 +276,7 @@ export function runSmartDemoAnalysis(resumeText) {
     skills: finalSkillsText,
     certifications: certifications || '',
     languages: languagesText || '',
+    achievements: achievements || '',
     experienceList: (() => {
       const list = [];
       if (experience) {
@@ -325,6 +329,8 @@ export function runSmartDemoAnalysis(resumeText) {
 }
 
 export async function analyzeResume(resumeText) {
+  const originalData = runSmartDemoAnalysis(resumeText);
+
   const prompt = `You are an expert data extractor. Analyze the following candidate resume text and extract the information into the corresponding JSON sections. 
 CRITICAL RULES:
 1. DO NOT summarize, rewrite, or modify the original text. You must extract the EXACT original text as it appears in the resume.
@@ -353,14 +359,6 @@ Required JSON Schema:
   },
   "summary": string (A clean, professional executive summary. Remove any contact info, links, or section headers like 'Summary'),
   "education": string (A clean list of education details. Remove skills and coursework),
-  "experienceList": [
-    {
-      "company": string (For jobs use Company Name. For projects use Project Title),
-      "role": string (For jobs use Job Title. For projects use Tech Stack or Role),
-      "period": string,
-      "bullets": string (Format the responsibilities/achievements as a professional bulleted list starting with '•'. Remove labels like 'Description:', 'Technologies:' and integrate them smoothly.)
-    }
-  ] (Extract BOTH professional work experience and academic/personal projects into this list),
   "sectionScores": {
     "structure": number (0 to 100),
     "experience": number (0 to 100),
@@ -381,6 +379,9 @@ Required JSON Schema:
     { "label": "No Large Tables", "passed": boolean }
   ],
   "skills": string (A clean, comma-separated list of technical skills. Remove headers like 'Technical Skills' or 'Tools'),
+  "certifications": string (A clean list of certifications, separated by commas or newlines),
+  "languages": string (A clean list of languages known, separated by commas),
+  "achievements": string (A clean list of awards or achievements, separated by newlines),
   "skillsFound": string[] (list of technical and soft skills clearly detected),
   "missingSkills": string[] (5-7 crucial industry-standard skills that would make this profile much stronger),
   "suggestions": [
@@ -391,28 +392,64 @@ Only output the JSON object without extra markdown formatting.`;
 
   const systemInstruction = 'You are a strict ATS parser and senior technical recruiter. Respond ONLY in valid JSON.';
 
+  let aiData = null;
+
   // Try Gemini first if key exists
   if (process.env.GEMINI_API_KEY) {
     try {
       console.log('🤖 Analyzing resume with Google Gemini API...');
-      return await callGemini(prompt, systemInstruction);
+      aiData = await callGemini(prompt, systemInstruction);
     } catch (err) {
-      console.warn('⚠️ Gemini API error, checking fallback...', err.message);
+      console.warn('⚠️ Gemini API error:', err.message);
+      if (!process.env.OPENAI_API_KEY) {
+        return originalData;
+      }
     }
   }
 
   // Try OpenAI if key exists
-  if (process.env.OPENAI_API_KEY) {
+  if (!aiData && process.env.OPENAI_API_KEY) {
     try {
       console.log('🤖 Analyzing resume with OpenAI API...');
-      return await callOpenAI(prompt, systemInstruction);
+      aiData = await callOpenAI(prompt, systemInstruction);
     } catch (err) {
-      console.warn('⚠️ OpenAI API error, checking fallback...', err.message);
+      console.warn('⚠️ OpenAI API error:', err.message);
+      return originalData;
     }
   }
 
-  // Fallback to Smart Demo Mode
-  return runSmartDemoAnalysis(resumeText);
+  if (!aiData) return originalData;
+
+  // Merge the data, preserving the original factual data while attaching AI optimizations as fixed fields
+  return {
+    ...originalData,
+    isResume: aiData.isResume !== undefined ? aiData.isResume : originalData.isResume,
+    atsScore: aiData.atsScore || originalData.atsScore,
+    personalInfo: {
+       ...originalData.personalInfo,
+       ...(aiData.personalInfo || {})
+    },
+    summary: originalData.summary,
+    fixedSummary: aiData.summary || null,
+    education: originalData.education,
+    fixedEducation: aiData.education || null,
+    skills: originalData.skills,
+    fixedSkills: aiData.skills || null,
+    experienceList: originalData.experienceList,
+    fixedProjects: null, // Always use original unaltered experience/projects
+    certifications: originalData.certifications,
+    fixedCertifications: aiData.certifications || null,
+    languages: originalData.languages,
+    fixedLanguages: aiData.languages || null,
+    achievements: originalData.achievements,
+    fixedAchievements: aiData.achievements || null,
+    sectionScores: aiData.sectionScores || originalData.sectionScores,
+    grammar: aiData.grammar || originalData.grammar,
+    formatting: aiData.formatting || originalData.formatting,
+    skillsFound: aiData.skillsFound || originalData.skillsFound,
+    missingSkills: aiData.missingSkills || originalData.missingSkills,
+    suggestions: aiData.suggestions || originalData.suggestions,
+  };
 }
 
 export async function matchJobDescription(resumeText, jobDescription) {
@@ -441,10 +478,10 @@ Required JSON Schema:
 }`;
 
   if (process.env.GEMINI_API_KEY) {
-    try { return await callGemini(prompt); } catch (e) { console.warn(e.message); }
+    try { return await callGemini(prompt); } catch (e) { console.warn(e.message); if (!process.env.OPENAI_API_KEY) throw e; }
   }
   if (process.env.OPENAI_API_KEY) {
-    try { return await callOpenAI(prompt); } catch (e) { console.warn(e.message); }
+    try { return await callOpenAI(prompt); } catch (e) { console.warn(e.message); throw e; }
   }
 
   // Demo fallback for Job Matching
@@ -486,10 +523,10 @@ Required JSON Schema:
 }`;
 
   if (process.env.GEMINI_API_KEY) {
-    try { return await callGemini(prompt); } catch (e) { console.warn(e.message); }
+    try { return await callGemini(prompt); } catch (e) { console.warn(e.message); if (!process.env.OPENAI_API_KEY) throw e; }
   }
   if (process.env.OPENAI_API_KEY) {
-    try { return await callOpenAI(prompt); } catch (e) { console.warn(e.message); }
+    try { return await callOpenAI(prompt); } catch (e) { console.warn(e.message); throw e; }
   }
 
   // Demo fallback for Cover Letter
@@ -519,10 +556,10 @@ Required JSON Schema:
 }`;
 
   if (process.env.GEMINI_API_KEY) {
-    try { return await callGemini(prompt); } catch (e) { console.warn(e.message); }
+    try { return await callGemini(prompt); } catch (e) { console.warn(e.message); if (!process.env.OPENAI_API_KEY) throw e; }
   }
   if (process.env.OPENAI_API_KEY) {
-    try { return await callOpenAI(prompt); } catch (e) { console.warn(e.message); }
+    try { return await callOpenAI(prompt); } catch (e) { console.warn(e.message); throw e; }
   }
 
   // Demo fallback for Interview Prep
@@ -581,10 +618,10 @@ Required JSON Schema:
 }`;
 
   if (process.env.GEMINI_API_KEY) {
-    try { return await callGemini(prompt); } catch (e) { console.warn(e.message); }
+    try { return await callGemini(prompt); } catch (e) { console.warn(e.message); if (!process.env.OPENAI_API_KEY) throw e; }
   }
   if (process.env.OPENAI_API_KEY) {
-    try { return await callOpenAI(prompt); } catch (e) { console.warn(e.message); }
+    try { return await callOpenAI(prompt); } catch (e) { console.warn(e.message); throw e; }
   }
 
   // Smart Demo Mode fallback for fixing resume section
@@ -605,6 +642,7 @@ Required JSON Schema:
 export async function agentChat(resumeText, userMessage, chatHistory = []) {
   const prompt = `You are JobSuit AI, an enthusiastic, highly expert AI Resume Agent & Recruiter Coach.
 You are helping a candidate improve their resume in real time. However, you are also a highly capable general AI assistant. If the candidate asks general questions (e.g., coding help, general knowledge, career advice outside of resumes, etc.), you should gladly answer them accurately and thoroughly.
+CRITICAL LANGUAGE INSTRUCTION: Detect the language of the user's message (e.g., English, Tamil, or Tanglish). You MUST respond in the exact same language and script as the user. If they use Tanglish, reply in Tanglish, keeping technical terms in English.
 Candidate's message: "${userMessage}"
 
 Resume Context:
@@ -619,10 +657,10 @@ Required JSON Schema:
 }`;
 
   if (process.env.GEMINI_API_KEY) {
-    try { return await callGemini(prompt); } catch (e) { console.warn(e.message); }
+    try { return await callGemini(prompt); } catch (e) { console.warn(e.message); if (!process.env.OPENAI_API_KEY) throw e; }
   }
   if (process.env.OPENAI_API_KEY) {
-    try { return await callOpenAI(prompt); } catch (e) { console.warn(e.message); }
+    try { return await callOpenAI(prompt); } catch (e) { console.warn(e.message); throw e; }
   }
 
   // Smart Demo Mode fallback for agent chat
@@ -640,4 +678,138 @@ Required JSON Schema:
     reply,
     suggestedAction: "Ask me a question or click 'Fix with AI' on any section."
   };
+}
+
+
+export async function agentChatStream(resumeText, jobDescription, userMessage, chatHistory = [], res) {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  const systemInstruction = `You are JobSuit AI, an enthusiastic, highly expert AI Resume Agent & Recruiter Coach.
+Your goal is to help the user improve their resume to bypass ATS and land a job.
+CRITICAL INSTRUCTIONS:
+1. If the user just says "hi", "hello", etc., ONLY respond with a short greeting like "Hello! How can I help you?". DO NOT analyze the resume unless they ask.
+2. Be concise. Avoid huge walls of text.
+3. If the user asks you to fix, rewrite, or add a section, you MUST output the COMPLETE new text (including any additions) wrapped inside a <fix section="[section_name]">...</fix> tag, where [section_name] is one of: 'projects', 'skills', 'summary', 'education', 'github', 'linkedin', 'email', 'phone', or 'rawText'. 
+4. CRITICAL: Any new content or rewritten text MUST be placed INSIDE the <fix> tag. Do not output the new content outside the tag! If they ask to add a Technical Summary or update technical skills, output it inside the <fix section="skills"> tag.
+5. If they just provided a keyword/skill, assume they want to add it to their skills, and output the updated full skills list in a <fix section="skills">...</fix> tag.
+6. FORMATTING: When outputting Projects or Experience, NEVER use a bullet point for the Title/Company name line. Only use bullet points for the achievement descriptions below the title.
+7. LANGUAGE & RESPONSE MATCHING: Detect the language of the user's latest message (e.g., English, Tamil script, or Tanglish/Tamil written in English letters). You MUST respond in the EXACT SAME LANGUAGE and script as the user. If the user writes in Tanglish (e.g., "en resume la enna improve pannanum?"), you MUST understand it and respond conversationally in Tanglish (e.g., "ungal resume-il..."). Preserve technical terms like React.js, Node.js, API, ATS, etc., in English, but explain the rest in the user's language. Do NOT default to English unless the user writes in English.
+
+Resume Context:
+"""
+${resumeText.slice(0, 4000)}
+"""
+
+${jobDescription ? `Job Description Context:\n"""\n${jobDescription.slice(0, 2000)}\n"""` : ''}`;
+
+  const historyString = chatHistory
+    .map(m => `${m.sender === 'user' ? 'User' : 'Assistant'}: ${m.text}`)
+    .join('\n');
+
+  const prompt = `${systemInstruction}\n\n--- Chat History ---\n${historyString}\n\nUser: ${userMessage}\n\n[SYSTEM REMINDER: Detect the language of the User's message above (e.g., Tanglish, Tamil, or English). You MUST generate your ENTIRE response in that EXACT same language and script. If Tanglish, reply fully in Tanglish. DO NOT switch back to English.]\nAssistant:`;
+
+  if (process.env.GEMINI_API_KEY) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:streamGenerateContent?key=${process.env.GEMINI_API_KEY}&alt=sse`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.7 }
+        })
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Gemini API stream error (${response.status}): ${errText}`);
+      }
+
+      const stream = response.body;
+      stream.on('data', chunk => {
+        const lines = chunk.toString().split('\n');
+        for (const line of lines) {
+          if (line.startsWith('data: ') && line !== 'data: [DONE]') {
+            try {
+              const data = JSON.parse(line.slice(6));
+              const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+              if (text) {
+                res.write(`data: ${JSON.stringify({ text })}\n\n`);
+              }
+            } catch (e) {}
+          }
+        }
+      });
+
+      stream.on('end', () => res.end());
+      return;
+    } catch (e) {
+      console.warn('Gemini stream failed', e);
+      if (!process.env.OPENAI_API_KEY) {
+         res.write(`data: ${JSON.stringify({ error: e.message })}\n\n`);
+         res.end();
+         return;
+      }
+    }
+  }
+
+  if (process.env.OPENAI_API_KEY) {
+    try {
+      const url = 'https://api.openai.com/v1/chat/completions';
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.2,
+          stream: true
+        })
+      });
+
+      if (!response.ok) throw new Error('OpenAI stream error');
+
+      const stream = response.body;
+      stream.on('data', chunk => {
+        const lines = chunk.toString().split('\n');
+        for (const line of lines) {
+          if (line.startsWith('data: ') && line !== 'data: [DONE]') {
+            try {
+              const data = JSON.parse(line.slice(6));
+              const text = data.choices?.[0]?.delta?.content;
+              if (text) {
+                res.write(`data: ${JSON.stringify({ text })}\n\n`);
+              }
+            } catch (e) {}
+          }
+        }
+      });
+
+      stream.on('end', () => res.end());
+      return;
+    } catch (e) {
+      console.warn('OpenAI stream failed', e);
+      res.write(`data: ${JSON.stringify({ error: e.message })}\n\n`);
+      res.end();
+      return;
+    }
+  }
+
+  // Demo fallback
+  const demoText = `I am in Smart Demo Mode. Please provide an API key to use real-time AI Chat.`;
+  const chunks = demoText.split(' ');
+  
+  const interval = setInterval(() => {
+    if (chunks.length === 0) {
+      clearInterval(interval);
+      res.end();
+      return;
+    }
+    res.write(`data: ${JSON.stringify({ text: chunks.shift() + ' ' })}\n\n`);
+  }, 100);
 }

@@ -68,12 +68,17 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
   const [accentColor, setAccentColor] = useState('#2563EB');
   const [showBuilderModal, setShowBuilderModal] = useState(() => resumeData?.isScratch ? true : false);
 
-  const [chatMessages, setChatMessages] = useState([
-    {
-      sender: 'bot',
-      text: `Hello, I'm your AI Resume Assistant. How can I help you?`
+  const [chatMessages, setChatMessages] = useState(() => {
+    if (resumeData && resumeData.chatHistory && resumeData.chatHistory.length > 0) {
+      return resumeData.chatHistory;
     }
-  ]);
+    return [
+      {
+        sender: 'bot',
+        text: `Hello, I'm your AI Resume Assistant. How can I help you?`
+      }
+    ];
+  });
 
   const [isTyping, setIsTyping] = useState(false);
   const [isFixing, setIsFixing] = useState(false);
@@ -224,57 +229,136 @@ Review the AI suggestions in the Studio to weave missing keywords into your expe
     }
   };
 
+  
   const handleSendMessage = async (userText) => {
-    setChatMessages(prev => [...prev, { sender: 'user', text: userText }]);
+    const newUserMsg = { sender: 'user', text: userText };
+    setChatMessages(prev => [...prev, newUserMsg]);
     setIsTyping(true);
 
     try {
-      // Delegate all conversational logic to the Live AI service
-      const res = await aiService.chatWithResumeAgent(userText, activeResume, chatMessages);
+      const currentHistory = [...chatMessages, newUserMsg];
+      
+      // Add empty bot message that will be streamed into
+      setChatMessages(prev => [...prev, { sender: 'bot', text: '', isStreaming: true }]);
 
-      if (res.proposedFix && res.autoApply) {
+      const streamBody = await resumeService.streamAgentChat(activeResume.id, userText, chatMessages, activeResume.jobDescription, activeResume.rawText);
+      
+      const reader = streamBody.getReader();
+      const decoder = new TextDecoder("utf-8");
+      
+      let fullText = '';
+      
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n');
+        
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              if (data.error) {
+                fullText += `\n**Error:** ${data.error}`;
+              } else if (data.text) {
+                fullText += data.text;
+              }
+              
+              setChatMessages(prev => {
+                const newMessages = [...prev];
+                const lastMsg = newMessages[newMessages.length - 1];
+                if (lastMsg.sender === 'bot' && lastMsg.isStreaming) {
+                  lastMsg.text = fullText;
+                }
+                return newMessages;
+              });
+            } catch (e) {}
+          }
+        }
+      }
+      
+      // Post-process the full text to extract <fix> tags
+      let proposedFix = null;
+      let finalDisplayText = fullText;
+      let autoApply = false;
+      const fixMatch = fullText.match(/<fix\s+section="([^"]+)">([\s\S]*?)<\/fix>/i);
+      
+      if (fixMatch) {
+        proposedFix = {
+          section: fixMatch[1],
+          content: fixMatch[2].trim()
+        };
+        finalDisplayText = fullText.replace(/<fix\s+section="([^"]+)">([\s\S]*?)<\/fix>/gi, '').trim();
+        
+        // Auto apply if it was a quick keyword addition
+        const lastUserMsg = userText.toLowerCase();
+        if (lastUserMsg.includes('keyword') || lastUserMsg.includes('skill') || lastUserMsg.includes('add ')) {
+          autoApply = true;
+        }
+      }
+
+      let newFinalMessages = [];
+      setChatMessages(prev => {
+         const newMessages = [...prev];
+         const lastMsg = newMessages[newMessages.length - 1];
+         if (lastMsg.sender === 'bot') {
+            lastMsg.text = finalDisplayText;
+            lastMsg.isStreaming = false;
+            if (proposedFix) {
+               lastMsg.proposedFix = autoApply ? { ...proposedFix, applied: true } : proposedFix;
+            }
+         }
+         newFinalMessages = newMessages;
+         return newMessages;
+      });
+      
+      if (proposedFix && autoApply) {
         setShowSplitChat(true);
         setActiveResume(prev => {
           const updated = { ...prev };
-          const sec = res.proposedFix.section.toLowerCase();
+          const sec = proposedFix.section.toLowerCase();
           if (sec.includes('project')) {
-            updated.fixedProjects = res.proposedFix.content;
+            updated.fixedProjects = proposedFix.content;
           } else if (sec.includes('skill')) {
-            updated.fixedSkills = res.proposedFix.content;
+            updated.fixedSkills = proposedFix.content;
           } else if (sec.includes('summary')) {
-            updated.fixedSummary = res.proposedFix.content;
+            updated.fixedSummary = proposedFix.content;
           } else if (sec.includes('education')) {
-            updated.fixedEducation = res.proposedFix.content;
+            updated.fixedEducation = proposedFix.content;
           } else if (sec.includes('format') || sec.includes('heading') || sec.includes('font') || sec.includes('bullet') || sec.includes('space')) {
-            updated.formattingCss = (updated.formattingCss || '') + '\n' + res.proposedFix.content;
+            updated.formattingCss = (updated.formattingCss || '') + '\n' + proposedFix.content;
           } else if (sec.includes('github')) {
-            updated.personalInfo = { ...updated.personalInfo, github: res.proposedFix.content.trim() };
+            updated.personalInfo = { ...updated.personalInfo, github: proposedFix.content.trim() };
           } else if (sec.includes('linkedin')) {
-            updated.personalInfo = { ...updated.personalInfo, linkedin: res.proposedFix.content.trim() };
+            updated.personalInfo = { ...updated.personalInfo, linkedin: proposedFix.content.trim() };
           } else if (sec.includes('email')) {
-            updated.personalInfo = { ...updated.personalInfo, email: res.proposedFix.content.trim() };
+            updated.personalInfo = { ...updated.personalInfo, email: proposedFix.content.trim() };
           } else if (sec.includes('phone')) {
-            updated.personalInfo = { ...updated.personalInfo, phone: res.proposedFix.content.trim() };
+            updated.personalInfo = { ...updated.personalInfo, phone: proposedFix.content.trim() };
           } else {
-            updated.rawText = res.proposedFix.content;
+            updated.rawText = proposedFix.content;
           }
-          // Increment ATS score for this fix, similar to handleApplyFix
           updated.atsScore = Math.min(100, (updated.atsScore || 41) + 4);
-          updated.customHtml = ''; // Clear customHtml so structural updates take effect
+          updated.customHtml = '';
           return updated;
         });
       }
 
-      setChatMessages(prev => [
-        ...prev,
-        { sender: 'bot', text: res.reply, proposedFix: res.autoApply ? { ...res.proposedFix, applied: true } : res.proposedFix, options: res.options }
-      ]);
+      // Persist to backend
+      resumeService.updateResume(activeResume.id, { chatHistory: newFinalMessages });
+
     } catch (err) {
       console.error('Chat error:', err);
-      setChatMessages(prev => [
-        ...prev,
-        { sender: 'bot', text: "I'm here to help! Try clicking 'Fix with AI' on any recommendation card in the left column to automatically apply verified ATS improvements." }
-      ]);
+      setChatMessages(prev => {
+         const newMessages = [...prev];
+         const lastMsg = newMessages[newMessages.length - 1];
+         if (lastMsg.sender === 'bot' && lastMsg.isStreaming) {
+            lastMsg.text = "I'm sorry, I encountered an error connecting to the AI. Please try again.";
+            lastMsg.isStreaming = false;
+         }
+         return newMessages;
+      });
     } finally {
       setIsTyping(false);
     }
@@ -311,35 +395,14 @@ Review the AI suggestions in the Studio to weave missing keywords into your expe
     ]);
   };
 
+  
   const handleSuggestionClick = async (suggestion) => {
     setActiveView('AI Chat');
     
-    // Instead of hardcoding dummy data, pass the suggestion to the AI service
     const message = `Please fix this: ${suggestion.text}`;
     
     // Call the same flow as manual typing
-    setIsTyping(true);
-    setChatMessages(prev => [...prev, { sender: 'user', text: message }]);
-    
-    // Optional: wait a moment for smooth transition
-    setTimeout(async () => {
-      try {
-        const response = await aiService.chatWithResumeAgent(message, activeResume, chatMessages);
-        setChatMessages(prev => [
-          ...prev,
-          { 
-            sender: 'bot', 
-            text: response.reply,
-            proposedFix: response.proposedFix,
-            autoApply: response.autoApply
-          }
-        ]);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setIsTyping(false);
-      }
-    }, 100);
+    handleSendMessage(message);
   };
 
   const handleUpdateResumeFromBuilder = (updatedFields) => {

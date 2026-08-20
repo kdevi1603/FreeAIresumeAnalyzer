@@ -244,8 +244,8 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'fresher
 
   const sections = [
     { title: 'Executive Summary', content: formatText(summaryText, false), isModified: !!resumeData?.fixedSummary },
-    { title: 'Work & Project Experience', content: formatText(projectsText), isModified: !!resumeData?.fixedProjects },
-    { title: 'Education & Academic Details', content: formatText(educationText), isModified: !!resumeData?.fixedEducation },
+    { title: 'Work & Project Experience', content: formatText(projectsText, false), isModified: !!resumeData?.fixedProjects },
+    { title: 'Education & Academic Details', content: formatText(educationText, false), isModified: !!resumeData?.fixedEducation },
     { title: 'Technical Skills & Tools', content: formatText(skillsText, false), isModified: !!resumeData?.fixedSkills },
     { title: 'Languages', content: resumeData?.languages || resumeData?.personalInfo?.languages || '' }
   ].filter(sec => sec.content);

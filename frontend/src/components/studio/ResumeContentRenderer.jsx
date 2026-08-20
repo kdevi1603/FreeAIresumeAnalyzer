@@ -81,7 +81,8 @@ export default function ResumeContentRenderer({
   if (mSkills === 'Communication, Problem Solving, Project Management, Teamwork, Data Analysis') mSkills = '';
 
   const mCertifications = (showDiff && originalResumeData?.fixedCertifications) ? originalResumeData.fixedCertifications : originalResumeData?.certifications;
-  const mLanguages = originalResumeData?.languages || originalResumeData?.personalInfo?.languages || '';
+  const mLanguages = (showDiff && originalResumeData?.fixedLanguages) ? originalResumeData.fixedLanguages : (originalResumeData?.languages || originalResumeData?.personalInfo?.languages || '');
+  const mAchievements = (showDiff && originalResumeData?.fixedAchievements) ? originalResumeData.fixedAchievements : originalResumeData?.achievements;
 
   const mProjects = (showDiff && originalResumeData?.fixedProjects) ? originalResumeData.fixedProjects : (Array.isArray(originalResumeData?.experienceList) && originalResumeData.experienceList.length > 0 ? originalResumeData.experienceList.map(exp => {
     let header = '';
@@ -146,13 +147,14 @@ export default function ResumeContentRenderer({
     );
   };
 
-    const sections = [
+  const sections = [
     { title: 'Executive Summary', content: formatText(mSummary, false), isModified: !!originalResumeData?.fixedSummary },
-    { title: 'Work & Project Experience', content: formatText(mProjects), isModified: !!originalResumeData?.fixedProjects },
-    { title: 'Education & Academic Details', content: formatText(mEducation), isModified: !!originalResumeData?.fixedEducation },
+    { title: 'Work & Project Experience', content: formatText(mProjects, false), isModified: !!originalResumeData?.fixedProjects },
+    { title: 'Education & Academic Details', content: formatText(mEducation, false), isModified: !!originalResumeData?.fixedEducation },
     { title: 'Certifications', content: formatText(mCertifications, false), isModified: !!originalResumeData?.fixedCertifications },
+    { title: 'Achievements', content: formatText(mAchievements, false), isModified: !!originalResumeData?.fixedAchievements },
     { title: 'Technical Skills & Tools', content: formatText(mSkills, false), isModified: !!originalResumeData?.fixedSkills },
-    { title: 'Languages', content: formatText(mLanguages, false) }
+    { title: 'Languages', content: formatText(mLanguages, false), isModified: !!originalResumeData?.fixedLanguages }
   ].filter(sec => sec.content);
 
   return (
@@ -274,6 +276,28 @@ export default function ResumeContentRenderer({
                     </div>
                  </div>
                )}
+
+               {mCertifications && (
+                 <div>
+                    <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#0f172a', marginBottom: '10px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                       <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: accentColor }} /> Certifications
+                    </h3>
+                    <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>
+                      {formatText(mCertifications)}
+                    </div>
+                 </div>
+               )}
+
+               {mAchievements && (
+                 <div>
+                    <h3 style={{ fontSize: '16px', fontWeight: 900, color: '#0f172a', marginBottom: '12px', borderBottom: '2px solid #e2e8f0', paddingBottom: '6px' }}>
+                       Achievements
+                    </h3>
+                    <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>
+                      {formatText(mAchievements)}
+                    </div>
+                 </div>
+               )}
              </div>
           </div>
         </div>
@@ -360,6 +384,20 @@ export default function ResumeContentRenderer({
                 <div>
                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#111', background: '#f1f5f9', padding: '6px 10px', borderRadius: '4px', textTransform: 'uppercase', marginBottom: '10px' }}>Education</h3>
                    <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>{formatText(mEducation)}</div>
+                </div>
+              )}
+
+              {mCertifications && (
+                <div>
+                   <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#111', background: '#f1f5f9', padding: '6px 10px', borderRadius: '4px', textTransform: 'uppercase', marginBottom: '10px' }}>Certifications</h3>
+                   <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>{formatText(mCertifications)}</div>
+                </div>
+              )}
+
+              {mAchievements && (
+                <div>
+                   <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#111', background: '#f1f5f9', padding: '6px 10px', borderRadius: '4px', textTransform: 'uppercase', marginBottom: '10px' }}>Achievements</h3>
+                   <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>{formatText(mAchievements)}</div>
                 </div>
               )}
 
@@ -489,6 +527,20 @@ export default function ResumeContentRenderer({
                    <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>{formatText(mEducation)}</div>
                 </div>
               )}
+
+              {mCertifications && (
+                <div style={{ background: '#fff', padding: '10px 0' }}>
+                   <h3 style={{ fontSize: '14px', fontWeight: 900, color: accentColor, textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '1px' }}>Certifications</h3>
+                   <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>{formatText(mCertifications)}</div>
+                </div>
+              )}
+
+              {mAchievements && (
+                <div style={{ background: '#fff', padding: '10px 0' }}>
+                   <h3 style={{ fontSize: '14px', fontWeight: 900, color: accentColor, textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '1px' }}>Achievements</h3>
+                   <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>{formatText(mAchievements)}</div>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -557,6 +609,20 @@ export default function ResumeContentRenderer({
                 <div>
                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff', background: '#1e293b', padding: '4px 8px', textTransform: 'uppercase', marginBottom: '12px', display: 'inline-block' }}>Education</h3>
                    <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>{formatText(mEducation)}</div>
+                </div>
+              )}
+
+              {mCertifications && (
+                <div>
+                   <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff', background: '#1e293b', padding: '4px 8px', textTransform: 'uppercase', marginBottom: '12px', display: 'inline-block' }}>Certifications</h3>
+                   <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>{formatText(mCertifications)}</div>
+                </div>
+              )}
+
+              {mAchievements && (
+                <div>
+                   <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff', background: '#1e293b', padding: '4px 8px', textTransform: 'uppercase', marginBottom: '12px', display: 'inline-block' }}>Achievements</h3>
+                   <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>{formatText(mAchievements)}</div>
                 </div>
               )}
             </div>
@@ -646,6 +712,13 @@ export default function ResumeContentRenderer({
                 <div>
                    <h3 style={{ fontSize: '13px', fontWeight: 800, color: accentColor, textTransform: 'uppercase', borderBottom: `1px solid ${accentColor}`, paddingBottom: '4px', marginBottom: '10px' }}>Education</h3>
                    <div style={{ fontSize: '12px', lineHeight: 1.6, color: '#1e293b', textAlign: 'justify' }}>{formatText(mEducation)}</div>
+                </div>
+              )}
+
+              {mAchievements && (
+                <div>
+                   <h3 style={{ fontSize: '13px', fontWeight: 800, color: accentColor, textTransform: 'uppercase', borderBottom: `1px solid ${accentColor}`, paddingBottom: '4px', marginBottom: '10px' }}>Achievements</h3>
+                   <div style={{ fontSize: '12px', lineHeight: 1.6, color: '#1e293b', textAlign: 'justify' }}>{formatText(mAchievements)}</div>
                 </div>
               )}
             </div>

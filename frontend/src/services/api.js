@@ -109,6 +109,23 @@ export const resumeService = {
     const response = await api.post(`/resumes/${resumeId}/chat`, { message, chatHistory });
     return response.data;
   },
+  streamAgentChat: async (resumeId, message, chatHistory, jobDescription, resumeText) => {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`/api/resumes/${resumeId}/chat/stream`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify({ message, chatHistory, jobDescription, resumeText })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Stream Error: ${response.statusText}`);
+    }
+    
+    return response.body;
+  },
   reanalyzeResume: async (resumeId) => {
     const response = await api.post(`/resumes/${resumeId}/reanalyze`);
     return response.data;

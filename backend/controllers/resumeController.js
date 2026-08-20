@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { db } from '../config/db.js';
 import { extractTextFromFile } from '../services/documentService.js';
-import { analyzeResume, matchJobDescription, generateCoverLetter, generateInterviewQuestions, fixResumeSection, agentChat } from '../services/aiService.js';
+import { analyzeResume, matchJobDescription, generateCoverLetter, generateInterviewQuestions, fixResumeSection, agentChat, agentChatStream } from '../services/aiService.js';
 
 export async function uploadResume(req, res) {
   try {
@@ -312,5 +312,42 @@ export async function agentChatEndpoint(req, res) {
   } catch (error) {
     console.error('Agent Chat Error:', error);
     return res.status(500).json({ message: error.message || 'Server error in agent chat.' });
+  }
+}
+
+
+export async function agentChatStreamEndpoint(req, res) {
+  try {
+    const { message, chatHistory, jobDescription, resumeText } = req.body;
+    const resumeId = req.params.id;
+    let textToUse = resumeText;
+
+    // Only strictly require DB existence if it's not a temporary scratch resume
+    if (resumeId && !resumeId.startsWith('scratch-')) {
+      const resume = await db.resumes.findById(resumeId);
+      if (!resume) {
+        return res.status(404).json({ message: 'Resume not found.' });
+      }
+      if (resume.userId !== req.user.id) {
+        return res.status(403).json({ message: 'Not authorized to access this resume.' });
+      }
+      textToUse = resume.rawText;
+    }
+
+    if (!textToUse) {
+      return res.status(400).json({ message: 'Please provide a valid resume text.' });
+    }
+
+    // Call the streaming service and pass the res object so it can pipe data
+    await agentChatStream(textToUse, jobDescription, message, chatHistory || [], res);
+    
+  } catch (error) {
+    console.error('Agent Chat Stream Error:', error);
+    if (!res.headersSent) {
+      return res.status(500).json({ message: error.message || 'Server error in agent chat.' });
+    } else {
+      res.write(`data: ${JSON.stringify({ error: error.message })}\n\n`);
+      res.end();
+    }
   }
 }
