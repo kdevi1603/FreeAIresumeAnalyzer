@@ -191,7 +191,7 @@ export default function AdminPanel({ onLogout, onBackToLanding }) {
                     display: 'flex', alignItems: 'center', gap: '12px',
                     padding: '12px 16px', borderRadius: '12px',
                     background: isActive ? 'rgba(0, 242, 254, 0.1)' : 'transparent',
-                    color: isActive ? 'var(--accent-cyan)' : 'var(--text-muted)',
+                    color: isActive ? 'var(--accent-blue)' : 'var(--text-muted)',
                     border: 'none', cursor: 'pointer',
                     fontWeight: isActive ? 600 : 500,
                     transition: 'all 0.2s',

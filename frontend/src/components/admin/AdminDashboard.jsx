@@ -385,15 +385,18 @@ function ActionButton({ icon: Icon, label, onClick }) {
 }
 
 function HealthItem({ label, status, icon: Icon, isGood }) {
+  const bgColor = isGood ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)';
+  const textColor = isGood ? 'var(--accent-green)' : 'var(--accent-danger)';
+
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-3">
-        <div className={`p-2 rounded-lg ${isGood ? 'bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400' : 'bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400'}`}>
+        <div className="p-2 rounded-lg" style={{ backgroundColor: bgColor, color: textColor }}>
           <Icon size={16} />
         </div>
         <span className="text-sm font-medium">{label}</span>
       </div>
-      <span className={`text-xs font-semibold px-2 py-1 rounded-full ${isGood ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
+      <span className="text-xs font-semibold px-2 py-1 rounded-full" style={{ backgroundColor: bgColor, color: textColor }}>
         {status}
       </span>
     </div>
