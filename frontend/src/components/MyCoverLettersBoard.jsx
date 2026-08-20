@@ -58,12 +58,21 @@ export default function MyCoverLettersBoard({ onCreateCoverLetter, savedCoverLet
             padding: '24px', display: 'flex', gap: '24px', alignItems: 'center',
             boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
           }}>
+            {/* Document Format Thumbnail */}
             <div style={{ 
-              width: '80px', height: '100px', backgroundColor: 'var(--bg-dark)', 
+              width: '140px', height: '180px', backgroundColor: 'var(--bg-dark)', 
               border: '1px solid var(--border-color)', borderRadius: '8px', 
-              display: 'flex', alignItems: 'center', justifyContent: 'center'
+              display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+              padding: '0', overflow: 'hidden', position: 'relative'
             }}>
-              <FileText size={32} color="var(--text-muted)" />
+              <div style={{ 
+                position: 'absolute', top: '10px', left: '10px',
+                width: '300px', height: '400px', backgroundColor: '#fff',
+                transform: 'scale(0.4)', transformOrigin: 'top left',
+                padding: '24px', color: '#1a1a1a', fontFamily: "'Times New Roman', serif",
+                fontSize: '1.2rem', lineHeight: 1.6, overflow: 'hidden',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)', boxSizing: 'border-box'
+              }} dangerouslySetInnerHTML={{ __html: letter.content || '' }} />
             </div>
 
             <div style={{ flex: 1 }}>

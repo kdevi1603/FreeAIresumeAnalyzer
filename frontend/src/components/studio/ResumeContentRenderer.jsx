@@ -118,7 +118,7 @@ export default function ResumeContentRenderer({
         continue;
       }
       
-      const isNewItem = /^([*\-•·➢>]|\d+\.)\s*/.test(trimmed);
+      const isNewItem = /^([*\-•·➢>]|\d+\.)\s*/.test(trimmed) || /^[\w\s]{2,40}:/.test(trimmed) || /^([A-Z0-9\s&]{4,})$/.test(trimmed);
       
       if (!mergeLines || isNewItem || mergedLines.length === 0 || mergedLines[mergedLines.length - 1] === '') {
         mergedLines.push(trimmed);
@@ -149,7 +149,7 @@ export default function ResumeContentRenderer({
 
   const sections = [
     { title: 'Executive Summary', content: formatText(mSummary, false), isModified: !!originalResumeData?.fixedSummary },
-    { title: 'Work & Project Experience', content: formatText(mProjects, false), isModified: !!originalResumeData?.fixedProjects },
+    { title: 'Work & Project Experience', content: formatText(mProjects), isModified: !!originalResumeData?.fixedProjects },
     { title: 'Education & Academic Details', content: formatText(mEducation, false), isModified: !!originalResumeData?.fixedEducation },
     { title: 'Certifications', content: formatText(mCertifications, false), isModified: !!originalResumeData?.fixedCertifications },
     { title: 'Achievements', content: formatText(mAchievements, false), isModified: !!originalResumeData?.fixedAchievements },

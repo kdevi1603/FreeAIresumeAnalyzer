@@ -9,6 +9,7 @@ import AccountSettingsBoard from '../components/AccountSettingsBoard.jsx';
 import JobSearchBoard from '../components/JobSearchBoard.jsx';
 import MyCoverLettersBoard from '../components/MyCoverLettersBoard.jsx';
 import HelpBoard from '../components/HelpBoard.jsx';
+import ResumeContentRenderer from '../components/studio/ResumeContentRenderer.jsx';
 
 export default function SidebarDashboard({ onCreateNew, onEditResume, onDeleteResume, savedResumes, onBackToLanding, onCreateCoverLetter, currentAnalysis, savedCoverLetters, setSavedCoverLetters, onEditCoverLetter }) {
   const { user, logout } = useAuth();
@@ -131,12 +132,20 @@ export default function SidebarDashboard({ onCreateNew, onEditResume, onDeleteRe
       </div>
 
       {/* Main Content Area */}
-      <div className="main-content" style={{ flex: 1, padding: '40px 60px' }}>
+      <div className="main-content" style={{ flex: 1, padding: '20px 24px', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         {/* Top bar controls */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '40px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <button 
+            className="mobile-menu-btn"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            style={{ display: 'none', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'var(--text-main)', cursor: 'pointer' }}
+          >
+            {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+          
           <div 
             onClick={toggleTheme}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px 12px', cursor: 'pointer' }}
+            style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px 12px', cursor: 'pointer' }}
           >
             {isDarkMode ? <Moon size={18} color="var(--text-main)" /> : <Sun size={18} color="var(--text-main)" />}
             <span style={{ fontSize: '0.9rem', fontWeight: 500, color: 'var(--text-main)' }}>
@@ -200,16 +209,23 @@ export default function SidebarDashboard({ onCreateNew, onEditResume, onDeleteRe
               }}>
                 {/* Thumbnail */}
                 <div style={{ 
-                  width: '200px', height: '140px', backgroundColor: 'var(--bg-dark)', 
+                  width: '160px', height: '200px', backgroundColor: 'var(--bg-dark)', 
                   border: '1px solid var(--border-color)', borderRadius: '8px', 
                   display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
-                  padding: '12px', overflow: 'hidden'
+                  padding: '0', overflow: 'hidden', position: 'relative'
                 }}>
-                  {/* Mock paper */}
-                  <div style={{ width: '80%', height: '100%', backgroundColor: 'var(--bg-card)', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                    <div style={{ width: '60%', height: '4px', backgroundColor: 'var(--border-color)', margin: '12px auto' }} />
-                    <div style={{ width: '80%', height: '3px', backgroundColor: 'var(--border-color)', margin: '4px auto' }} />
-                    <div style={{ width: '80%', height: '3px', backgroundColor: 'var(--border-color)', margin: '4px auto' }} />
+                  <div style={{
+                    position: 'absolute', top: '0', left: '0',
+                    width: '794px', height: '1123px', backgroundColor: '#fff',
+                    transform: 'scale(0.201)', transformOrigin: 'top left',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)', overflow: 'hidden',
+                    pointerEvents: 'none'
+                  }}>
+                    <ResumeContentRenderer 
+                      resumeData={resume} 
+                      templateStyle={resume.templateStyle || 'modern'} 
+                      zoom={100} 
+                    />
                   </div>
                 </div>
 

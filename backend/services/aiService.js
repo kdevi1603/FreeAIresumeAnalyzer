@@ -284,7 +284,7 @@ export function runSmartDemoAnalysis(resumeText) {
           company: 'Work Experience',
           role: '',
           period: '',
-          bullets: experience.replace(/\n(?!\n)/g, '\n\n')
+          bullets: experience
         });
       }
       if (projects) {
@@ -292,7 +292,7 @@ export function runSmartDemoAnalysis(resumeText) {
           company: 'Projects',
           role: '',
           period: '',
-          bullets: projects.replace(/\n(?!\n)/g, '\n\n')
+          bullets: projects
         });
       }
       return list;

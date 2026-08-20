@@ -145,6 +145,24 @@ Sincerely,<br>
     document.execCommand(command, false, value);
   };
 
+  const handlePrint = () => {
+    const element = contentRef.current;
+    if (!element) return;
+    
+    const clone = element.cloneNode(true);
+    clone.style.padding = '80px';
+    clone.style.boxSizing = 'border-box';
+    
+    const printWrapper = document.createElement('div');
+    printWrapper.id = 'print-wrapper';
+    printWrapper.appendChild(clone);
+    document.body.appendChild(printWrapper);
+    
+    window.print();
+    
+    document.body.removeChild(printWrapper);
+  };
+
   const renderMarkdown = (text) => {
     if (!text) return null;
     const lines = text.split('\n');
@@ -328,7 +346,7 @@ Sincerely,<br>
           </div>
           
           <div style={{ display: 'flex', gap: '12px' }}>
-            <button onClick={() => window.print()} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', backgroundColor: 'var(--bg-dark)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '6px', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}>
+            <button onClick={handlePrint} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', backgroundColor: 'var(--bg-dark)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '6px', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}>
               <Download size={16} /> PDF
             </button>
             <button onClick={() => { if(onSave) onSave(documentText); }} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', backgroundColor: 'var(--text-main)', color: 'var(--bg-dark)', borderRadius: '6px', fontSize: '0.9rem', fontWeight: 600, border: 'none', cursor: 'pointer' }}>

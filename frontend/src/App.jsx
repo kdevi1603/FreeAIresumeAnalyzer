@@ -172,7 +172,7 @@ export default function App() {
   };
 
   if (viewMode === 'admin') {
-    return <AdminPanel onLogout={() => setViewMode('landing')} onBackToLanding={() => setViewMode('sidebar_dashboard')} />;
+    return <AdminPanel onLogout={() => setViewMode('landing')} onBackToLanding={() => setViewMode('landing')} />;
   }
 
   if (viewMode === 'profile') {

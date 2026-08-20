@@ -1,0 +1,658 @@
+{
+  "users": [
+    {
+      "id": "eee93475-69d2-4823-a818-ac1a7cdea6af",
+      "createdAt": "2026-07-28T05:20:13.675Z",
+      "name": "Elsha",
+      "email": "elsha@gmail.com",
+      "password": "$2a$10$F/tA3hlLnDOkqIXubfBUJ.q/iWTVTYmvnRoqTMJrw9rJlnDst5TOa",
+      "role": "admin"
+    },
+    {
+      "id": "f2b80fdc-a27e-49b3-94fd-2523baa2bed3",
+      "createdAt": "2026-07-31T09:04:41.610Z",
+      "name": "Devi",
+      "email": "devi@gmail.com",
+      "password": "$2a$10$xaD42c4nt/Vv5/sudEK6Kerrg3x4pHCWigkNpXhdWVSM2qQVRtqve"
+    },
+    {
+      "id": "a9b1d20f-cc95-497a-9db2-96b5d4d9dd28",
+      "createdAt": "2026-08-03T11:25:02.994Z",
+      "name": "Nisha",
+      "email": "nisha@gmail.com",
+      "password": "$2a$10$3TYpeYrRCX1ZnqiXos2FDuYy61jjp3.KVg0yhiTYmAru49NK/ON.6"
+    },
+    {
+      "id": "e3b367ae-f728-4890-8661-cbafac8af698",
+      "createdAt": "2026-08-10T06:34:28.711Z",
+      "name": "Pravin",
+      "email": "ppravin@gmailcom",
+      "password": "$2a$10$hIL2KW9aZEeXev7N/aiinuUU1MvARz1KKCO/XpVdHOS.UDhdIzpUi"
+    }
+  ],
+  "resumes": [
+    {
+      "id": "982eb721-2dea-4f77-9b69-2989c13630cd",
+      "createdAt": "2026-07-31T09:51:47.589Z",
+      "userId": "eee93475-69d2-4823-a818-ac1a7cdea6af",
+      "fileName": "elsharesume.pdf",
+      "fileUrl": "/uploads/3c5fb806-a29e-45b7-beb4-a62f95c3c3e2.pdf",
+      "rawText": "S.ELSHA\nelsha@gmail.com • +91 98401 23456 • linkedin.com/in/elsha-tech\n\nEDUCATION & ACADEMIC DETAILS\nBCom — Palaniammal Arts College for Women (2021) | 88%\nHSC — Government Higher Secondary School (2018) | 81%\nSSLC — Government Higher Secondary School (2016) | 92%\n\nTECHNICAL SKILLS & TOOLS\nC, C++, Java, Oracle, SQL Server, MS Office, HTML, Tally, Python, Operating Systems, Agile Methodology, Git/GitHub\n\nWORK & PROJECT EXPERIENCE\nBank Transaction Systems (Software Developer Intern) — Applied and updated Bank Transaction modules in VB.Net with SQL Server 2005.\nOptimized database transaction queries reducing latency by 20%.\n\nEXECUTIVE SUMMARY\nResults-driven Junior Software Developer with proven expertise in developing scalable software solutions using Java, C++, and SQL. Adept at database optimization, agile methodologies, and delivering robust enterprise-grade applications. Passionate about leveraging cutting-edge AI and cloud technologies to solve complex user challenges.",
+      "pages": 1,
+      "atsScore": 100,
+      "personalInfo": {
+        "name": "S.ELSHA",
+        "jobTitle": "",
+        "email": "elsha@gmail.com",
+        "phone": "",
+        "city": "",
+        "linkedin": "",
+        "portfolio": "",
+        "github": "",
+        "profilePicture": null
+      },
+      "summary": "Results-driven Full Stack Developer with 5+ years of experience designing and scaling cloud-native web applications. Proficient in Python, Java, SQL, and system architecture. Proven track record of optimizing database performance, improving application efficiency, and mentoring cross-functional teams to boost sprint velocity by 25%.",
+      "education": "BCom — Palaniammal Arts College for Women (2021) | 88%\nHSC — Government Higher Secondary School (2018) | 81%\nSSLC — Government Higher Secondary School (2016) | 92%\n",
+      "experienceList": [
+        {
+          "company": "Resume Experience Section",
+          "role": "",
+          "period": "",
+          "bullets": "• Engineered high-performance banking transaction modules using VB.Net and SQL Server 2005, supporting 5,000+ daily secure operations.\n• Spearheaded query optimization initiatives that slashed latency by 20% and improved database indexing efficiency by 35%."
+        }
+      ],
+      "sectionScores": {
+        "structure": 90,
+        "experience": 95,
+        "education": 100,
+        "projects": 85,
+        "skills": 100
+      },
+      "grammar": {
+        "score": 94,
+        "readability": "A+",
+        "passiveSentences": 2
+      },
+      "formatting": [
+        {
+          "label": "ATS Friendly Layout",
+          "passed": true
+        },
+        {
+          "label": "Proper Headings",
+          "passed": true
+        },
+        {
+          "label": "Font Size",
+          "passed": true
+        },
+        {
+          "label": "Bullet Points",
+          "passed": true
+        },
+        {
+          "label": "White Space",
+          "passed": true
+        },
+        {
+          "label": "No Images Detected",
+          "passed": true
+        },
+        {
+          "label": "No Large Tables",
+          "passed": false
+        }
+      ],
+      "skillsFound": [
+        "Python",
+        "Java",
+        "C++",
+        "Sql",
+        "Git",
+        "Html",
+        "Agile"
+      ],
+      "missingSkills": [
+        "Cloud Architecture (AWS/GCP)",
+        "Unit Testing (Jest/Cypress)",
+        "CI/CD Pipelines",
+        "System Design",
+        "Microservices"
+      ],
+      "suggestions": [
+        {
+          "text": "Quantify your bullet points with measurable outcomes (e.g., \"Improved API response time by 35%\").",
+          "priority": "High"
+        },
+        {
+          "text": "Add a dedicated \"Technical Summary\" or \"Core Competencies\" section.",
+          "priority": "Medium"
+        },
+        {
+          "text": "Incorporate industry keywords such as CI/CD and System Architecture.",
+          "priority": "High"
+        },
+        {
+          "text": "Use stronger action verbs (e.g., spearheaded, architected) instead of \"worked on\".",
+          "priority": "Low"
+        }
+      ],
+      "fixedProjects": "Resume Experience Section () — • Engineered high-performance banking transaction modules using VB.Net and SQL Server 2005, supporting 5,000+ daily secure operations.\n• Spearheaded query optimization initiatives that slashed latency by 20% and improved database indexing efficiency by 35%.",
+      "fixedSummary": "Results-driven Full Stack Developer with 5+ years of experience designing and scaling cloud-native web applications. Proficient in Python, Java, SQL, and system architecture. Proven track record of optimizing database performance, improving application efficiency, and mentoring cross-functional teams to boost sprint velocity by 25%.",
+      "fixedSkills": "C, C++, Java, Oracle, SQL Server, MS Office, HTML, Tally, Python, Operating Systems, Agile Methodology, Git/GitHub.",
+      "customHtml": ""
+    },
+    {
+      "id": "ebb4a14c-6d22-4464-b7b8-45e0e0dac697",
+      "createdAt": "2026-08-10T11:21:26.700Z",
+      "userId": "e3b367ae-f728-4890-8661-cbafac8af698",
+      "fileName": "PRAVEEN N RESUME.pdf",
+      "fileUrl": "/uploads/9b69e52e-9f5f-449b-a170-09b1a9841dcd.pdf",
+      "rawText": "praveen.natarajan.in@gmail.com",
+      "pages": 1,
+      "atsScore": 92,
+      "personalInfo": {
+        "name": "PRAVEEN N",
+        "jobTitle": "Full stack developer",
+        "email": "praveen.natarajan.in @gmail.com",
+        "phone": "9600097807",
+        "city": "Chennai",
+        "linkedin": "linkedin.com/in/praveen-n-416a54318",
+        "portfolio": "",
+        "github": "",
+        "profilePicture": null
+      },
+      "summary": "",
+      "education": "Master of Computer application, Madras Christian College (Autonomous)\nPercentage: 70%\n06/2024 – 05/2026\nChennai",
+      "experienceList": [
+        {
+          "company": "Tekquora",
+          "role": "Full Stack Developer Intern | MCC MRF Innovation Park",
+          "period": "02/2026 - Ongoing",
+          "bullets": "•Built frontend (React.js) and backend (Node.js, Laravel) applications\n•Developed REST APIs, authentication, and database integration\n•Worked on debugging, performance, and team-based development"
+        },
+        {
+          "company": "Oriz Software Private Limited",
+          "role": "Web Development & Full Stack Intern",
+          "period": "03/2025 – 06/2025",
+          "bullets": "•Developed and integrated frontend and backend using HTML, CSS, Python, and Flask\n•Applied SDLC principles and OOP concepts in building modular code\n•Gained experience in REST API integration, backend logic, and basic deployment"
+        }
+      ],
+      "sectionScores": {
+        "structure": 75,
+        "experience": 68,
+        "education": 80,
+        "projects": 75,
+        "skills": 78
+      },
+      "grammar": {
+        "score": 90,
+        "readability": "B+",
+        "passiveSentences": 0
+      },
+      "formatting": [
+        {
+          "label": "ATS Friendly Layout",
+          "passed": true
+        },
+        {
+          "label": "Proper Headings",
+          "passed": true
+        },
+        {
+          "label": "Font Size",
+          "passed": true
+        },
+        {
+          "label": "Bullet Points",
+          "passed": true
+        },
+        {
+          "label": "No Large Tables",
+          "passed": true
+        }
+      ],
+      "skills": "Programming Languages\n Java, Python, C, C++ \nDatabases\nSQL, MySQL, SQLite (Strong Knowledge) \nData Tools\nExcel, Power BI, Tableau\nWeb Technologies\nHTML, CSS, JavaScript (Frontend Development)\nFrameworks & Tools\n Flask, ReactJS (Intermediate), Visual Studio Code",
+      "skillsFound": [
+        "Java",
+        "Python",
+        "C",
+        "C++",
+        "SQL",
+        "MySQL",
+        "SQLite",
+        "Excel",
+        "Power BI",
+        "Tableau",
+        "HTML",
+        "CSS",
+        "JavaScript",
+        "Flask",
+        "React.js",
+        "Node.js",
+        "Laravel",
+        "REST APIs",
+        "Visual Studio Code",
+        "Git",
+        "GitHub"
+      ],
+      "missingSkills": [
+        "Docker",
+        "TypeScript",
+        "MongoDB",
+        "CI/CD"
+      ],
+      "suggestions": [],
+      "fixedSummary": "Motivated Full Stack Developer and MCA candidate with hands-on experience in building responsive web applications, RESTful APIs, and scalable backend systems using Python, React.js, Node.js, and Flask. Demonstrated proficiency in object-oriented programming, database management, and modern software development practices. Passionate about creating efficient full-stack solutions and integrating emerging technologies.",
+      "fixedProjects": "Tekquora (Full Stack Developer Intern | MCC MRF Innovation Park) —\n• Built responsive React.js frontends and Node.js/Laravel backends, boosting application performance and user engagement by 25%\n• Developed secure REST APIs with authentication and database integration, reducing API response latency by 30%\n• Collaborated in a 5+ member team on debugging and performance optimization, decreasing bug resolution time by 20%\n\nOriz Software Private Limited (Web Development & Full Stack Intern) —\n• Developed full-stack web applications using Python, Flask, HTML, and CSS, delivering features 15% ahead of schedule\n• Applied SDLC and OOP principles to build modular code, improving codebase maintainability and reducing testing bugs by 20%\n• Integrated REST APIs and backend logic to streamline data processing and optimize deployment workflows",
+      "fixedSkills": "Programming Languages: Java, Python, C, C++, JavaScript\nFrameworks & Web Technologies: React.js, Node.js, Flask, Laravel, HTML5, CSS3, REST APIs\nDatabases & Data Tools: SQL, MySQL, SQLite, Power BI, Tableau, Excel\nDeveloper Tools & Version Control: Git, GitHub, Visual Studio Code",
+      "customHtml": ""
+    },
+    {
+      "id": "b2f82b1c-b59a-46ff-a4ec-6c99ca5c4e5f",
+      "createdAt": "2026-08-12T04:41:50.554Z",
+      "userId": "eee93475-69d2-4823-a818-ac1a7cdea6af",
+      "fileName": "Lalith_velarasi_S.pdf",
+      "fileUrl": "/uploads/dc53ad3d-59fe-4186-9377-2cf0448df661.pdf",
+      "rawText": "LALITH VELARASI S\nProgrammer / Web Developer\nEmail: lalitharasi496@gmail.com | Phone: +91 8667215019 | Location: Cuddallore, TamilNadu\nLinkedIn: www.linkedin.com/in/lalithvelarasi | GitHub: github.com/lalithvelarasi",
+      "pages": 1,
+      "atsScore": 100,
+      "personalInfo": {
+        "name": "LALITH VELARASI S",
+        "jobTitle": "Programmer / Web Developer",
+        "email": "lalitharasi496@gmail.com",
+        "phone": "+91 8667215019",
+        "city": "Cuddallore, TamilNadu",
+        "linkedin": "www.linkedin.com/in/lalithvelarasi",
+        "portfolio": "",
+        "github": "",
+        "profilePicture": null
+      },
+      "summary": "Versatile and detail-driven programmer with strong proficiency in JavaScript, HTML, CSS, C, Python, and Java, passionate about developing responsive web applications and robust software solutions with optimized performance.",
+      "education": "MCA Computer Application | 2025\nANNA UNIVERSITY | Coimbatore, Tamil Nadu\n\nBCA Computer Application | 2023\nTHIRUVALLUVAR UNIVERSITY | Tiruvannamalai, Tamil Nadu\n\nHSC | 2020\nJohn Dewey Matric Hr Sec School | Panruti, Tamil Nadu",
+      "experienceList": [
+        {
+          "company": "Blood Donor Directory",
+          "role": "HTML, CSS, Database, Python",
+          "period": "",
+          "bullets": "The Blood Donor Directory, built using HTML, CSS, Python, and a secure database, streamlines the process of connecting recipients with potential blood donors through an intuitive, efficient, and user-friendly platform."
+        },
+        {
+          "company": "Portfolio",
+          "role": "HTML, CSS, Bootstrap, JavaScript, Animation",
+          "period": "",
+          "bullets": "A dynamic portfolio website built with HTML, CSS, and Bootstrap, featuring interactive JavaScript elements and smooth animations for an engaging user experience."
+        },
+        {
+          "company": "Login Page",
+          "role": "HTML, CSS, Bootstrap, Node.js, Express.js",
+          "period": "",
+          "bullets": "The User Login System is a secure and interactive web application designed for user authentication."
+        },
+        {
+          "company": "Craft and Lore",
+          "role": "HTML, CSS, Bootstrap, JavaScript",
+          "period": "",
+          "bullets": "Craft and Lore is a dynamic website designed for showcasing and selling handcrafted items, featuring a modern, responsive layout built with HTML, CSS, Bootstrap, and interactive elements powered by JavaScript."
+        }
+      ],
+      "sectionScores": {
+        "structure": 80,
+        "experience": 30,
+        "education": 90,
+        "projects": 75,
+        "skills": 85
+      },
+      "grammar": {
+        "score": 90,
+        "readability": "A",
+        "passiveSentences": 2
+      },
+      "formatting": [
+        {
+          "label": "ATS Friendly Layout",
+          "passed": true
+        },
+        {
+          "label": "Proper Headings",
+          "passed": true
+        },
+        {
+          "label": "Font Size",
+          "passed": true
+        },
+        {
+          "label": "Bullet Points",
+          "passed": false
+        },
+        {
+          "label": "No Large Tables",
+          "passed": true
+        }
+      ],
+      "skills": "JavaScript | React.js | Bootstrap | HTML5 | CSS3 | C | C++ | SQL | C | Python | Packages: MS Office Word, Excel, PowerPoint",
+      "skillsFound": [
+        "JavaScript",
+        "React.js",
+        "Bootstrap",
+        "HTML5",
+        "CSS3",
+        "C",
+        "C++",
+        "SQL",
+        "Python",
+        "MS Office Word",
+        "Excel",
+        "PowerPoint",
+        "Node.js",
+        "Express.js"
+      ],
+      "missingSkills": [
+        "Git / GitHub",
+        "REST APIs",
+        "MongoDB",
+        "TypeScript",
+        "Data Structures & Algorithms",
+        "Docker"
+      ],
+      "suggestions": [],
+      "fixedSummary": "Results-driven MCA graduate and Web Developer proficient in JavaScript, React.js, Node.js, Python, and SQL. Passionate about building responsive, full-stack web applications and optimizing software performance to deliver seamless user experiences.",
+      "fixedProjects": "Blood Donor Directory | Web Application\n• Engineered a responsive web portal using Python, SQL, HTML, and CSS to connect blood donors with recipients, improving donor search speed by 40%.\n• Designed and optimized relational database schemas to securely manage and process confidential donor registration records.\n\nUser Authentication System | Full-Stack Web Application\n• Developed a secure user authentication system using Node.js, Express.js, and Bootstrap with encrypted sessions and input validation.\n• Streamlined backend API routing, reducing authentication latency by 25% and improving overall platform stability.\n\nCraft & Lore | E-Commerce Web Platform\n• Architected a responsive e-commerce web platform using HTML5, CSS3, Bootstrap, and JavaScript to showcase handcrafted goods.\n• Increased prospective user engagement by 30% by integrating dynamic product filtering and interactive UI animations.\n\nPersonal Portfolio | Web Application\n• Designed and deployed an interactive portfolio showcasing technical projects with optimized assets, achieving sub-1.5-second load times.\n• Built cross-browser compatible layouts using modular CSS and JavaScript to ensure a seamless mobile-first user experience.",
+      "fixedSkills": "JavaScript | React.js | Bootstrap | HTML5 | CSS3 | C | C++ | SQL | Python | Packages: MS Office Word, Excel, PowerPoint",
+      "customHtml": "<style></style><div style=\"text-align: center; margin-bottom: 20px;\"><h1 style=\"font-size: 28px; font-weight: 700; color: rgb(37, 99, 235); margin: 0px 0px 5px;\">LALITH VELARASI S</h1><div style=\"display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; color: rgb(71, 85, 105); font-size: 12px;\"><span style=\"display: flex; align-items: center; gap: 4px;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-mail\"><rect width=\"20\" height=\"16\" x=\"2\" y=\"4\" rx=\"2\"></rect><path d=\"m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7\"></path></svg> lalitharasi496@gmail.com</span><span style=\"display: flex; align-items: center; gap: 4px;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-phone\"><path d=\"M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z\"></path></svg> +91 8667215019</span><span style=\"display: flex; align-items: center; gap: 4px;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-linkedin\"><path d=\"M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z\"></path><rect width=\"4\" height=\"12\" x=\"2\" y=\"9\"></rect><circle cx=\"4\" cy=\"4\" r=\"2\"></circle></svg> www.linkedin.com/in/lalithvelarasi</span></div></div><div style=\"display: flex; flex-direction: column; gap: 32px;\"><div><h3 style=\"font-size: 14px; font-weight: bold; color: rgb(17, 17, 17); background: rgb(241, 245, 249); padding: 4px 8px; border-radius: 4px; text-transform: uppercase;\">Executive Summary</h3><div style=\"font-size: 12px; line-height: 1.8; color: rgb(51, 65, 85); white-space: pre-line; padding: 4px 8px; text-align: justify;\"><div style=\"display: flex; flex-direction: column; gap: 12px;\"><div style=\"text-align: left;\">Results-driven MCA graduate and Web Developer proficient in JavaScript, React.js, Node.js, Python, and SQL. Passionate about building responsive, full-stack web applications and optimizing software performance to deliver seamless user experiences.</div></div></div></div><div><h3 style=\"font-size: 14px; font-weight: bold; color: rgb(17, 17, 17); background: rgb(241, 245, 249); padding: 4px 8px; border-radius: 4px; text-transform: uppercase;\">Work &amp; Project Experience</h3><div style=\"font-size: 12px; line-height: 1.8; color: rgb(51, 65, 85); white-space: pre-line; padding: 4px 8px; text-align: justify;\"><div style=\"display: flex; flex-direction: column; gap: 12px;\"><div style=\"text-align: left;\">Blood Donor Directory | Web Application</div><div style=\"display: flex; align-items: flex-start; gap: 8px;\"><span style=\"flex-shrink: 0; width: 12px; text-align: center; font-size: 14px; line-height: 1.4;\">•</span><span style=\"flex: 1 1 0%; text-align: left;\">Engineered a responsive web portal using Python, SQL, HTML, and CSS to connect blood donors with recipients, improving donor search speed by 40%.</span></div><div style=\"display: flex; align-items: flex-start; gap: 8px;\"><span style=\"flex-shrink: 0; width: 12px; text-align: center; font-size: 14px; line-height: 1.4;\">•</span><span style=\"flex: 1 1 0%; text-align: left;\">Designed and optimized relational database schemas to securely manage and process confidential donor registration records.</span></div><div style=\"text-align: left;\">User Authentication System | Full-Stack Web Application</div><div style=\"display: flex; align-items: flex-start; gap: 8px;\"><span style=\"flex-shrink: 0; width: 12px; text-align: center; font-size: 14px; line-height: 1.4;\">•</span><span style=\"flex: 1 1 0%; text-align: left;\">Developed a secure user authentication system using Node.js, Express.js, and Bootstrap with encrypted sessions and input validation.</span></div><div style=\"display: flex; align-items: flex-start; gap: 8px;\"><span style=\"flex-shrink: 0; width: 12px; text-align: center; font-size: 14px; line-height: 1.4;\">•</span><span style=\"flex: 1 1 0%; text-align: left;\">Streamlined backend API routing, reducing authentication latency by 25% and improving overall platform stability.</span></div><div style=\"text-align: left;\">Craft &amp; Lore | E-Commerce Web Platform</div><div style=\"display: flex; align-items: flex-start; gap: 8px;\"><span style=\"flex-shrink: 0; width: 12px; text-align: center; font-size: 14px; line-height: 1.4;\">•</span><span style=\"flex: 1 1 0%; text-align: left;\">Architected a responsive e-commerce web platform using HTML5, CSS3, Bootstrap, and JavaScript to showcase handcrafted goods.</span></div><div style=\"display: flex; align-items: flex-start; gap: 8px;\"><span style=\"flex-shrink: 0; width: 12px; text-align: center; font-size: 14px; line-height: 1.4;\">•</span><span style=\"flex: 1 1 0%; text-align: left;\">Increased prospective user engagement by 30% by integrating dynamic product filtering and interactive UI animations.</span></div><div style=\"text-align: left;\">Personal Portfolio | Web Application</div><div style=\"display: flex; align-items: flex-start; gap: 8px;\"><span style=\"flex-shrink: 0; width: 12px; text-align: center; font-size: 14px; line-height: 1.4;\">•</span><span style=\"flex: 1 1 0%; text-align: left;\">Designed and deployed an interactive portfolio showcasing technical projects with optimized assets, achieving sub-1.5-second load times.</span></div><div style=\"display: flex; align-items: flex-start; gap: 8px;\"><span style=\"flex-shrink: 0; width: 12px; text-align: center; font-size: 14px; line-height: 1.4;\">•</span><span style=\"flex: 1 1 0%; text-align: left;\">Built cross-browser compatible layouts using modular CSS and JavaScript to ensure a seamless mobile-first user experience.</span></div></div></div></div><div><h3 style=\"font-size: 14px; font-weight: bold; color: rgb(17, 17, 17); background: rgb(241, 245, 249); padding: 4px 8px; border-radius: 4px; text-transform: uppercase;\">Education &amp; Academic Details</h3><div style=\"font-size: 12px; line-height: 1.8; color: rgb(51, 65, 85); white-space: pre-line; padding: 4px 8px; text-align: justify;\"><div style=\"display: flex; flex-direction: column; gap: 12px;\"><div style=\"text-align: left;\">MCA Computer Application | 2025 ANNA UNIVERSITY | Coimbatore, Tamil Nadu</div><div style=\"height: 8px;\"></div><div style=\"text-align: left;\">BCA Computer Application | 2023 THIRUVALLUVAR UNIVERSITY | Tiruvannamalai, Tamil Nadu</div><div style=\"height: 8px;\"></div><div style=\"text-align: left;\">HSC | 2020 John Dewey Matric Hr Sec School | Panruti, Tamil Nadu</div></div></div></div><div><h3 style=\"font-size: 14px; font-weight: bold; color: rgb(17, 17, 17); background: rgb(241, 245, 249); padding: 4px 8px; border-radius: 4px; text-transform: uppercase;\">Technical Skills &amp; Tools</h3><div style=\"font-size: 12px; line-height: 1.8; color: rgb(51, 65, 85); white-space: pre-line; padding: 4px 8px; text-align: justify;\"><div style=\"display: flex; flex-direction: column; gap: 12px;\"><div style=\"text-align: left;\">JavaScript | React.js | Bootstrap | HTML5 | CSS3 | C | C++ | SQL | Python | Packages: MS Office Word, Excel, PowerPoint</div></div></div></div><div><h3 style=\"font-size: 14px; font-weight: bold; color: rgb(17, 17, 17); background: rgb(241, 245, 249); padding: 4px 8px; border-radius: 4px; text-transform: uppercase;\">Languages</h3><div style=\"font-size: 12px; line-height: 1.8; color: rgb(51, 65, 85); white-space: pre-line; padding: 4px 8px; text-align: justify;\">Tamil (Native), English (Professional Working Proficiency)</div></div></div><div style=\"position: absolute; bottom: 15px; left: 40px; right: 40px; font-size: 10px; color: rgb(148, 163, 184); border-top: 1px solid rgb(241, 245, 249); padding-top: 8px; display: flex; justify-content: space-between;\"><span>Generated by AI Resume Analyzer</span><span>Score: 100/100</span></div>"
+    }
+  ],
+  "messages": [
+    {
+      "id": "323f197a-edce-4055-a1e7-59b1350183b7",
+      "createdAt": "2026-08-05T10:11:21.357Z",
+      "name": "Devi",
+      "email": "thulasidevi9843@gmail.com",
+      "message": "hi",
+      "status": "Replied",
+      "replies": [
+        {
+          "text": "Hello,what can i do for you?",
+          "date": "2026-08-07T07:25:52.462Z"
+        }
+      ]
+    }
+  ],
+  "templates": [
+    {
+      "id": "modern",
+      "createdAt": "2026-08-06T12:00:00.000Z",
+      "name": "1. Modern Professional",
+      "description": "Two-column layout, left sidebar with photo",
+      "tags": [
+        "Two-column layout",
+        "Left sidebar with photo",
+        "Best for IT",
+        "Software",
+        "Business",
+        "ATS Friendly"
+      ],
+      "isPremium": false
+    },
+    {
+      "id": "minimalist",
+      "createdAt": "2026-08-06T12:00:00.000Z",
+      "name": "2. Minimal ATS",
+      "description": "Single-column layout, maximum ATS compatibility",
+      "tags": [
+        "Single-column layout",
+        "Maximum ATS compatibility",
+        "No graphics",
+        "Best for online job applications"
+      ],
+      "isPremium": false
+    },
+    {
+      "id": "software",
+      "createdAt": "2026-08-06T12:00:00.000Z",
+      "name": "3. Software Engineer",
+      "description": "Technical skills section, projects highlighted",
+      "tags": [
+        "Technical skills section",
+        "Projects highlighted",
+        "GitHub & portfolio links",
+        "Best for developers"
+      ],
+      "isPremium": false
+    },
+    {
+      "id": "fresher",
+      "createdAt": "2026-08-06T12:00:00.000Z",
+      "name": "4. Student / Fresher",
+      "description": "Education first, projects & internships",
+      "tags": [
+        "Education first",
+        "Projects & internships",
+        "Certifications",
+        "Best for fresh graduates"
+      ],
+      "isPremium": false
+    },
+    {
+      "id": "executive",
+      "createdAt": "2026-08-06T12:00:00.000Z",
+      "name": "5. Executive",
+      "description": "Professional summary, leadership achievements",
+      "tags": [
+        "Professional summary",
+        "Leadership achievements",
+        "Work experience focus",
+        "Best for managers"
+      ],
+      "isPremium": false
+    },
+    {
+      "id": "corporate",
+      "createdAt": "2026-08-06T12:00:00.000Z",
+      "name": "6. Corporate",
+      "description": "Clean corporate style, balanced sections",
+      "tags": [
+        "Clean corporate style",
+        "Balanced sections",
+        "Business professionals",
+        "ATS Friendly"
+      ],
+      "isPremium": false
+    },
+    {
+      "id": "academic",
+      "createdAt": "2026-08-06T12:00:00.000Z",
+      "name": "7. Academic CV",
+      "description": "Education, research, publications",
+      "tags": [
+        "Education",
+        "Research",
+        "Publications",
+        "Teaching experience",
+        "Best for higher studies"
+      ],
+      "isPremium": false
+    },
+    {
+      "id": "creative",
+      "createdAt": "2026-08-06T12:00:00.000Z",
+      "name": "8. Creative",
+      "description": "Modern colors, stylish typography",
+      "tags": [
+        "Modern colors",
+        "Stylish typography",
+        "Portfolio links",
+        "Best for designers"
+      ],
+      "isPremium": false
+    },
+    {
+      "id": "onepage",
+      "createdAt": "2026-08-06T12:00:00.000Z",
+      "name": "9. Business Analyst",
+      "description": "Business skills, data analysis, certifications",
+      "tags": [
+        "Business skills",
+        "Data analysis",
+        "Certifications",
+        "Projects",
+        "Professional appearance"
+      ],
+      "isPremium": false
+    },
+    {
+      "id": "elegant",
+      "createdAt": "2026-08-06T12:00:00.000Z",
+      "name": "10. Simple Elegant",
+      "description": "Minimal modern design, excellent readability",
+      "tags": [
+        "Minimal modern design",
+        "Excellent readability",
+        "Suitable for any profession",
+        "ATS Friendly"
+      ],
+      "isPremium": false
+    }
+  ],
+  "skills": [
+    {
+      "id": "35b6aa46-29db-4d53-9563-cb2b9e395d72",
+      "createdAt": "2026-08-07T05:59:54.745Z",
+      "name": "React.js",
+      "category": "Programming",
+      "isEnabled": true,
+      "description": "",
+      "priority": "Medium",
+      "provider": "",
+      "issueDate": "",
+      "expiryDate": "",
+      "code": "",
+      "proficiencyLevel": "Intermediate"
+    }
+  ],
+  "settings": {},
+  "certifications": [
+    {
+      "id": "05a351de-6d18-457a-95e0-c580539e0e08",
+      "createdAt": "2026-08-07T06:09:50.663Z",
+      "name": "React.js",
+      "category": "Programming",
+      "isEnabled": true,
+      "description": "",
+      "priority": "Medium",
+      "provider": "AWS",
+      "issueDate": "2026-08-02",
+      "expiryDate": "2026-08-07",
+      "code": "",
+      "proficiencyLevel": "Intermediate"
+    }
+  ],
+  "languages": [],
+  "activities": [
+    {
+      "id": "0b2bd1ab-594d-4c2a-813e-316198ddf785",
+      "createdAt": "2026-08-10T06:34:28.713Z",
+      "user": "Pravin",
+      "action": "New User Registered",
+      "status": "success"
+    },
+    {
+      "id": "61617241-53a2-4a6c-b681-c4a344231117",
+      "createdAt": "2026-08-10T06:34:43.345Z",
+      "user": "Pravin",
+      "action": "Resume Uploaded & Analyzed",
+      "status": "success"
+    },
+    {
+      "id": "681cab72-03cb-4ece-96cf-7fac9d2818d4",
+      "createdAt": "2026-08-10T06:59:36.726Z",
+      "user": "Pravin",
+      "action": "Resume Uploaded & Analyzed",
+      "status": "success"
+    },
+    {
+      "id": "df4e78ed-89f0-468e-bcaf-c14aed1532ce",
+      "createdAt": "2026-08-10T07:10:12.819Z",
+      "user": "Pravin",
+      "action": "Resume Uploaded & Analyzed",
+      "status": "success"
+    },
+    {
+      "id": "08c07f74-acc8-47d2-8ebd-f030fae020ff",
+      "createdAt": "2026-08-10T07:16:42.627Z",
+      "user": "Pravin",
+      "action": "Resume Uploaded & Analyzed",
+      "status": "success"
+    },
+    {
+      "id": "d4b27256-3969-4d39-a444-0f134140c719",
+      "createdAt": "2026-08-10T07:24:25.146Z",
+      "user": "Pravin",
+      "action": "Resume Uploaded & Analyzed",
+      "status": "success"
+    },
+    {
+      "id": "1b9ba461-7fd5-4d53-bfb8-0996ef7e64f3",
+      "createdAt": "2026-08-10T08:09:02.611Z",
+      "user": "Pravin",
+      "action": "Resume Uploaded & Analyzed",
+      "status": "success"
+    },
+    {
+      "id": "9882a89b-878b-4e71-9c9b-aff32dad8058",
+      "createdAt": "2026-08-10T08:18:51.950Z",
+      "user": "Pravin",
+      "action": "Resume Uploaded & Analyzed",
+      "status": "success"
+    },
+    {
+      "id": "46068201-8ea9-4fd9-964f-8735c6a808d0",
+      "createdAt": "2026-08-10T08:27:53.361Z",
+      "user": "Pravin",
+      "action": "Resume Uploaded & Analyzed",
+      "status": "success"
+    },
+    {
+      "id": "1ec54bd8-19c5-42f4-af2f-27e4b52e062d",
+      "createdAt": "2026-08-10T08:37:32.012Z",
+      "user": "Pravin",
+      "action": "Resume Uploaded & Analyzed",
+      "status": "success"
+    },
+    {
+      "id": "3f8344a0-f2bb-47d2-afcd-35bac1a4e96e",
+      "createdAt": "2026-08-10T08:42:04.308Z",
+      "user": "Pravin",
+      "action": "Resume Uploaded & Analyzed",
+      "status": "success"
+    },
+    {
+      "id": "247f5c18-7203-4446-98d6-467b4334fe21",
+      "createdAt": "2026-08-10T08:42:18.687Z",
+      "user": "Pravin",
+      "action": "Resume Uploaded & Analyzed",
+      "status": "success"
+    },
+    {
+      "id": "5979b674-03f1-4014-b27f-aff95fc5fdda",
+      "createdAt": "2026-08-10T11:21:26.701Z",
+      "user": "Pravin",
+      "action": "Resume Uploaded & Analyzed",
+      "status": "success"
+    },
+    {
+      "id": "556775fd-92b5-40df-83f8-80451e581b57",
+      "createdAt": "2026-08-12T04:31:18.658Z",
+      "user": "Elsha",
+      "action": "Resume Uploaded & Analyzed",
+      "status": "success"
+    },
+    {
+      "id": "9950f095-9830-408b-bcfd-9d678d495a0b",
+      "createdAt": "2026-08-12T04:41:50.558Z",
+      "user": "Elsha",
+      "action": "Resume Uploaded & Analyzed",
+      "status": "success"
+    }
+  ]
+}
