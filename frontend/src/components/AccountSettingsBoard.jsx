@@ -19,7 +19,7 @@ export default function AccountSettingsBoard() {
   };
   
   return (
-    <div style={{ padding: '0 20px', maxWidth: '1000px', margin: '0 auto' }}>
+    <div style={{ width: '100%' }}>
       {/* Header */}
       <div style={{ marginBottom: '32px' }}>
         <h1 style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--text-main)', margin: '0 0 8px 0' }}>Account Settings</h1>
