@@ -42,7 +42,7 @@ export default function AdminLogin({ onLogin, onBackToLanding }) {
         }} />
 
         <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', marginBottom: '32px' }}>
-          <img src="/admin-logo.jpg" alt="Admin Logo" style={{ width: '64px', height: '64px', borderRadius: '16px', objectFit: 'cover', margin: '0 auto 16px', boxShadow: '0 8px 20px rgba(0, 242, 254, 0.3)' }} />
+          <img src="/admin-logo.jpg" alt="Admin Logo" className="admin-logo-img" style={{ width: '64px', height: '64px', borderRadius: '16px', objectFit: 'cover', margin: '0 auto 16px', boxShadow: '0 8px 20px rgba(0, 242, 254, 0.3)' }} />
           <h2 style={{ fontSize: '1.75rem', marginBottom: '8px' }}>Admin Portal</h2>
           <p style={{ color: 'var(--text-muted)' }}>Secure access required</p>
         </div>

@@ -723,3 +723,4 @@ a:hover {
   }
 }
 [data-theme='dark'] .document-thumbnail { filter: invert(0.9) hue-rotate(180deg) brightness(1.2); }
+body:not(.light-mode) .admin-logo-img { filter: invert(0.95) hue-rotate(180deg) brightness(1.2); mix-blend-mode: screen; }
