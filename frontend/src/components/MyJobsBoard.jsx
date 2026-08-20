@@ -42,7 +42,7 @@ export default function MyJobsBoard({ currentAnalysis }) {
   const getJobsByStage = (stage) => filteredJobs.filter(job => job.stage === stage);
 
   return (
-    <div style={{ padding: '0 20px', maxWidth: '1400px', margin: '0 auto' }}>
+    <div style={{ width: '100%' }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div>

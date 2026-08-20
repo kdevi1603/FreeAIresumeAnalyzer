@@ -722,3 +722,4 @@ a:hover {
     width: 100% !important;
   }
 }
+[data-theme='dark'] .document-thumbnail { filter: invert(0.9) hue-rotate(180deg) brightness(1.2); }

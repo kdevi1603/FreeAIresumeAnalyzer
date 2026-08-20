@@ -208,7 +208,7 @@ export default function SidebarDashboard({ onCreateNew, onEditResume, onDeleteRe
                 boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
               }}>
                 {/* Thumbnail */}
-                <div style={{ 
+                <div className="document-thumbnail" style={{ 
                   width: '160px', height: '200px', backgroundColor: 'var(--bg-dark)', 
                   border: '1px solid var(--border-color)', borderRadius: '8px', 
                   display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
