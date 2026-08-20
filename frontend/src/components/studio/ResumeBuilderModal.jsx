@@ -471,6 +471,7 @@ export default function ResumeBuilderModal({
                                   <ResumeContentRenderer 
                                      resumeData={MOCK_RESUME_DATA} 
                                      templateStyle={tmpl.id === 'original' ? 'modern' : tmpl.id} 
+                                     customBuilderConfig={tmpl.builderConfig}
                                      zoom={100}
                                   />
                                 </div>

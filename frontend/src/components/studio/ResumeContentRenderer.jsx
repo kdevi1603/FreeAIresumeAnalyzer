@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Mail, Phone, Linkedin, Github } from 'lucide-react';
+import CustomBuilderRenderer from './CustomBuilderRenderer';
 
 export default function ResumeContentRenderer({ 
   resumeData: originalResumeData, 
@@ -9,8 +10,28 @@ export default function ResumeContentRenderer({
   zoom = 100,
   contentEditable = false,
   onManualEdit = null,
-  customTemplateHtml = null
+  customTemplateHtml = null,
+  customBuilderConfig = null
 }) {
+  const [fetchedBuilderConfig, setFetchedBuilderConfig] = useState(null);
+
+  useEffect(() => {
+    const knownStyles = ['modern', 'elegant', 'minimalist', 'software', 'fresher', 'executive', 'corporate', 'academic', 'creative', 'onepage', 'sidebar', 'original'];
+    if (!customBuilderConfig && templateStyle && !knownStyles.includes(templateStyle.toLowerCase()) && !customTemplateHtml) {
+      fetch('/api/admin/templates')
+        .then(r => r.json())
+        .then(templates => {
+          const t = templates.find(temp => temp.id === templateStyle);
+          if (t && t.builderConfig) {
+            setFetchedBuilderConfig(t.builderConfig);
+          }
+        })
+        .catch(console.error);
+    }
+  }, [templateStyle, customBuilderConfig, customTemplateHtml]);
+
+  const activeBuilderConfig = customBuilderConfig || fetchedBuilderConfig;
+
   const hasStructuredData = Boolean(
     originalResumeData?.summary || 
     originalResumeData?.education || 
@@ -190,8 +211,31 @@ export default function ResumeContentRenderer({
          }} />
       ) : (
       <>
+      {/* Custom Builder Template */}
+      {activeBuilderConfig && (
+        <CustomBuilderRenderer 
+          builderConfig={activeBuilderConfig}
+          candidateName={candidateName}
+          email={email}
+          phone={phone}
+          city={city}
+          linkedin={linkedin}
+          github={github}
+          mJobTitle={mJobTitle}
+          mSummary={mSummary}
+          mProjects={mProjects}
+          mEducation={mEducation}
+          mSkills={mSkills}
+          mCertifications={mCertifications}
+          mAchievements={mAchievements}
+          mLanguages={mLanguages}
+          profilePicture={profilePicture}
+          accentColor={accentColor}
+        />
+      )}
+
       {/* 1. Modern Professional (formerly modern) */}
-      {templateStyle === 'modern' && (
+      {!activeBuilderConfig && templateStyle === 'modern' && (
         <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', minHeight: '100%', width: '100%' }}>
           {/* Left Sidebar */}
           <div style={{ background: '#f8fafc', padding: '40px 30px', borderRight: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '28px' }}>
@@ -304,7 +348,7 @@ export default function ResumeContentRenderer({
         )}
 
       {/* 2. Minimal ATS (formerly minimalist) */}
-      {templateStyle === 'minimalist' && (
+      {!activeBuilderConfig && !customBuilderConfig && templateStyle === 'minimalist' && (
         <div style={{ borderLeft: `6px solid ${accentColor}`, paddingLeft: '24px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
@@ -327,7 +371,7 @@ export default function ResumeContentRenderer({
       )}
 
       {/* 3. Fresher / Student (Education First) */}
-      {templateStyle === 'fresher' && (
+      {!activeBuilderConfig && !customBuilderConfig && templateStyle === 'fresher' && (
           <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', minHeight: '100%', width: '100%' }}>
             {/* Left Sidebar */}
             <div style={{ background: '#f8fafc', padding: '40px 24px', borderRight: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -412,7 +456,7 @@ export default function ResumeContentRenderer({
         )}
 
       {/* 4. Software Engineer */}
-      {templateStyle === 'software' && (
+      {!activeBuilderConfig && !customBuilderConfig && templateStyle === 'software' && (
         <>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderBottom: `2px solid ${accentColor}`, paddingBottom: '12px', marginBottom: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -436,7 +480,7 @@ export default function ResumeContentRenderer({
       )}
 
       {/* 5. Executive */}
-      {templateStyle === 'executive' && (
+      {!activeBuilderConfig && !customBuilderConfig && templateStyle === 'executive' && (
           <div>
             <div style={{ background: '#0f172a', color: '#fff', padding: '40px 40px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
@@ -461,7 +505,7 @@ export default function ResumeContentRenderer({
         )}
 
       {/* 6. Creative */}
-      {templateStyle === 'creative' && (
+      {!activeBuilderConfig && !customBuilderConfig && templateStyle === 'creative' && (
           <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', minHeight: '100%', width: '100%' }}>
             {/* Left Sidebar */}
             <div style={{ background: `${accentColor}10`, padding: '40px 24px', display: 'flex', flexDirection: 'column', gap: '30px' }}>
@@ -546,7 +590,7 @@ export default function ResumeContentRenderer({
         )}
 
       {/* 7. Corporate */}
-      {templateStyle === 'corporate' && (
+      {!activeBuilderConfig && !customBuilderConfig && templateStyle === 'corporate' && (
           <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', minHeight: '100%', width: '100%' }}>
             {/* Left Sidebar */}
             <div style={{ background: '#1e293b', color: '#f8fafc', padding: '40px 24px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
@@ -630,7 +674,7 @@ export default function ResumeContentRenderer({
         )}
 
       {/* 8. Academic (formerly serif) */}
-      {templateStyle === 'academic' && (
+      {!activeBuilderConfig && !customBuilderConfig && templateStyle === 'academic' && (
         <div style={{ textAlign: 'center' }}>
           {profilePicture && <img src={profilePicture} style={{ width: '70px', height: '70px', borderRadius: '50%', objectFit: 'cover', marginBottom: '12px', display: 'inline-block', border: '2px solid #000' }} />}
           <h1 style={{ fontSize: '28px', fontWeight: 700, borderBottom: '1px solid #000', paddingBottom: '10px' }}>{candidateName.toUpperCase()}</h1>
@@ -647,7 +691,7 @@ export default function ResumeContentRenderer({
       )}
 
       {/* 9. One-Page ATS (Business Analyst) */}
-      {templateStyle === 'onepage' && (
+      {!activeBuilderConfig && !customBuilderConfig && templateStyle === 'onepage' && (
           <div style={{ display: 'grid', gridTemplateColumns: '230px 1fr', minHeight: '100%', width: '100%' }}>
             {/* Left Sidebar */}
             <div style={{ background: '#f1f5f9', padding: '30px 20px', borderRight: '2px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -726,7 +770,7 @@ export default function ResumeContentRenderer({
         )}
 
       {/* 10. Elegant */}
-      {templateStyle === 'elegant' && (
+      {!activeBuilderConfig && !customBuilderConfig && templateStyle === 'elegant' && (
         <div style={{ border: `1px solid ${accentColor}40`, padding: '30px', minHeight: '100%' }}>
           <div style={{ textAlign: 'center', marginBottom: '24px' }}>
             {profilePicture && <img src={profilePicture} style={{ width: '64px', height: '64px', borderRadius: '32px', objectFit: 'cover', marginBottom: '16px', display: 'inline-block', border: `1px solid ${accentColor}` }} />}
@@ -746,7 +790,7 @@ export default function ResumeContentRenderer({
       )}
 
       {/* Legacy sidebar alias for any previously selected sidebar template */}
-      {templateStyle === 'sidebar' && (
+      {!activeBuilderConfig && !customBuilderConfig && templateStyle === 'sidebar' && (
         <div style={{ display: 'grid', gridTemplateColumns: '190px 1fr', minHeight: '842px' }}>
           <div style={{ background: accentColor, color: getContrastColor(accentColor), padding: '36px 20px' }}>
             <h2 style={{ fontSize: '18px' }}>{candidateName}</h2>

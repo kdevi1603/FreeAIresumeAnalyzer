@@ -212,6 +212,7 @@ export default function TemplateGallery({ onSelectTemplate, onBack }) {
                       <ResumeContentRenderer 
                           resumeData={MOCK_RESUME_DATA} 
                           templateStyle={template.id} 
+                          customBuilderConfig={template.builderConfig}
                           zoom={100}
                       />
                   </div>
@@ -316,6 +317,7 @@ export default function TemplateGallery({ onSelectTemplate, onBack }) {
                     <ResumeContentRenderer 
                       resumeData={MOCK_RESUME_DATA} 
                       templateStyle={selectedPreview.id} 
+                      customBuilderConfig={selectedPreview.builderConfig}
                       zoom={100}
                   />
                  </div>

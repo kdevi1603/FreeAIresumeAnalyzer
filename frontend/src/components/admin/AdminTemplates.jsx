@@ -5,6 +5,7 @@ import {
   Search, Filter, LayoutTemplate, Zap, FileText, CheckCircle, Image, Settings, Palette
 } from 'lucide-react';
 import ResumeContentRenderer from '../studio/ResumeContentRenderer';
+import AdminTemplateBuilder from './AdminTemplateBuilder';
 
 export default function AdminTemplates() {
   const [templates, setTemplates] = useState([]);
@@ -129,6 +130,31 @@ export default function AdminTemplates() {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
         body: JSON.stringify(formData)
+      });
+      if (res.ok) {
+        setEditModal(null);
+        fetchTemplates();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleBuilderSave = async (dataToSave) => {
+    const isEditing = editModal !== 'add';
+    const method = isEditing ? 'PUT' : 'POST';
+    const url = isEditing 
+      ? `/api/admin/templates/${editModal}`
+      : `/api/admin/templates`;
+
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(dataToSave)
       });
       if (res.ok) {
         setEditModal(null);
@@ -409,7 +435,7 @@ export default function AdminTemplates() {
       {/* FULL PREVIEW MODAL */}
       <AnimatePresence>
         {previewModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
             <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }} 
               className="bg-[var(--bg-dark)] w-full max-w-4xl h-[90vh] rounded-2xl shadow-2xl border border-[var(--border-color)] overflow-hidden flex flex-col">
               
@@ -471,10 +497,18 @@ export default function AdminTemplates() {
         )}
       </AnimatePresence>
 
-      {/* FULL EDITOR MODAL */}
+      {/* FULL EDITOR MODAL / TEMPLATE BUILDER */}
       <AnimatePresence>
         {editModal && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+          editModal === 'add' || formData.builderConfig ? (
+            <AdminTemplateBuilder 
+              initialData={formData} 
+              onSave={handleBuilderSave} 
+              onCancel={() => setEditModal(null)} 
+              dummyResume={dummyResume} 
+            />
+          ) : (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} 
               className="bg-[var(--bg-dark)] w-full max-w-5xl h-[85vh] rounded-2xl shadow-2xl border border-[var(--border-color)] overflow-hidden flex flex-col">
               
@@ -578,11 +612,11 @@ export default function AdminTemplates() {
                       </div>
                     </div>
                   </div>
-
                 </form>
               </div>
             </motion.div>
           </div>
+          )
         )}
       </AnimatePresence>
 

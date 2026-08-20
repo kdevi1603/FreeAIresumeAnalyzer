@@ -240,11 +240,12 @@ export default function TemplateSelectionModal({ isOpen, onClose, onApply }) {
                     style={{ width: '100%', height: '480px', overflow: 'hidden', boxSizing: 'border-box', paddingTop: '16px' }}
                   >
                     <div style={{ transform: 'scale(0.4)', transformOrigin: 'top center', width: '794px', height: '1123px', pointerEvents: 'none' }} className="shadow-2xl">
-                       <ResumeContentRenderer 
+                        <ResumeContentRenderer 
                           resumeData={MOCK_RESUME_DATA} 
                           templateStyle={template.id} 
+                          customBuilderConfig={template.builderConfig}
                           zoom={100}
-                       />
+                        />
                     </div>
                   </div>
                   
