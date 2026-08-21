@@ -17,12 +17,15 @@ async function callGemini(prompt, systemInstruction = '', retries = 2) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error('GEMINI_API_KEY not found');
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent?key=${apiKey}`;
+  const isApiKey = apiKey.startsWith('AIza');
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent${isApiKey ? `?key=${apiKey}` : ''}`;
+  const headers = { 'Content-Type': 'application/json' };
+  if (!isApiKey) headers['Authorization'] = `Bearer ${apiKey}`;
   
   for (let i = 0; i <= retries; i++) {
     const response = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({
         contents: [{
           parts: [{ text: `${systemInstruction}\n\n${prompt}` }]
@@ -712,10 +715,20 @@ ${jobDescription ? `Job Description Context:\n"""\n${jobDescription.slice(0, 200
 
   if (process.env.GEMINI_API_KEY) {
     try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:streamGenerateContent?key=${process.env.GEMINI_API_KEY}&alt=sse`;
+      const apiKey = process.env.GEMINI_API_KEY;
+      const isApiKey = apiKey.startsWith('AIza') || apiKey.startsWith('AQ.');
+      
+      console.log(`[Gemini Diagnostics] Found GEMINI_API_KEY.`);
+      console.log(`[Gemini Diagnostics] Key Prefix Detected: ${apiKey.startsWith('AIza') ? 'AIza' : (apiKey.startsWith('AQ.') ? 'AQ.' : 'Unknown')}`);
+      console.log(`[Gemini Diagnostics] Selected Model: gemini-flash-lite-latest`);
+      
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:streamGenerateContent?${isApiKey ? `key=${apiKey}&` : ''}alt=sse`;
+      const headers = { 'Content-Type': 'application/json' };
+      if (!isApiKey) headers['Authorization'] = `Bearer ${apiKey}`;
+
       const response = await fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: { temperature: 0.7 }

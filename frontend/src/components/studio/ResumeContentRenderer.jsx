@@ -149,20 +149,20 @@ export default function ResumeContentRenderer({
     }
     
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
         {mergedLines.map((line, i) => {
-          if (!line) return <div key={i} style={{ height: '8px' }} />;
+          if (!line) return <div key={i} style={{ height: '4px' }} />;
           
           const bulletMatch = line.match(/^([*\-•·➢>])\s*(.*)/);
           if (bulletMatch) {
             return (
-              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                <span style={{ flexShrink: 0, width: '12px', textAlign: 'center', fontSize: '14px', lineHeight: '1.4' }}>•</span>
-                <span style={{ flex: 1, textAlign: 'left' }}>{bulletMatch[2]}</span>
+              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+                <span style={{ flexShrink: 0, width: '12px', textAlign: 'center', fontSize: '13px', lineHeight: '1.3' }}>•</span>
+                <span style={{ flex: 1, textAlign: 'left', lineHeight: '1.3', fontSize: '13px' }}>{bulletMatch[2]}</span>
               </div>
             );
           }
-          return <div key={i} style={{ textAlign: 'left' }}>{line}</div>;
+          return <div key={i} style={{ textAlign: 'left', lineHeight: '1.3', fontSize: '13px' }}>{line}</div>;
         })}
       </div>
     );
@@ -178,17 +178,40 @@ export default function ResumeContentRenderer({
     { title: 'Languages', content: formatText(mLanguages, false), isModified: !!originalResumeData?.fixedLanguages }
   ].filter(sec => sec.content);
 
+  const containerRef = React.useRef(null);
+  const [pages, setPages] = useState(1);
+
+  useEffect(() => {
+    if (containerRef.current) {
+      const el = containerRef.current;
+      const prevHeight = el.style.minHeight;
+      el.style.minHeight = 'auto';
+      const actualHeight = el.scrollHeight;
+      el.style.minHeight = prevHeight;
+
+      const numPages = Math.max(1, Math.ceil(actualHeight / 1123));
+      if (pages !== numPages) {
+        setPages(numPages);
+      }
+    }
+  });
+
   return (
-    <div className="a4-print-container" style={{
+    <div ref={containerRef} className="a4-print-container ai-optimized-page" style={{
       zoom: `${zoom}%`,
-      width: '794px', minHeight: '1123px', backgroundColor: '#ffffff', color: '#1a1a1a',
-      padding: (templateStyle === 'sidebar' || templateStyle === 'executive' || templateStyle === 'modern' || templateStyle === 'fresher' || templateStyle === 'corporate' || templateStyle === 'creative' || templateStyle === 'onepage') ? '0' : '56px 56px',
+      width: '210mm', 
+      minHeight: '297mm',
+      boxSizing: 'border-box',
+      backgroundColor: '#ffffff', 
+      color: '#1a1a1a',
+      padding: (templateStyle === 'sidebar' || templateStyle === 'executive' || templateStyle === 'modern' || templateStyle === 'fresher' || templateStyle === 'corporate' || templateStyle === 'creative' || templateStyle === 'onepage') ? '0' : '10mm',
       boxShadow: zoom < 100 ? 'none' : '0 20px 60px rgba(0,0,0,0.6)', 
       borderRadius: '4px',
       fontFamily: ['academic', 'corporate', 'serif'].includes(templateStyle) ? "'Times New Roman', serif"
         : ['minimalist', 'software'].includes(templateStyle) ? "'Courier New', monospace"
         : "'Inter', sans-serif",
-      position: 'relative'
+      position: 'relative',
+      backgroundImage: pages > 1 ? `repeating-linear-gradient(to bottom, transparent, transparent 296mm, #cbd5e1 296mm, #cbd5e1 297mm)` : 'none'
     }}
     contentEditable={contentEditable}
     suppressContentEditableWarning={true}
@@ -201,6 +224,7 @@ export default function ResumeContentRenderer({
       
       <style>{resumeData?.formattingCss || ''}</style>
       
+
       {customTemplateHtml ? (
          <div dangerouslySetInnerHTML={{ 
              __html: customTemplateHtml

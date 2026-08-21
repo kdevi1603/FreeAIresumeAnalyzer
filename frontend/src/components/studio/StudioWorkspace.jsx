@@ -64,7 +64,7 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
     }
   }, [activeResume]);
 
-  const [selectedTemplate, setSelectedTemplate] = useState(initialTemplate);
+  const [selectedTemplate, setSelectedTemplate] = useState(() => resumeData?.templateStyle || resumeData?.templateUsed || resumeData?.template || initialTemplate);
   const [accentColor, setAccentColor] = useState('#2563EB');
   const [showBuilderModal, setShowBuilderModal] = useState(() => resumeData?.isScratch ? true : false);
 
@@ -84,7 +84,10 @@ export default function StudioWorkspace({ resumeData, onBackToDashboard, initial
   const [isFixing, setIsFixing] = useState(false);
   const [autoFixMessage, setAutoFixMessage] = useState(null);
   const [showSplitChat, setShowSplitChat] = useState(true);
-  const [previewMode, setPreviewMode] = useState('original'); // 'original' | 'ai_edited'
+  const [previewMode, setPreviewMode] = useState(() => {
+    const hasCustomTemplate = resumeData?.templateStyle && resumeData.templateStyle !== 'original';
+    return (resumeData?.isScratch || hasCustomTemplate) ? 'ai_edited' : 'original';
+  });
 
 
   const [activeView, setActiveView] = useState(() => {

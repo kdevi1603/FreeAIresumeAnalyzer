@@ -35,7 +35,7 @@ export const db = {
       return await User.find(query).sort({ createdAt: -1 }).lean();
     },
     async update(id, updatedData) {
-      return await User.findOneAndUpdate({ id }, updatedData, { new: true }).lean();
+      return await User.findOneAndUpdate({ id }, updatedData, { returnDocument: 'after' }).lean();
     },
     async deleteOne(query) {
       return await User.deleteOne(query);
@@ -60,7 +60,7 @@ export const db = {
       return await Resume.deleteOne(query);
     },
     async update(id, updatedData) {
-      return await Resume.findOneAndUpdate({ id }, updatedData, { new: true }).lean();
+      return await Resume.findOneAndUpdate({ id }, updatedData, { returnDocument: 'after' }).lean();
     }
   },
   messages: {
@@ -82,7 +82,7 @@ export const db = {
       return await Message.findOne({ id }).lean();
     },
     async update(id, updatedData) {
-      return await Message.findOneAndUpdate({ id }, updatedData, { new: true }).lean();
+      return await Message.findOneAndUpdate({ id }, updatedData, { returnDocument: 'after' }).lean();
     },
     async deleteOne(query) {
       return await Message.deleteOne(query);
@@ -102,7 +102,7 @@ export const db = {
       return await Setting.findOneAndUpdate(
         { id: 'global' },
         { $set: updatedData },
-        { new: true, upsert: true }
+        { returnDocument: 'after', upsert: true }
       ).lean();
     }
   },
@@ -119,7 +119,7 @@ export const db = {
       return newTemplate.toObject();
     },
     async update(id, updatedData) {
-      return await Template.findOneAndUpdate({ id }, updatedData, { new: true }).lean();
+      return await Template.findOneAndUpdate({ id }, updatedData, { returnDocument: 'after' }).lean();
     },
     async unsetAllDefaults() {
       await Template.updateMany({}, { isDefault: false });
@@ -142,7 +142,7 @@ export const db = {
       return newSkill.toObject();
     },
     async update(id, updatedData) {
-      return await Skill.findOneAndUpdate({ id }, updatedData, { new: true }).lean();
+      return await Skill.findOneAndUpdate({ id }, updatedData, { returnDocument: 'after' }).lean();
     },
     async deleteOne(query) {
       return await Skill.deleteOne(query);
@@ -161,7 +161,7 @@ export const db = {
       return newCert.toObject();
     },
     async update(id, updatedData) {
-      return await Certification.findOneAndUpdate({ id }, updatedData, { new: true }).lean();
+      return await Certification.findOneAndUpdate({ id }, updatedData, { returnDocument: 'after' }).lean();
     },
     async deleteOne(query) {
       return await Certification.deleteOne(query);
@@ -180,7 +180,7 @@ export const db = {
       return newLang.toObject();
     },
     async update(id, updatedData) {
-      return await Language.findOneAndUpdate({ id }, updatedData, { new: true }).lean();
+      return await Language.findOneAndUpdate({ id }, updatedData, { returnDocument: 'after' }).lean();
     },
     async deleteOne(query) {
       return await Language.deleteOne(query);

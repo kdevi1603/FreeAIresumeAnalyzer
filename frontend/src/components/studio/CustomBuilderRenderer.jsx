@@ -28,8 +28,8 @@ export default function CustomBuilderRenderer({
     primaryColor = accentColor || '#2563EB',
     secondaryColor = '#F3F4F6',
     textColor = '#1F2937',
-    fontSize = '14px',
-    sectionSpacing = '24px',
+    fontSize = '12px',
+    sectionSpacing = '12px',
     headingStyle = 'uppercase',
     showProfilePhoto = true,
     sectionOrder = [
@@ -68,20 +68,20 @@ export default function CustomBuilderRenderer({
     }
     
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
         {mergedLines.map((line, i) => {
-          if (!line) return <div key={i} style={{ height: '6px' }} />;
+          if (!line) return <div key={i} style={{ height: '4px' }} />;
           
           const bulletMatch = line.match(/^([*\-•·➢>])\s*(.*)/);
           if (bulletMatch) {
             return (
-              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', paddingLeft: '8px' }}>
-                <span style={{ flexShrink: 0, width: '12px', textAlign: 'center', fontSize: '1em', lineHeight: '1.4', color: primaryColor }}>•</span>
-                <span style={{ flex: 1, textAlign: 'left' }}>{bulletMatch[2]}</span>
+              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', paddingLeft: '4px' }}>
+                <span style={{ flexShrink: 0, width: '10px', textAlign: 'center', fontSize: '1em', lineHeight: '1.3', color: primaryColor }}>•</span>
+                <span style={{ flex: 1, textAlign: 'left', lineHeight: '1.3' }}>{bulletMatch[2]}</span>
               </div>
             );
           }
-          return <div key={i} style={{ textAlign: 'left' }}>{line}</div>;
+          return <div key={i} style={{ textAlign: 'left', lineHeight: '1.3' }}>{line}</div>;
         })}
       </div>
     );
@@ -91,11 +91,11 @@ export default function CustomBuilderRenderer({
 
   const renderSectionHeader = (title) => (
     <div style={{
-      fontSize: '1.2em',
+      fontSize: '1.1em',
       fontWeight: '700',
       color: primaryColor,
       textTransform: headingStyle === 'uppercase' ? 'uppercase' : 'capitalize',
-      marginBottom: '12px',
+      marginBottom: '6px',
       borderBottom: `2px solid ${secondaryColor}`,
       paddingBottom: '4px'
     }}>
