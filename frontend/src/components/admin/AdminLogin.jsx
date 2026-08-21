@@ -4,17 +4,39 @@ import { Shield, Lock, Mail, ArrowRight } from 'lucide-react';
 export default function AdminLogin({ onLogin, onBackToLanding }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Hardcoded simple authentication for demo purposes
-    if (email === 'admin@admin.com' && password === 'admin') {
-      setError('');
-      onLogin();
-    } else {
-      setError('Invalid admin credentials. Hint: admin@admin.com / admin');
+    setLoading(true);
+    setError('');
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+
+      if (res.ok && data.token) {
+        if (data.role === 'admin' || data.role === 'super_admin') {
+          localStorage.setItem('token', data.token);
+          sessionStorage.setItem('adminAuth', 'true');
+          sessionStorage.setItem('adminRole', data.role);
+          sessionStorage.setItem('adminName', data.name);
+          onLogin();
+        } else {
+          setError('Access denied. You do not have admin privileges.');
+        }
+      } else {
+        setError(data.message || 'Invalid credentials.');
+      }
+    } catch (err) {
+      setError('Server error during login.');
     }
+    setLoading(false);
   };
 
   return (
@@ -97,12 +119,12 @@ export default function AdminLogin({ onLogin, onBackToLanding }) {
             </div>
           </div>
 
-          <button type="submit" className="btn btn-primary" style={{ width: '100%', marginBottom: '16px' }}>
-            Login to Admin Panel <ArrowRight size={18} />
+          <button type="submit" className="btn btn-primary" style={{ width: '100%', marginBottom: '16px' }} disabled={loading}>
+            {loading ? 'Authenticating...' : 'Secure Login'} <ArrowRight size={18} style={{ marginLeft: '8px' }} />
           </button>
           
-          <button type="button" className="btn btn-secondary" style={{ width: '100%' }} onClick={onBackToLanding}>
-            Back to Application
+          <button type="button" onClick={onBackToLanding} className="btn" style={{ width: '100%', background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-muted)' }}>
+            Return to Homepage
           </button>
         </form>
       </div>

@@ -86,7 +86,7 @@ export default function AdminResumes() {
   const fetchResumes = async () => {
     try {
       const res = await fetch('/api/admin/resumes', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
       });
       if (res.ok) {
         let data = await res.json();
@@ -121,7 +121,7 @@ export default function AdminResumes() {
     try {
       const res = await fetch(`/api/admin/resumes/${id}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
       });
       if (res.ok) fetchResumes();
     } catch (err) {

@@ -42,7 +42,9 @@ export default function App() {
     }
     try {
       const item = window.sessionStorage.getItem('app_viewMode');
-      return item ? JSON.parse(item) : 'landing';
+      const savedMode = item ? JSON.parse(item) : 'landing';
+      if (savedMode === 'admin') return 'landing';
+      return savedMode;
     } catch {
       return 'landing';
     }

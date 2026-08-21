@@ -130,7 +130,7 @@ export default function AdminAllResumes() {
     try {
       setLoading(true);
       const res = await fetch('/api/admin/resumes', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
       });
       if (res.ok) {
         const data = await res.json();
@@ -153,7 +153,7 @@ export default function AdminAllResumes() {
     try {
       await fetch(`/api/admin/resumes/${deleteConfirmModal.id}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
       });
       showToast('Resume deleted successfully.');
       setDeleteConfirmModal(null);

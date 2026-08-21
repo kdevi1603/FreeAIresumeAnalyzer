@@ -224,7 +224,13 @@ export async function getDashboardStats(req, res) {
 // --- Users ---
 export async function getUsers(req, res) {
   try {
-    const users = await db.users.find();
+    let users = await db.users.find();
+    
+    // Admins can only see regular users. Super Admins can see everyone.
+    if (req.user && req.user.role === 'admin') {
+      users = users.filter(u => u.role !== 'admin' && u.role !== 'super_admin');
+    }
+
     const resumes = await db.resumes.find() || [];
     // exclude passwords
     const safeUsers = users.map(({ password, ...u }) => {
@@ -245,6 +251,16 @@ export async function getUsers(req, res) {
 export async function deleteUser(req, res) {
   try {
     const { id } = req.params;
+    const targetUser = await db.users.findOne({ id });
+    
+    if (!targetUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if ((targetUser.role === 'admin' || targetUser.role === 'super_admin') && req.user.role !== 'super_admin') {
+      return res.status(403).json({ message: 'Not authorized to delete an admin' });
+    }
+
     await db.users.deleteOne({ id });
     res.json({ message: 'User deleted successfully' });
   } catch (error) {
@@ -255,11 +271,15 @@ export async function deleteUser(req, res) {
 export async function toggleBlockUser(req, res) {
   try {
     const { id } = req.params;
-    const user = await db.users.findById(id);
+    const user = await db.users.findOne({ id });
     if (!user) return res.status(404).json({ message: 'User not found' });
-    
-    const updated = await db.users.update(id, { isBlocked: !user.isBlocked });
-    res.json({ message: `User ${updated.isBlocked ? 'blocked' : 'unblocked'}`, user: updated });
+
+    if ((user.role === 'admin' || user.role === 'super_admin') && req.user.role !== 'super_admin') {
+      return res.status(403).json({ message: 'Not authorized to modify an admin' });
+    }
+
+    await db.users.update(id, { isBlocked: !user.isBlocked });
+    res.json({ message: `User ${user.isBlocked ? 'unblocked' : 'blocked'} successfully`, isBlocked: !user.isBlocked });
   } catch (error) {
     res.status(500).json({ message: 'Error blocking user' });
   }

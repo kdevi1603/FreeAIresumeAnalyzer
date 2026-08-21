@@ -12,10 +12,11 @@ import AdminSupport from '../components/admin/AdminSupport.jsx';
 import AdminAnalytics from '../components/admin/AdminAnalytics.jsx';
 import { ShieldCheck, Moon, Sun } from 'lucide-react';
 import AdminLogin from '../components/admin/AdminLogin.jsx';
+import AdminHeader from '../components/admin/AdminHeader.jsx';
 
 export default function AdminPanel({ onLogout, onBackToLanding }) {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return sessionStorage.getItem('adminAuth') === 'true';
+    return sessionStorage.getItem('adminAuth') === 'true' && !!localStorage.getItem('token');
   });
   const [activeTab, setActiveTab] = useState(() => {
     return localStorage.getItem('adminTab') || 'dashboard';
@@ -56,12 +57,31 @@ export default function AdminPanel({ onLogout, onBackToLanding }) {
     { id: 'templates', label: 'Templates', icon: Layout },
     { id: 'skills_master', label: 'Skills Master', icon: BookOpen },
     { id: 'analytics', label: 'Analytics', icon: Activity },
-    { id: 'support', label: 'Support & Feedback', icon: MessageSquare },
+    { id: 'support', label: 'Support & Feedback', icon: MessageSquare, role: 'super_admin' },
     { id: 'settings', label: 'Settings', icon: Settings },
-    { id: 'admin_management', label: 'Admin Management', icon: ShieldCheck },
+    { id: 'admin_management', label: 'Admin Management', icon: ShieldCheck, role: 'super_admin' },
   ];
 
+  const adminRole = sessionStorage.getItem('adminRole') || 'admin';
+  const adminName = sessionStorage.getItem('adminName') || '';
+
+  const visibleTabs = TABS.filter(tab => !tab.role || tab.role === adminRole);
+
+  const getActiveTabLabel = () => {
+    const tab = TABS.find(t => t.id === activeTab);
+    return tab ? tab.label : 'Admin Panel';
+  };
+
   const renderContent = () => {
+    if ((activeTab === 'support' || activeTab === 'admin_management') && adminRole !== 'super_admin') {
+      return (
+        <div style={{ padding: '40px', textAlign: 'center', color: '#ef4444' }}>
+          <Shield size={48} style={{ margin: '0 auto 16px' }} />
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>Access Denied</h2>
+          <p>You do not have permission to view this page. Super Admin access required.</p>
+        </div>
+      );
+    }
     switch (activeTab) {
       case 'dashboard': return <AdminDashboard setActiveTab={setActiveTab} isLightMode={isLightMode} setIsLightMode={setIsLightMode} onBackToLanding={onBackToLanding} />;
       case 'users': return <AdminUsers />;
@@ -164,7 +184,9 @@ export default function AdminPanel({ onLogout, onBackToLanding }) {
           <div style={{ padding: '0 24px', marginBottom: '32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <img src="/admin-logo.jpg" alt="Logo" className="admin-logo-img" style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover' }} />
-              <span style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-main)' }}>Admin Panel</span>
+              <span style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-main)' }}>
+                {adminRole === 'super_admin' ? 'Super Admin' : 'Admin Panel'}
+              </span>
             </div>
             {/* Close button for mobile inside sidebar */}
             <button 
@@ -177,7 +199,7 @@ export default function AdminPanel({ onLogout, onBackToLanding }) {
           </div>
 
           <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', padding: '0 12px', overflowY: 'auto' }}>
-            {TABS.map(tab => {
+            {visibleTabs.map(tab => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
               return (
@@ -204,26 +226,6 @@ export default function AdminPanel({ onLogout, onBackToLanding }) {
               );
             })}
           </nav>
-
-          <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px', marginTop: 'auto' }}>
-            <button
-              onClick={() => {
-                setIsAuthenticated(false);
-                sessionStorage.removeItem('adminAuth');
-                onLogout();
-              }}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '8px',
-                padding: '10px 16px', borderRadius: '8px',
-                background: 'rgba(239, 68, 68, 0.1)', color: '#EF4444',
-                border: '1px solid rgba(239, 68, 68, 0.3)', cursor: 'pointer',
-                width: '100%', justifyContent: 'center'
-              }}
-            >
-              <LogOut size={16} />
-              Logout
-            </button>
-          </div>
         </div>
 
         {/* Main Content Area */}
@@ -240,6 +242,21 @@ export default function AdminPanel({ onLogout, onBackToLanding }) {
           </div>
           
           <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
+            <AdminHeader 
+              title={getActiveTabLabel()}
+              subtitle={`Welcome back, ${adminName || (adminRole === 'super_admin' ? 'Super Admin' : 'Admin')} • ${new Date().toLocaleDateString()}`}
+              isLightMode={isLightMode}
+              setIsLightMode={setIsLightMode}
+              onBackToLanding={onBackToLanding}
+              onLogout={() => {
+                setIsAuthenticated(false);
+                sessionStorage.removeItem('adminRole');
+                sessionStorage.removeItem('adminName');
+                localStorage.removeItem('token');
+              }}
+              role={adminRole}
+              name={adminName}
+            />
             {renderContent()}
           </div>
         </div>

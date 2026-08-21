@@ -52,7 +52,7 @@ export default function AdminSkills() {
   const [modal, setModal] = useState({ isOpen: false, mode: 'add', type: 'skills', item: null });
   const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, ids: [] });
 
-  const getHeaders = () => ({ 'Authorization': `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json' });
+  const getHeaders = () => ({ 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`, 'Content-Type': 'application/json' });
 
   // --- Fetch Data ---
   const fetchData = async () => {

@@ -1,0 +1,1 @@
+import * as dotenv from 'dotenv'; dotenv.config(); import { initDB, db } from './config/db.js'; await initDB(); const admins = await db.users.find({ role: 'admin' }); const superAdmins = await db.users.find({ role: 'super_admin' }); console.log('Admins:', admins); console.log('Super Admins:', superAdmins); process.exit(0);

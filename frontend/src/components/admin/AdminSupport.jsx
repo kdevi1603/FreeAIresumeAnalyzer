@@ -35,7 +35,7 @@ export default function AdminSupport() {
     setLoading(true);
     try {
       const res = await fetch('/api/admin/messages', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
       });
       if (res.ok) {
         const data = await res.json();
@@ -57,7 +57,7 @@ export default function AdminSupport() {
       const res = await fetch(`/api/admin/messages/${id}/status`, {
         method: 'PUT',
         headers: { 
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(updates)
@@ -80,7 +80,7 @@ export default function AdminSupport() {
       const res = await fetch(`/api/admin/messages/${replyModal.id}/reply`, {
         method: 'POST',
         headers: { 
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ replyText, subject: `Re: ${replyModal.subject || 'Support Request'}` })
@@ -105,7 +105,7 @@ export default function AdminSupport() {
     try {
       const res = await fetch(`/api/admin/messages/${id}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
       });
       if (res.ok) {
         setMessages(prev => prev.filter(m => m.id !== id));
@@ -121,7 +121,7 @@ export default function AdminSupport() {
     for (const id of selectedIds) {
       await fetch(`/api/admin/messages/${id}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
       });
     }
     setMessages(prev => prev.filter(m => !selectedIds.includes(m.id)));

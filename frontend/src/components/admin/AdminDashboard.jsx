@@ -34,7 +34,7 @@ export default function AdminDashboard({ setActiveTab, isLightMode, setIsLightMo
   useEffect(() => {
     const fetchData = () => {
       fetch('/api/admin/stats', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
       })
         .then(res => res.json())
         .then(resData => {
@@ -90,41 +90,6 @@ export default function AdminDashboard({ setActiveTab, isLightMode, setIsLightMo
 
   return (
     <div className="text-[var(--text-main)] w-full">
-      {/* Top Header */}
-      <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 bg-[var(--bg-card)] p-4 rounded-2xl border border-[var(--border-color)] shadow-sm backdrop-blur-md relative z-50">
-        <div>
-          <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">Admin Dashboard</h1>
-          <p className="text-sm text-[var(--text-muted)]">Welcome back, Admin • {new Date().toLocaleDateString()}</p>
-        </div>
-        
-        <div className="flex items-center gap-6 w-full md:w-auto">
-          <button 
-            onClick={() => setIsLightMode(!isLightMode)}
-            className="p-2 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-[var(--text-muted)] hover:text-blue-500 transition-colors"
-            title={isLightMode ? 'Dark Mode' : 'Light Mode'}
-          >
-            {isLightMode ? <Moon size={18} /> : <Sun size={18} />}
-          </button>
-          
-          <button 
-            onClick={onBackToLanding}
-            className="flex items-center gap-2 p-2 px-4 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-[var(--text-muted)] hover:text-blue-500 transition-colors text-sm font-medium"
-          >
-            <ChevronLeft size={16} />
-            <span className="hidden md:inline">Back to Site</span>
-          </button>
-
-
-          <div className="flex items-center gap-2 cursor-pointer border-l border-[var(--border-color)] pl-4">
-            <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold text-sm">
-              AD
-            </div>
-            <span className="text-sm font-medium hidden sm:block">Admin</span>
-            <ChevronDown size={16} className="text-[var(--text-muted)]" />
-          </div>
-        </div>
-      </div>
-
       {/* Search & Notifications Row */}
       <div className="flex flex-col md:flex-row items-center gap-4 mb-8 relative z-40">
         <div className="flex-1 w-full bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl shadow-sm flex items-center p-1.5 h-16">

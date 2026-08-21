@@ -36,9 +36,17 @@ export function generateToken(id) {
 }
 
 export async function isAdmin(req, res, next) {
-  if (req.user && req.user.role === 'admin') {
+  if (req.user && (req.user.role === 'admin' || req.user.role === 'super_admin')) {
     next();
   } else {
     res.status(403).json({ message: 'Not authorized as an admin' });
+  }
+}
+
+export async function isSuperAdmin(req, res, next) {
+  if (req.user && req.user.role === 'super_admin') {
+    next();
+  } else {
+    res.status(403).json({ message: 'Not authorized. Super Admin access required.' });
   }
 }

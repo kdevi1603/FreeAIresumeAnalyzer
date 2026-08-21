@@ -19,8 +19,13 @@ export const AuthProvider = ({ children }) => {
       if (token) {
         try {
           const profile = await authService.getMe();
-          setUser(profile);
-          localStorage.setItem('user', JSON.stringify(profile));
+          if (profile.role === 'admin' || profile.role === 'super_admin') {
+            setUser(null);
+            localStorage.removeItem('user');
+          } else {
+            setUser(profile);
+            localStorage.setItem('user', JSON.stringify(profile));
+          }
         } catch (err) {
           console.error('Session expired or invalid:', err);
           authService.logout();
@@ -36,10 +41,13 @@ export const AuthProvider = ({ children }) => {
     setError(null);
     try {
       const data = await authService.login({ email, password });
+      if (data.role === 'admin' || data.role === 'super_admin') {
+        throw new Error('Admin accounts must log in via the /admin portal.');
+      }
       setUser(data);
       return data;
     } catch (err) {
-      const msg = err.response?.data?.message || 'Failed to sign in. Please check your credentials.';
+      const msg = err.response?.data?.message || err.message || 'Failed to sign in. Please check your credentials.';
       setError(msg);
       throw new Error(msg);
     }

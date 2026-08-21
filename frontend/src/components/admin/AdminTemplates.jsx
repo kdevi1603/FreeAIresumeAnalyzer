@@ -75,7 +75,7 @@ export default function AdminTemplates() {
     setLoading(true);
     try {
       const res = await fetch('/api/admin/templates', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
       });
       if (res.ok) setTemplates(await res.json());
     } catch (err) {
@@ -127,7 +127,7 @@ export default function AdminTemplates() {
         method,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
         },
         body: JSON.stringify(formData)
       });
@@ -152,7 +152,7 @@ export default function AdminTemplates() {
         method,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
         },
         body: JSON.stringify(dataToSave)
       });
@@ -178,7 +178,7 @@ export default function AdminTemplates() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
         },
         body: JSON.stringify(duplicateData)
       });
@@ -193,7 +193,7 @@ export default function AdminTemplates() {
     try {
       const res = await fetch(`/api/admin/templates/${id}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
       });
       if (res.ok) fetchTemplates();
     } catch (err) {
@@ -205,7 +205,7 @@ export default function AdminTemplates() {
     try {
       const res = await fetch(`/api/admin/templates/${id}/default`, {
         method: 'PUT',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
       });
       if (res.ok) fetchTemplates();
     } catch (err) {
@@ -259,7 +259,7 @@ export default function AdminTemplates() {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',
-                      'Authorization': `Bearer ${localStorage.getItem('token')}`
+                      'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
                     },
                     body: JSON.stringify(t)
                   });
@@ -454,7 +454,7 @@ export default function AdminTemplates() {
                                  .replace(/john\.doe@example\.com/g, '{{email}}')
                                  .replace(/\+1 234 567 8900/g, '{{phone}}');
                       try {
-                        const token = localStorage.getItem('token');
+                        const token = localStorage.getItem('adminToken');
                         await fetch(`/api/admin/templates/${previewModal.id}`, {
                           method: 'PUT',
                           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },

@@ -70,7 +70,7 @@ export default function AdminManagement() {
     try {
       setLoading(true);
       const res = await fetch('/api/admin/users', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
       });
       if (res.ok) {
         let data = await res.json();

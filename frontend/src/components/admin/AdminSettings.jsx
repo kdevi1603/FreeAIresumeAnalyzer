@@ -89,7 +89,7 @@ export default function AdminSettings() {
     { id: 'Activity Log', icon: Activity }
   ];
 
-  const getHeaders = () => ({ 'Authorization': `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json' });
+  const getHeaders = () => ({ 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`, 'Content-Type': 'application/json' });
 
   useEffect(() => {
     fetch('/api/admin/settings', { headers: getHeaders() })

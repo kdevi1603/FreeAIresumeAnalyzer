@@ -44,7 +44,7 @@ export default function AdminAnalytics() {
   useEffect(() => {
     setLoading(true);
     fetch(`/api/admin/stats?range=${encodeURIComponent(dateRange)}`, {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
     })
       .then(res => res.json())
       .then(resData => {

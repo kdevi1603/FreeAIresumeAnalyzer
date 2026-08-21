@@ -62,7 +62,7 @@ export default function AdminUsers() {
     try {
       setLoading(true);
       const res = await fetch('/api/admin/users', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
       });
       if (res.ok) {
         const data = await res.json();
@@ -85,7 +85,7 @@ export default function AdminUsers() {
     try {
       await fetch(`/api/admin/users/${deleteConfirmModal.id}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
       });
       showToast('User deleted successfully.');
       setDeleteConfirmModal(null);
@@ -101,7 +101,7 @@ export default function AdminUsers() {
       // Normally we'd send the reason in the body, but the backend patch just toggles it currently
       await fetch(`/api/admin/users/${blockModal.id}/block`, {
         method: 'PATCH',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
       });
       showToast(`User successfully ${blockModal.isBlocked ? 'unblocked' : 'blocked'}.`);
       setBlockModal(null);
@@ -311,7 +311,6 @@ export default function AdminUsers() {
                     <td className="py-4 px-6">
                       <div className="flex items-center justify-end gap-2">
                         <button onClick={() => setViewModal(u)} className="p-2 bg-[var(--bg-dark)] border border-[var(--border-color)] hover:bg-blue-500/10 hover:border-blue-500/30 text-[var(--text-muted)] hover:text-blue-500 rounded-lg transition-all" title="View Details"><Eye size={16} /></button>
-                        <button onClick={() => setEditModal(u)} className="p-2 bg-[var(--bg-dark)] border border-[var(--border-color)] hover:bg-indigo-500/10 hover:border-indigo-500/30 text-[var(--text-muted)] hover:text-indigo-500 rounded-lg transition-all" title="Edit User"><Edit2 size={16} /></button>
                         <button onClick={() => setBlockModal(u)} className={`p-2 bg-[var(--bg-dark)] border border-[var(--border-color)] rounded-lg transition-all ${u.isBlocked ? 'hover:bg-emerald-500/10 hover:border-emerald-500/30 text-[var(--text-muted)] hover:text-emerald-500' : 'hover:bg-amber-500/10 hover:border-amber-500/30 text-[var(--text-muted)] hover:text-amber-500'}`} title={u.isBlocked ? 'Unblock User' : 'Block User'}>
                           {u.isBlocked ? <Unlock size={16} /> : <Lock size={16} />}
                         </button>

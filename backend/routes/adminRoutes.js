@@ -1,5 +1,5 @@
 import express from 'express';
-import { protect, isAdmin } from '../middleware/auth.js';
+import { protect, isAdmin, isSuperAdmin } from '../middleware/auth.js';
 import {
   getDashboardStats,
   getUsers,
@@ -35,10 +35,10 @@ import {
 const router = express.Router();
 
 // Dashboard
-router.get('/stats', getDashboardStats);
+router.get('/stats', protect, isAdmin, getDashboardStats);
 
-// Apply auth & admin middlewares to all other routes in this file (Disabled for Demo Mode)
-// router.use(protect, isAdmin);
+// Apply auth & admin middlewares to all other routes in this file
+router.use(protect, isAdmin);
 
 // Users
 router.get('/users', getUsers);
@@ -79,9 +79,9 @@ router.get('/settings', getSettings);
 router.put('/settings', updateSettings);
 
 // Support Messages
-router.get('/messages', getSupportMessages);
-router.delete('/messages/:id', deleteSupportMessage);
-router.put('/messages/:id/status', updateSupportMessageStatus);
-router.post('/messages/:id/reply', replySupportMessage);
+router.get('/messages', isSuperAdmin, getSupportMessages);
+router.delete('/messages/:id', isSuperAdmin, deleteSupportMessage);
+router.put('/messages/:id/status', isSuperAdmin, updateSupportMessageStatus);
+router.post('/messages/:id/reply', isSuperAdmin, replySupportMessage);
 
 export default router;
