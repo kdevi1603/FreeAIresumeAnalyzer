@@ -112,8 +112,8 @@ export default function AiAgentChat({ resumeData, chatMessages, onSendMessage, i
               }}>
                 {renderMarkdown(msg.text)}
 
-                {msg.proposedFix && (
-                  <div style={{ marginTop: '16px' }}>
+                {msg.proposedFixes && msg.proposedFixes.length > 0 && msg.proposedFixes.map((fix, fixIdx) => (
+                  <div key={fixIdx} style={{ marginTop: '16px' }}>
                     <div style={{ 
                       padding: '12px', 
                       background: isBot ? 'rgba(255,255,255,0.5)' : '#f8fafc', 
@@ -127,11 +127,14 @@ export default function AiAgentChat({ resumeData, chatMessages, onSendMessage, i
                       maxHeight: '200px',
                       overflowY: 'auto'
                     }}>
-                      {msg.proposedFix.content || '/* Formatting updates */'}
+                      <div style={{ fontWeight: 'bold', marginBottom: '8px', color: 'var(--accent-blue)', textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.5px' }}>
+                        {fix.section} Update
+                      </div>
+                      {fix.content || '/* Formatting updates */'}
                     </div>
-                    {!msg.proposedFix.applied && (
+                    {!fix.applied && (
                       <button
-                        onClick={() => onApplyFix && onApplyFix(msg.proposedFix.section, msg.proposedFix.content)}
+                        onClick={() => onApplyFix && onApplyFix(fix.section, fix.content)}
                         style={{
                           display: 'flex',
                           alignItems: 'center',
@@ -155,7 +158,7 @@ export default function AiAgentChat({ resumeData, chatMessages, onSendMessage, i
                       </button>
                     )}
                   </div>
-                )}
+                ))}
 
                 {msg.options && (
                   <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>

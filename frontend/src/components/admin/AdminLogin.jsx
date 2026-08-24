@@ -23,6 +23,7 @@ export default function AdminLogin({ onLogin, onBackToLanding }) {
       if (res.ok && data.token) {
         if (data.role === 'admin' || data.role === 'super_admin') {
           localStorage.setItem('token', data.token);
+          localStorage.setItem('adminToken', data.token);
           sessionStorage.setItem('adminAuth', 'true');
           sessionStorage.setItem('adminRole', data.role);
           sessionStorage.setItem('adminName', data.name);

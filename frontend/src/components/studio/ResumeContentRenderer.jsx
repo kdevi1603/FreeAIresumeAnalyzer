@@ -14,6 +14,8 @@ export default function ResumeContentRenderer({
   customBuilderConfig = null
 }) {
   const [fetchedBuilderConfig, setFetchedBuilderConfig] = useState(null);
+  const [fitScale, setFitScale] = useState(1);
+  const [compactLevel, setCompactLevel] = useState(0);
 
   useEffect(() => {
     const knownStyles = ['modern', 'elegant', 'minimalist', 'software', 'fresher', 'executive', 'corporate', 'academic', 'creative', 'onepage', 'sidebar', 'original'];
@@ -157,12 +159,12 @@ export default function ResumeContentRenderer({
           if (bulletMatch) {
             return (
               <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
-                <span style={{ flexShrink: 0, width: '12px', textAlign: 'center', fontSize: '13px', lineHeight: '1.3' }}>•</span>
-                <span style={{ flex: 1, textAlign: 'left', lineHeight: '1.3', fontSize: '13px' }}>{bulletMatch[2]}</span>
+                <span style={{ flexShrink: 0, width: '12px', textAlign: 'center', fontSize: '13px', lineHeight: '1.45' }}>•</span>
+                <span style={{ flex: 1, textAlign: 'left', lineHeight: '1.45', fontSize: '13px' }}>{bulletMatch[2]}</span>
               </div>
             );
           }
-          return <div key={i} style={{ textAlign: 'left', lineHeight: '1.3', fontSize: '13px' }}>{line}</div>;
+          return <div key={i} style={{ textAlign: 'left', lineHeight: '1.45', fontSize: '13px' }}>{line}</div>;
         })}
       </div>
     );
@@ -181,37 +183,155 @@ export default function ResumeContentRenderer({
   const containerRef = React.useRef(null);
   const [pages, setPages] = useState(1);
 
+  const isPaginating = React.useRef(false);
+  const paginationTimeout = React.useRef(null);
+  const prevResumeDataRef = React.useRef(resumeData);
+  const prevShowDiffRef = React.useRef(showDiff);
+  
   useEffect(() => {
-    if (containerRef.current) {
-      const el = containerRef.current;
-      const prevHeight = el.style.minHeight;
-      el.style.minHeight = 'auto';
-      const actualHeight = el.scrollHeight;
-      el.style.minHeight = prevHeight;
-
-      const numPages = Math.max(1, Math.ceil(actualHeight / 1123));
-      if (pages !== numPages) {
-        setPages(numPages);
-      }
+    if (prevResumeDataRef.current !== resumeData || prevShowDiffRef.current !== showDiff) {
+       setCompactLevel(0);
+       setFitScale(1);
+       prevResumeDataRef.current = resumeData;
+       prevShowDiffRef.current = showDiff;
+       return; 
     }
-  });
+
+    if (!containerRef.current || isPaginating.current) return;
+    const container = containerRef.current;
+    
+    // Only paginate if not in 'original' template and if it's the A4 container
+    if (!container.classList.contains('a4-print-container')) return;
+
+    if (paginationTimeout.current) {
+      clearTimeout(paginationTimeout.current);
+    }
+
+    paginationTimeout.current = setTimeout(() => {
+      isPaginating.current = true;
+      
+      // 1. Reset all paginator-generated margins
+      const sections = Array.from(container.querySelectorAll('.resume-section-wrapper'));
+      sections.forEach(el => {
+        if (el.dataset.paginationMargin) {
+          el.style.marginTop = '';
+          el.removeAttribute('data-pagination-margin');
+        }
+      });
+
+      // 2. Wait for layout to settle (using double requestAnimationFrame)
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          // We must temporarily unzoom to calculate correct pixel measurements
+          const originalZoom = container.style.zoom;
+          container.style.zoom = '100%';
+          
+          // A4 dimensions in pixels at 96 DPI (297mm)
+          const PAGE_HEIGHT = 1122.5; 
+          const TOP_MARGIN = 53; // ~14mm
+          const BOTTOM_MARGIN = 53; // ~14mm
+          
+          const scaleWrapper = container.querySelector('.resume-scale-wrapper');
+          let originalWrapperTransform = 'scale(1)';
+          if (scaleWrapper) {
+             originalWrapperTransform = scaleWrapper.style.transform;
+             scaleWrapper.style.transform = 'scale(1)';
+          }
+          
+          let containerRect = container.getBoundingClientRect();
+          let newNumPages = 1;
+          let newFitScale = 1;
+
+          if (showDiff) {
+            // AI Optimized Mode: Force Single Page Compaction
+            container.style.minHeight = 'auto';
+            const actualHeight = container.scrollHeight;
+            
+            if (actualHeight > PAGE_HEIGHT - 20) {
+              if (compactLevel < 12) {
+                // Iteratively increase compaction until it fits
+                setCompactLevel(prev => prev + 1);
+              } else {
+                // Max compaction reached, apply tiny zoom to force fit
+                newFitScale = Math.max(0.75, (PAGE_HEIGHT - 20) / actualHeight);
+              }
+            } else if (actualHeight < PAGE_HEIGHT - 100 && compactLevel > 0) {
+                // Optional: decrease compaction if there's plenty of room
+                // In practice, it's safer to just let it settle. 
+            }
+          } else {
+            // Normal Mode: Zero-Insertion Margin Strategy for multi-page
+            setCompactLevel(0); // Ensure normal mode isn't compacted
+
+            for (let el of sections) {
+              const elRect = el.getBoundingClientRect();
+              const top = elRect.top - containerRect.top;
+              const bottom = top + elRect.height;
+              
+              const pageIndex = Math.floor(top / PAGE_HEIGHT);
+              const pageBottom = (pageIndex + 1) * PAGE_HEIGHT;
+              
+              if (bottom > pageBottom && elRect.height < (PAGE_HEIGHT - TOP_MARGIN - BOTTOM_MARGIN)) {
+                 const nextPageTop = pageBottom + TOP_MARGIN;
+                 const shiftAmount = nextPageTop - top;
+                 
+                 el.style.marginTop = `${shiftAmount}px`;
+                 el.dataset.paginationMargin = 'true';
+                 
+                 containerRect = container.getBoundingClientRect();
+              }
+            }
+            
+            const prevHeight = container.style.minHeight;
+            container.style.minHeight = 'auto';
+            const actualHeight = container.scrollHeight;
+            
+            newNumPages = Math.max(1, Math.ceil(actualHeight / PAGE_HEIGHT));
+            container.style.minHeight = `${newNumPages * PAGE_HEIGHT}px`;
+          }
+          
+          setPages(prev => (prev !== newNumPages ? newNumPages : prev));
+          setFitScale(prev => (prev !== newFitScale ? newFitScale : prev));
+          
+          // Restore zoom
+          container.style.zoom = originalZoom;
+          if (scaleWrapper) {
+             scaleWrapper.style.transform = originalWrapperTransform;
+          }
+          
+          isPaginating.current = false;
+        });
+      });
+    }, 200); // Debounce delay
+    
+    return () => {
+      if (paginationTimeout.current) clearTimeout(paginationTimeout.current);
+    }
+  }, [resumeData, templateStyle, activeBuilderConfig, customBuilderConfig, showDiff, compactLevel]);
 
   return (
     <div ref={containerRef} className="a4-print-container ai-optimized-page" style={{
       zoom: `${zoom}%`,
-      width: '210mm', 
+      width: '210mm',
+      maxWidth: '210mm',
+      margin: '0 auto',
       minHeight: '297mm',
+      height: 'auto',
       boxSizing: 'border-box',
+      overflowWrap: 'break-word',
       backgroundColor: '#ffffff', 
       color: '#1a1a1a',
-      padding: (templateStyle === 'sidebar' || templateStyle === 'executive' || templateStyle === 'modern' || templateStyle === 'fresher' || templateStyle === 'corporate' || templateStyle === 'creative' || templateStyle === 'onepage') ? '0' : '10mm',
+      padding: (templateStyle === 'sidebar' || templateStyle === 'executive' || templateStyle === 'modern' || templateStyle === 'fresher' || templateStyle === 'corporate' || templateStyle === 'creative' || templateStyle === 'onepage') ? '0' : '14mm 12mm',
       boxShadow: zoom < 100 ? 'none' : '0 20px 60px rgba(0,0,0,0.6)', 
       borderRadius: '4px',
       fontFamily: ['academic', 'corporate', 'serif'].includes(templateStyle) ? "'Times New Roman', serif"
         : ['minimalist', 'software'].includes(templateStyle) ? "'Courier New', monospace"
         : "'Inter', sans-serif",
       position: 'relative',
-      backgroundImage: pages > 1 ? `repeating-linear-gradient(to bottom, transparent, transparent 296mm, #cbd5e1 296mm, #cbd5e1 297mm)` : 'none'
+      backgroundImage: pages > 1 ? `repeating-linear-gradient(to bottom, transparent, transparent calc(1122.5px - 4px), #cbd5e1 calc(1122.5px - 4px), #cbd5e1 1122.5px)` : 'none',
+      backgroundSize: '100% 1122.5px',
+      display: 'flex',
+      flexDirection: 'column'
     }}
     contentEditable={contentEditable}
     suppressContentEditableWarning={true}
@@ -224,6 +344,51 @@ export default function ResumeContentRenderer({
       
       <style>{resumeData?.formattingCss || ''}</style>
       
+      {showDiff && compactLevel > 0 && (
+        <style>{`
+          /* AI Optimized Progressive Compaction CSS */
+          
+          /* Level 1-3: Spacing & Margin Reductions */
+          .ai-optimized-page .resume-section-wrapper h3 {
+              margin-bottom: ${Math.max(2, 10 - compactLevel * 2)}px !important;
+          }
+          .ai-optimized-page p, .ai-optimized-page ul {
+              margin: ${Math.max(1, 12 - compactLevel * 3)}px 0 !important;
+          }
+          .ai-optimized-page > div > div {
+              padding-top: ${Math.max(12, 40 - compactLevel * 8)}px !important;
+              padding-bottom: ${Math.max(12, 40 - compactLevel * 8)}px !important;
+              gap: ${Math.max(8, 28 - compactLevel * 5)}px !important;
+          }
+          .ai-optimized-page .resume-section-wrapper {
+              gap: ${Math.max(2, 8 - compactLevel)}px !important;
+          }
+          
+          /* Level 4-7: Line Height Adjustments */
+          ${compactLevel >= 4 ? `
+          .ai-optimized-page div, .ai-optimized-page span, .ai-optimized-page li, .ai-optimized-page p {
+              line-height: ${Math.max(1.2, 1.7 - (compactLevel - 3) * 0.1)} !important;
+          }
+          ` : ''}
+          
+          /* Level 8-12: Font Size Adjustments */
+          ${compactLevel >= 6 ? `
+          .ai-optimized-page h1 { font-size: ${Math.max(22, 32 - (compactLevel - 5) * 2)}px !important; margin-bottom: 2px !important; }
+          .ai-optimized-page h2 { font-size: ${Math.max(14, 18 - (compactLevel - 5))}px !important; margin-bottom: 2px !important; }
+          .ai-optimized-page h3 { font-size: ${Math.max(11, 14 - (compactLevel - 5) * 0.5)}px !important; padding: 2px 6px !important; }
+          ` : ''}
+          
+          ${compactLevel >= 8 ? `
+          .ai-optimized-page div, .ai-optimized-page span, .ai-optimized-page li {
+              font-size: ${Math.max(8.5, 12 - (compactLevel - 7) * 0.5)}px !important;
+          }
+          .ai-optimized-page ul { padding-left: 12px !important; }
+          .ai-optimized-page li { margin-bottom: 1px !important; }
+          ` : ''}
+        `}</style>
+      )}
+      
+      <div className="resume-scale-wrapper" style={{ transform: `scale(${fitScale})`, transformOrigin: 'top left', flex: 1, display: 'flex', flexDirection: 'column' }}>
 
       {customTemplateHtml ? (
          <div dangerouslySetInnerHTML={{ 
@@ -260,7 +425,7 @@ export default function ResumeContentRenderer({
 
       {/* 1. Modern Professional (formerly modern) */}
       {!activeBuilderConfig && templateStyle === 'modern' && (
-        <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', minHeight: '100%', width: '100%' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', minHeight: '100%', width: '100%', flex: 1 }}>
           {/* Left Sidebar */}
           <div style={{ background: '#f8fafc', padding: '40px 30px', borderRight: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '28px' }}>
             {profilePicture && (
@@ -270,7 +435,7 @@ export default function ResumeContentRenderer({
             )}
             
             {hasContact && (
-              <div>
+              <div className="resume-section-wrapper">
                 <h3 style={{ fontSize: '13px', fontWeight: 800, color: accentColor, borderBottom: '2px solid #e2e8f0', paddingBottom: '6px', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Contact</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '11px', color: '#475569' }}>
                   {mEmail && <span style={{ display: 'flex', alignItems: 'center', gap: '8px', wordBreak: 'break-all' }}><Mail size={14} style={{ color: accentColor }} /> {mEmail}</span>}
@@ -286,7 +451,7 @@ export default function ResumeContentRenderer({
             )}
 
             {mSkills && (
-               <div>
+               <div className="resume-section-wrapper">
                  <h3 style={{ fontSize: '13px', fontWeight: 800, color: accentColor, borderBottom: '2px solid #e2e8f0', paddingBottom: '6px', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Skills</h3>
                  <div style={{ fontSize: '11px', lineHeight: 1.6, color: '#334155' }}>
                    {formatText(mSkills, false)}
@@ -295,7 +460,7 @@ export default function ResumeContentRenderer({
             )}
 
             {mLanguages && (
-              <div>
+              <div className="resume-section-wrapper">
                  <h3 style={{ fontSize: '13px', fontWeight: 800, color: accentColor, borderBottom: '2px solid #e2e8f0', paddingBottom: '6px', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Languages</h3>
                  <div style={{ fontSize: '11px', lineHeight: 1.6, color: '#334155' }}>
                    {formatText(mLanguages, false)}
@@ -313,7 +478,7 @@ export default function ResumeContentRenderer({
 
              <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
                {mSummary && (
-                 <div>
+                 <div className="resume-section-wrapper">
                     <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#0f172a', marginBottom: '10px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '8px' }}>
                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: accentColor }} /> Executive Summary
                     </h3>
@@ -324,7 +489,7 @@ export default function ResumeContentRenderer({
                )}
 
                {mProjects && (
-                 <div>
+                 <div className="resume-section-wrapper">
                     <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#0f172a', marginBottom: '10px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '8px' }}>
                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: accentColor }} /> Experience
                     </h3>
@@ -335,7 +500,7 @@ export default function ResumeContentRenderer({
                )}
 
                {mEducation && (
-                 <div>
+                 <div className="resume-section-wrapper">
                     <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#0f172a', marginBottom: '10px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '8px' }}>
                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: accentColor }} /> Education
                     </h3>
@@ -346,7 +511,7 @@ export default function ResumeContentRenderer({
                )}
 
                {mCertifications && (
-                 <div>
+                 <div className="resume-section-wrapper">
                     <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#0f172a', marginBottom: '10px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '8px' }}>
                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: accentColor }} /> Certifications
                     </h3>
@@ -357,7 +522,7 @@ export default function ResumeContentRenderer({
                )}
 
                {mAchievements && (
-                 <div>
+                 <div className="resume-section-wrapper">
                     <h3 style={{ fontSize: '16px', fontWeight: 900, color: '#0f172a', marginBottom: '12px', borderBottom: '2px solid #e2e8f0', paddingBottom: '6px' }}>
                        Achievements
                     </h3>
@@ -383,7 +548,7 @@ export default function ResumeContentRenderer({
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
             {sections.map((sec, idx) => (
-              <div key={idx}>
+              <div className="resume-section-wrapper" key={idx}>
                 <h3 style={{ fontSize: '14px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', textTransform: 'uppercase' }}>
                   <span style={{ width: '8px', height: '8px', background: accentColor }} /> {sec.title}
                 </h3>
@@ -396,7 +561,7 @@ export default function ResumeContentRenderer({
 
       {/* 3. Fresher / Student (Education First) */}
       {!activeBuilderConfig && !customBuilderConfig && templateStyle === 'fresher' && (
-          <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', minHeight: '100%', width: '100%' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', minHeight: '100%', width: '100%', flex: 1 }}>
             {/* Left Sidebar */}
             <div style={{ background: '#f8fafc', padding: '40px 24px', borderRight: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '24px' }}>
               {profilePicture && (
@@ -406,7 +571,7 @@ export default function ResumeContentRenderer({
               )}
               
               {hasContact && (
-                <div>
+                <div className="resume-section-wrapper">
                   <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#111', marginBottom: '12px', borderBottom: '2px solid #e2e8f0', paddingBottom: '6px' }}>Contact</h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '11px', color: '#475569' }}>
                     {mEmail && <span style={{ display: 'flex', alignItems: 'center', gap: '8px', wordBreak: 'break-all' }}><Mail size={14} style={{ color: accentColor }} /> {mEmail}</span>}
@@ -419,14 +584,14 @@ export default function ResumeContentRenderer({
               )}
 
               {mSkills && (
-                 <div>
+                 <div className="resume-section-wrapper">
                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#111', marginBottom: '12px', borderBottom: '2px solid #e2e8f0', paddingBottom: '6px' }}>Skills</h3>
                    <div style={{ fontSize: '11px', lineHeight: 1.6, color: '#334155' }}>{formatText(mSkills, false)}</div>
                  </div>
               )}
 
               {mLanguages && (
-                <div>
+                <div className="resume-section-wrapper">
                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#111', marginBottom: '12px', borderBottom: '2px solid #e2e8f0', paddingBottom: '6px' }}>Languages</h3>
                    <div style={{ fontSize: '11px', lineHeight: 1.6, color: '#334155' }}>{formatText(mLanguages, false)}</div>
                 </div>
@@ -441,7 +606,7 @@ export default function ResumeContentRenderer({
               </div>
 
               {mSummary && (
-                <div>
+                <div className="resume-section-wrapper">
                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#111', background: '#f1f5f9', padding: '6px 10px', borderRadius: '4px', textTransform: 'uppercase', marginBottom: '10px' }}>Career Objective</h3>
                    <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>{formatText(mSummary, false)}</div>
                 </div>
@@ -449,28 +614,28 @@ export default function ResumeContentRenderer({
 
               {/* Education First for Fresher */}
               {mEducation && (
-                <div>
+                <div className="resume-section-wrapper">
                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#111', background: '#f1f5f9', padding: '6px 10px', borderRadius: '4px', textTransform: 'uppercase', marginBottom: '10px' }}>Education</h3>
                    <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>{formatText(mEducation)}</div>
                 </div>
               )}
 
               {mCertifications && (
-                <div>
+                <div className="resume-section-wrapper">
                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#111', background: '#f1f5f9', padding: '6px 10px', borderRadius: '4px', textTransform: 'uppercase', marginBottom: '10px' }}>Certifications</h3>
                    <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>{formatText(mCertifications)}</div>
                 </div>
               )}
 
               {mAchievements && (
-                <div>
+                <div className="resume-section-wrapper">
                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#111', background: '#f1f5f9', padding: '6px 10px', borderRadius: '4px', textTransform: 'uppercase', marginBottom: '10px' }}>Achievements</h3>
                    <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>{formatText(mAchievements)}</div>
                 </div>
               )}
 
               {mProjects && (
-                <div>
+                <div className="resume-section-wrapper">
                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#111', background: '#f1f5f9', padding: '6px 10px', borderRadius: '4px', textTransform: 'uppercase', marginBottom: '10px' }}>Projects & Experience</h3>
                    <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>{formatText(mProjects)}</div>
                 </div>
@@ -494,7 +659,7 @@ export default function ResumeContentRenderer({
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
             {sections.map((sec, idx) => (
-              <div key={idx}>
+              <div className="resume-section-wrapper" key={idx}>
                 <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#0f172a', textTransform: 'uppercase', display: 'inline-block', borderBottom: `2px solid ${accentColor}`, paddingBottom: '2px', marginBottom: '8px' }}>{'//'} {sec.title}</h3>
                 <div style={{ fontSize: '12px', lineHeight: 1.8, color: '#334155', whiteSpace: 'pre-line' }}>{sec.content}</div>
               </div>
@@ -515,7 +680,7 @@ export default function ResumeContentRenderer({
             </div>
             <div style={{ padding: '30px 40px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
               {sections.map((sec, idx) => (
-                <div key={idx} style={{ display: 'flex', gap: '32px' }}>
+                <div key={idx} className="resume-section-wrapper" style={{ display: 'flex', gap: '32px' }}>
                   <div style={{ width: '140px', flexShrink: 0 }}>
                     <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: accentColor, textTransform: 'uppercase', textAlign: 'right' }}>{sec.title}</h3>
                   </div>
@@ -530,7 +695,7 @@ export default function ResumeContentRenderer({
 
       {/* 6. Creative */}
       {!activeBuilderConfig && !customBuilderConfig && templateStyle === 'creative' && (
-          <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', minHeight: '100%', width: '100%' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', minHeight: '100%', width: '100%', flex: '1' }}>
             {/* Left Sidebar */}
             <div style={{ background: `${accentColor}10`, padding: '40px 24px', display: 'flex', flexDirection: 'column', gap: '30px' }}>
               <div style={{ textAlign: 'center' }}>
@@ -546,7 +711,7 @@ export default function ResumeContentRenderer({
               </div>
               
               {hasContact && (
-                <div>
+                <div className="resume-section-wrapper">
                   <h3 style={{ fontSize: '13px', fontWeight: 900, color: accentColor, borderBottom: `2px solid ${accentColor}30`, paddingBottom: '6px', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '2px' }}>Contact</h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '11px', color: '#475569' }}>
                     {mEmail && <span style={{ display: 'flex', alignItems: 'center', gap: '12px', wordBreak: 'break-all' }}><Mail size={16} style={{ color: accentColor }} /> {mEmail}</span>}
@@ -559,14 +724,14 @@ export default function ResumeContentRenderer({
               )}
 
               {mSkills && (
-                 <div>
+                 <div className="resume-section-wrapper">
                    <h3 style={{ fontSize: '13px', fontWeight: 900, color: accentColor, borderBottom: `2px solid ${accentColor}30`, paddingBottom: '6px', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '2px' }}>Skills</h3>
                    <div style={{ fontSize: '11px', lineHeight: 1.6, color: '#334155' }}>{formatText(mSkills, false)}</div>
                  </div>
               )}
               
               {mLanguages && (
-                 <div>
+                 <div className="resume-section-wrapper">
                    <h3 style={{ fontSize: '13px', fontWeight: 900, color: accentColor, borderBottom: `2px solid ${accentColor}30`, paddingBottom: '6px', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '2px' }}>Languages</h3>
                    <div style={{ fontSize: '11px', lineHeight: 1.6, color: '#334155' }}>{formatText(mLanguages, false)}</div>
                  </div>
@@ -576,35 +741,35 @@ export default function ResumeContentRenderer({
             {/* Main Content */}
             <div style={{ padding: '40px 48px', display: 'flex', flexDirection: 'column', gap: '28px' }}>
               {mSummary && (
-                <div style={{ background: '#f8fafc', padding: '20px', borderRadius: '16px', border: `1px solid ${accentColor}30` }}>
+                <div className="resume-section-wrapper" style={{ background: '#f8fafc', padding: '20px', borderRadius: '16px', border: `1px solid ${accentColor}30` }}>
                    <h3 style={{ fontSize: '14px', fontWeight: 900, color: accentColor, textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '1px' }}>Profile</h3>
                    <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>{formatText(mSummary, false)}</div>
                 </div>
               )}
 
               {mProjects && (
-                <div style={{ background: '#fff', padding: '10px 0' }}>
+                <div className="resume-section-wrapper" style={{ background: '#fff', padding: '10px 0' }}>
                    <h3 style={{ fontSize: '14px', fontWeight: 900, color: accentColor, textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '1px' }}>Experience</h3>
                    <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>{formatText(mProjects)}</div>
                 </div>
               )}
 
               {mEducation && (
-                <div style={{ background: '#fff', padding: '10px 0' }}>
+                <div className="resume-section-wrapper" style={{ background: '#fff', padding: '10px 0' }}>
                    <h3 style={{ fontSize: '14px', fontWeight: 900, color: accentColor, textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '1px' }}>Education</h3>
                    <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>{formatText(mEducation)}</div>
                 </div>
               )}
 
               {mCertifications && (
-                <div style={{ background: '#fff', padding: '10px 0' }}>
+                <div className="resume-section-wrapper" style={{ background: '#fff', padding: '10px 0' }}>
                    <h3 style={{ fontSize: '14px', fontWeight: 900, color: accentColor, textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '1px' }}>Certifications</h3>
                    <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>{formatText(mCertifications)}</div>
                 </div>
               )}
 
               {mAchievements && (
-                <div style={{ background: '#fff', padding: '10px 0' }}>
+                <div className="resume-section-wrapper" style={{ background: '#fff', padding: '10px 0' }}>
                    <h3 style={{ fontSize: '14px', fontWeight: 900, color: accentColor, textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '1px' }}>Achievements</h3>
                    <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>{formatText(mAchievements)}</div>
                 </div>
@@ -625,7 +790,7 @@ export default function ResumeContentRenderer({
               )}
               
               {hasContact && (
-                <div>
+                <div className="resume-section-wrapper">
                   <h3 style={{ fontSize: '13px', fontWeight: 'bold', color: '#94a3b8', borderBottom: '1px solid #334155', paddingBottom: '8px', marginBottom: '16px', textTransform: 'uppercase' }}>Contact</h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '11px', color: '#cbd5e1' }}>
                     {mEmail && <span style={{ display: 'flex', alignItems: 'center', gap: '8px', wordBreak: 'break-all' }}><Mail size={14} style={{ color: '#94a3b8' }} /> {mEmail}</span>}
@@ -638,14 +803,14 @@ export default function ResumeContentRenderer({
               )}
 
               {mSkills && (
-                 <div>
+                 <div className="resume-section-wrapper">
                    <h3 style={{ fontSize: '13px', fontWeight: 'bold', color: '#94a3b8', borderBottom: '1px solid #334155', paddingBottom: '8px', marginBottom: '16px', textTransform: 'uppercase' }}>Expertise</h3>
                    <div style={{ fontSize: '11px', lineHeight: 1.6, color: '#cbd5e1' }}>{formatText(mSkills, false)}</div>
                  </div>
               )}
 
               {mLanguages && (
-                <div>
+                <div className="resume-section-wrapper">
                    <h3 style={{ fontSize: '13px', fontWeight: 'bold', color: '#94a3b8', borderBottom: '1px solid #334155', paddingBottom: '8px', marginBottom: '16px', textTransform: 'uppercase' }}>Languages</h3>
                    <div style={{ fontSize: '11px', lineHeight: 1.6, color: '#cbd5e1' }}>{formatText(mLanguages, false)}</div>
                 </div>
@@ -660,35 +825,35 @@ export default function ResumeContentRenderer({
               </div>
 
               {mSummary && (
-                <div>
+                <div className="resume-section-wrapper">
                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff', background: '#1e293b', padding: '4px 8px', textTransform: 'uppercase', marginBottom: '12px', display: 'inline-block' }}>Professional Summary</h3>
                    <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>{formatText(mSummary, false)}</div>
                 </div>
               )}
 
               {mProjects && (
-                <div>
+                <div className="resume-section-wrapper">
                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff', background: '#1e293b', padding: '4px 8px', textTransform: 'uppercase', marginBottom: '12px', display: 'inline-block' }}>Experience</h3>
                    <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>{formatText(mProjects)}</div>
                 </div>
               )}
 
               {mEducation && (
-                <div>
+                <div className="resume-section-wrapper">
                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff', background: '#1e293b', padding: '4px 8px', textTransform: 'uppercase', marginBottom: '12px', display: 'inline-block' }}>Education</h3>
                    <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>{formatText(mEducation)}</div>
                 </div>
               )}
 
               {mCertifications && (
-                <div>
+                <div className="resume-section-wrapper">
                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff', background: '#1e293b', padding: '4px 8px', textTransform: 'uppercase', marginBottom: '12px', display: 'inline-block' }}>Certifications</h3>
                    <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>{formatText(mCertifications)}</div>
                 </div>
               )}
 
               {mAchievements && (
-                <div>
+                <div className="resume-section-wrapper">
                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff', background: '#1e293b', padding: '4px 8px', textTransform: 'uppercase', marginBottom: '12px', display: 'inline-block' }}>Achievements</h3>
                    <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#334155', textAlign: 'justify' }}>{formatText(mAchievements)}</div>
                 </div>
@@ -705,7 +870,7 @@ export default function ResumeContentRenderer({
           <div style={{ fontSize: '12px', color: '#333', marginTop: '8px' }}>{email} • {phone} • {city}</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginTop: '24px' }}>
             {sections.map((sec, idx) => (
-              <div key={idx}>
+              <div className="resume-section-wrapper" key={idx}>
                 <h3 style={{ fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '5px' }}>{sec.title}</h3>
                 <div style={{ fontSize: '12px', textAlign: 'justify', whiteSpace: 'pre-line' }}>{sec.content}</div>
               </div>
@@ -726,7 +891,7 @@ export default function ResumeContentRenderer({
               </div>
               
               {hasContact && (
-                <div>
+                <div className="resume-section-wrapper">
                   <h3 style={{ fontSize: '12px', fontWeight: 800, color: '#0f172a', textTransform: 'uppercase', borderBottom: '1px solid #cbd5e1', paddingBottom: '4px', marginBottom: '10px' }}>Contact Info</h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '11px', color: '#334155' }}>
                     {mEmail && <span style={{ display: 'flex', alignItems: 'center', gap: '6px', wordBreak: 'break-all' }}><Mail size={12} /> {mEmail}</span>}
@@ -739,21 +904,21 @@ export default function ResumeContentRenderer({
               )}
 
               {mSkills && (
-                 <div>
+                 <div className="resume-section-wrapper">
                    <h3 style={{ fontSize: '12px', fontWeight: 800, color: '#0f172a', textTransform: 'uppercase', borderBottom: '1px solid #cbd5e1', paddingBottom: '4px', marginBottom: '10px' }}>Core Competencies</h3>
                    <div style={{ fontSize: '11px', lineHeight: 1.6, color: '#334155' }}>{formatText(mSkills, false)}</div>
                  </div>
               )}
 
               {mLanguages && (
-                 <div>
+                 <div className="resume-section-wrapper">
                    <h3 style={{ fontSize: '12px', fontWeight: 800, color: '#0f172a', textTransform: 'uppercase', borderBottom: '1px solid #cbd5e1', paddingBottom: '4px', marginBottom: '10px' }}>Languages</h3>
                    <div style={{ fontSize: '11px', lineHeight: 1.6, color: '#334155' }}>{formatText(mLanguages, false)}</div>
                  </div>
               )}
 
               {mCertifications && (
-                 <div>
+                 <div className="resume-section-wrapper">
                    <h3 style={{ fontSize: '12px', fontWeight: 800, color: '#0f172a', textTransform: 'uppercase', borderBottom: '1px solid #cbd5e1', paddingBottom: '4px', marginBottom: '10px' }}>Certifications</h3>
                    <div style={{ fontSize: '11px', lineHeight: 1.6, color: '#334155' }}>{formatText(mCertifications, false)}</div>
                  </div>
@@ -763,28 +928,28 @@ export default function ResumeContentRenderer({
             {/* Main Content */}
             <div style={{ padding: '30px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
               {mSummary && (
-                <div>
+                <div className="resume-section-wrapper">
                    <h3 style={{ fontSize: '13px', fontWeight: 800, color: accentColor, textTransform: 'uppercase', borderBottom: `1px solid ${accentColor}`, paddingBottom: '4px', marginBottom: '10px' }}>Professional Summary</h3>
                    <div style={{ fontSize: '12px', lineHeight: 1.6, color: '#1e293b', textAlign: 'justify' }}>{formatText(mSummary, false)}</div>
                 </div>
               )}
 
               {mProjects && (
-                <div>
+                <div className="resume-section-wrapper">
                    <h3 style={{ fontSize: '13px', fontWeight: 800, color: accentColor, textTransform: 'uppercase', borderBottom: `1px solid ${accentColor}`, paddingBottom: '4px', marginBottom: '10px' }}>Work Experience</h3>
                    <div style={{ fontSize: '12px', lineHeight: 1.6, color: '#1e293b', textAlign: 'justify' }}>{formatText(mProjects)}</div>
                 </div>
               )}
 
               {mEducation && (
-                <div>
+                <div className="resume-section-wrapper">
                    <h3 style={{ fontSize: '13px', fontWeight: 800, color: accentColor, textTransform: 'uppercase', borderBottom: `1px solid ${accentColor}`, paddingBottom: '4px', marginBottom: '10px' }}>Education</h3>
                    <div style={{ fontSize: '12px', lineHeight: 1.6, color: '#1e293b', textAlign: 'justify' }}>{formatText(mEducation)}</div>
                 </div>
               )}
 
               {mAchievements && (
-                <div>
+                <div className="resume-section-wrapper">
                    <h3 style={{ fontSize: '13px', fontWeight: 800, color: accentColor, textTransform: 'uppercase', borderBottom: `1px solid ${accentColor}`, paddingBottom: '4px', marginBottom: '10px' }}>Achievements</h3>
                    <div style={{ fontSize: '12px', lineHeight: 1.6, color: '#1e293b', textAlign: 'justify' }}>{formatText(mAchievements)}</div>
                 </div>
@@ -804,7 +969,7 @@ export default function ResumeContentRenderer({
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
             {sections.map((sec, idx) => (
-              <div key={idx} style={{ textAlign: 'center' }}>
+              <div key={idx} className="resume-section-wrapper" style={{ textAlign: 'center', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
                 <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: accentColor, textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '12px' }}>{sec.title}</h3>
                 <div style={{ fontSize: '12px', lineHeight: 1.8, color: '#444', whiteSpace: 'pre-line', textAlign: 'justify' }}>{sec.content}</div>
               </div>
@@ -822,7 +987,7 @@ export default function ResumeContentRenderer({
           </div>
           <div style={{ padding: '36px 30px' }}>
             {sections.map((sec, idx) => (
-              <div key={idx} style={{ marginBottom: '20px' }}>
+              <div key={idx} className="resume-section-wrapper" style={{ marginBottom: '20px' }}>
                 <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: accentColor, textTransform: 'uppercase' }}>{sec.title}</h3>
                 <p style={{ fontSize: '12px', whiteSpace: 'pre-line', textAlign: 'justify' }}>{sec.content}</p>
               </div>
@@ -839,6 +1004,7 @@ export default function ResumeContentRenderer({
       )}
       </>
       )}
+      </div>
     </div>
   );
 }

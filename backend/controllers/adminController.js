@@ -160,11 +160,26 @@ export async function getDashboardStats(req, res) {
        recentActivity = [{ id: 1, user: 'System', action: 'System Initialized', time: 'Just now', status: 'info' }];
     }
 
-    // Mock Notifications
-    const notifications = [
-      { id: 1, text: `System: Tracking ${users.length} users and ${resumes.length} resumes`, type: 'info' },
-      { id: 2, text: 'AI API: Active and responding quickly', type: 'success' }
-    ];
+    // Dynamic Notifications
+    const notifications = [];
+    
+    const unreadCount = messages.filter(m => m.status === 'Unread').length;
+    if (unreadCount > 0) {
+      notifications.push({ id: 'msg', text: `You have ${unreadCount} unread contact message${unreadCount > 1 ? 's' : ''}`, type: 'warning' });
+    }
+
+    if (todaysUsers > 0) {
+      notifications.push({ id: 'usr', text: `${todaysUsers} new user${todaysUsers > 1 ? 's' : ''} registered today`, type: 'success' });
+    }
+    
+    if (todaysAnalyses > 0) {
+      notifications.push({ id: 'res', text: `${todaysAnalyses} resume${todaysAnalyses > 1 ? 's' : ''} analyzed today`, type: 'info' });
+    }
+
+    if (notifications.length === 0) {
+      notifications.push({ id: 1, text: `System: Tracking ${users.length} users and ${resumes.length} resumes`, type: 'info' });
+      notifications.push({ id: 2, text: 'AI API: Active and responding quickly', type: 'success' });
+    }
 
     res.json({
       stats: {

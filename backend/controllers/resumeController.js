@@ -66,7 +66,7 @@ export async function reanalyzeResume(req, res) {
     if (!resume) {
       return res.status(404).json({ message: 'Resume not found.' });
     }
-    if (resume.userId !== req.user.id) {
+    if ((resume.userId !== req.user.id && req.user.role !== 'admin' && req.user.role !== 'super_admin')) {
       return res.status(403).json({ message: 'Not authorized.' });
     }
 
@@ -131,7 +131,7 @@ export async function getResumeById(req, res) {
       return res.status(404).json({ message: 'Resume analysis not found.' });
     }
 
-    if (resume.userId !== req.user.id) {
+    if ((resume.userId !== req.user.id && req.user.role !== 'admin' && req.user.role !== 'super_admin')) {
       return res.status(403).json({ message: 'Not authorized to view this resume.' });
     }
 
@@ -151,7 +151,7 @@ export async function deleteResume(req, res) {
       return res.status(404).json({ message: 'Resume analysis not found.' });
     }
 
-    if (resume.userId !== req.user.id) {
+    if ((resume.userId !== req.user.id && req.user.role !== 'admin' && req.user.role !== 'super_admin')) {
       return res.status(403).json({ message: 'Not authorized to delete this resume.' });
     }
 
@@ -179,7 +179,7 @@ export async function updateResume(req, res) {
       return res.status(404).json({ message: 'Resume not found.' });
     }
 
-    if (resume.userId !== req.user.id) {
+    if ((resume.userId !== req.user.id && req.user.role !== 'admin' && req.user.role !== 'super_admin')) {
       return res.status(403).json({ message: 'Not authorized to update this resume.' });
     }
 
@@ -200,7 +200,7 @@ export async function matchJob(req, res) {
 
     if (resumeId) {
       const resume = await db.resumes.findById(resumeId);
-      if (!resume || resume.userId !== req.user.id) {
+      if (!resume || (resume.userId !== req.user.id && req.user.role !== 'admin' && req.user.role !== 'super_admin')) {
         return res.status(404).json({ message: 'Resume not found.' });
       }
       textToMatch = resume.rawText;
@@ -225,7 +225,7 @@ export async function generateCoverLetterEndpoint(req, res) {
 
     if (resumeId) {
       const resume = await db.resumes.findById(resumeId);
-      if (!resume || resume.userId !== req.user.id) {
+      if (!resume || (resume.userId !== req.user.id && req.user.role !== 'admin' && req.user.role !== 'super_admin')) {
         return res.status(404).json({ message: 'Resume not found.' });
       }
       textToUse = resume.rawText;
@@ -250,7 +250,7 @@ export async function generateInterviewQuestionsEndpoint(req, res) {
 
     if (resumeId) {
       const resume = await db.resumes.findById(resumeId);
-      if (!resume || resume.userId !== req.user.id) {
+      if (!resume || (resume.userId !== req.user.id && req.user.role !== 'admin' && req.user.role !== 'super_admin')) {
         return res.status(404).json({ message: 'Resume not found.' });
       }
       textToUse = resume.rawText;
@@ -272,7 +272,7 @@ export async function fixSectionEndpoint(req, res) {
   try {
     const { sectionName, itemIndex, instruction } = req.body;
     const resume = await db.resumes.findById(req.params.id);
-    if (!resume || resume.userId !== req.user.id) {
+    if (!resume || (resume.userId !== req.user.id && req.user.role !== 'admin' && req.user.role !== 'super_admin')) {
       return res.status(404).json({ message: 'Resume not found.' });
     }
 
@@ -303,7 +303,7 @@ export async function agentChatEndpoint(req, res) {
   try {
     const { message, chatHistory } = req.body;
     const resume = await db.resumes.findById(req.params.id);
-    if (!resume || resume.userId !== req.user.id) {
+    if (!resume || (resume.userId !== req.user.id && req.user.role !== 'admin' && req.user.role !== 'super_admin')) {
       return res.status(404).json({ message: 'Resume not found.' });
     }
 
@@ -328,10 +328,11 @@ export async function agentChatStreamEndpoint(req, res) {
       if (!resume) {
         return res.status(404).json({ message: 'Resume not found.' });
       }
-      if (resume.userId !== req.user.id) {
+      if ((resume.userId !== req.user.id && req.user.role !== 'admin' && req.user.role !== 'super_admin')) {
         return res.status(403).json({ message: 'Not authorized to access this resume.' });
       }
-      textToUse = resume.rawText;
+      // We DO NOT override textToUse with resume.rawText here.
+      // The frontend sends the structured live state, which is much more accurate for the AI.
     }
 
     if (!textToUse) {

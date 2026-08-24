@@ -25,25 +25,7 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'fresher
   const [customHtml, setCustomHtml] = useState(resumeData?.customHtml || '');
   const [liveCustomTemplate, setLiveCustomTemplate] = useState(null);
 
-  useEffect(() => {
-    if (templateStyle === 'original') return;
-    fetch('/api/admin/templates')
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          const match = data.find(t => {
-            const staticMatch = TEMPLATES.find(st => st.name.includes(t.name) || (t.name && st.name.includes(t.name))) || TEMPLATES.find(st => st.id === t.theme?.toLowerCase()) || TEMPLATES[0];
-            return staticMatch.id === templateStyle;
-          });
-          if (match && match.customHtml) {
-            setLiveCustomTemplate(match.customHtml);
-          } else {
-            setLiveCustomTemplate(null);
-          }
-        }
-      })
-      .catch(() => {});
-  }, [templateStyle]);
+  // Custom template overrides are handled by resumeData.customHtml
   
   useEffect(() => {
     if (resumeData?.customHtml !== undefined && resumeData?.customHtml !== customHtml) {
@@ -107,18 +89,25 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'fresher
     if (!element) return;
     
     const originalTransform = element.style.transform;
+    const originalZoom = element.style.zoom;
     element.style.transform = 'scale(1)';
+    element.style.zoom = '100%';
     
     const opt = {
       margin:       0,
       filename:     `${(resumeData?.fileName || 'resume').replace(/\.pdf$/i, '')}.pdf`,
       image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true },
-      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak:    { mode: ['css', 'legacy'], avoid: ['h1', 'h2', 'h3', 'h4', '.resume-section-wrapper'] }
     };
+    
+    element.classList.add('pdf-exporting');
     
     html2pdf().set(opt).from(element).save().then(() => {
       element.style.transform = originalTransform;
+      element.style.zoom = originalZoom;
+      element.classList.remove('pdf-exporting');
       setShowPrintPreview(false);
     });
   };
@@ -131,7 +120,9 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'fresher
     
     if (printContainer) {
       const originalTransform = printContainer.style.transform;
+      const originalZoom = printContainer.style.zoom;
       printContainer.style.transform = 'scale(1)';
+      printContainer.style.zoom = '100%';
       
       const clone = printContainer.cloneNode(true);
       const printWrapper = document.createElement('div');
@@ -140,6 +131,7 @@ export default function LiveResumePreview({ resumeData, templateStyle = 'fresher
       document.body.appendChild(printWrapper);
       
       printContainer.style.transform = originalTransform;
+      printContainer.style.zoom = originalZoom;
       
       window.print();
       

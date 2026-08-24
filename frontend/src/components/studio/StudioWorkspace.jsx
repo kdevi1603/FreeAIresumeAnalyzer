@@ -244,7 +244,44 @@ Review the AI suggestions in the Studio to weave missing keywords into your expe
       // Add empty bot message that will be streamed into
       setChatMessages(prev => [...prev, { sender: 'bot', text: '', isStreaming: true }]);
 
-      const streamBody = await resumeService.streamAgentChat(activeResume.id, userText, chatMessages, activeResume.jobDescription, activeResume.rawText);
+      // Construct live context from current state to prevent hallucinations about missing sections
+      const hasSummary = !!(activeResume.fixedSummary || activeResume.summary || activeResume.personalInfo?.summary);
+      const hasExperience = (activeResume.fixedExperience?.length > 0) || (activeResume.experienceList?.length > 0);
+      const hasProjects = (activeResume.fixedProjects?.length > 0) || (activeResume.projects?.length > 0);
+      const hasSkills = !!(activeResume.fixedSkills || activeResume.skills || activeResume.skillsFound?.length > 0);
+      const hasEducation = !!(activeResume.fixedEducation || activeResume.education);
+
+      const liveResumeContext = `
+AVAILABLE SECTIONS:
+- summary: ${hasSummary ? 'PRESENT' : 'MISSING'}
+- projects: ${hasProjects ? 'PRESENT' : 'MISSING'}
+- skills: ${hasSkills ? 'PRESENT' : 'MISSING'}
+- education: ${hasEducation ? 'PRESENT' : 'MISSING'}
+- experience: ${hasExperience ? 'PRESENT' : 'MISSING'}
+
+Name: ${activeResume.personalInfo?.name || activeResume.personalInfo?.fullName || 'Not provided'}
+Title: ${activeResume.personalInfo?.jobTitle || 'Not provided'}
+
+SUMMARY:
+${hasSummary ? (activeResume.fixedSummary || activeResume.summary || activeResume.personalInfo?.summary) : 'Not provided'}
+
+SKILLS:
+${hasSkills ? (activeResume.fixedSkills || activeResume.skills || (Array.isArray(activeResume.skillsFound) ? activeResume.skillsFound.map(s => typeof s === 'string' ? s : s.skill).join(', ') : '')) : 'Not provided'}
+
+EXPERIENCE:
+${hasExperience ? (activeResume.fixedExperience || (activeResume.experienceList || []).map(e => `${e.jobTitle || 'Role'} at ${e.company || 'Company'}\n${e.description || ''}`).join('\n\n')) : 'Not provided'}
+
+PROJECTS:
+${hasProjects ? (activeResume.fixedProjects || (activeResume.projects || []).map(p => `${p.name || 'Project'}\n${p.description || ''}`).join('\n\n')) : 'Not provided'}
+
+EDUCATION:
+${hasEducation ? (activeResume.fixedEducation || activeResume.education) : 'Not provided'}
+
+CERTIFICATIONS:
+${activeResume.certifications || 'Not provided'}
+      `.trim();
+
+      const streamBody = await resumeService.streamAgentChat(activeResume.id, userText, chatMessages, activeResume.jobDescription, liveResumeContext);
       
       const reader = streamBody.getReader();
       const decoder = new TextDecoder("utf-8");
@@ -264,6 +301,8 @@ Review the AI suggestions in the Studio to weave missing keywords into your expe
               const data = JSON.parse(line.slice(6));
               if (data.error) {
                 fullText += `\n**Error:** ${data.error}`;
+              } else if (data.clear) {
+                fullText = '';
               } else if (data.text) {
                 fullText += data.text;
               }
@@ -272,7 +311,17 @@ Review the AI suggestions in the Studio to weave missing keywords into your expe
                 const newMessages = [...prev];
                 const lastMsg = newMessages[newMessages.length - 1];
                 if (lastMsg.sender === 'bot' && lastMsg.isStreaming) {
-                  lastMsg.text = fullText;
+                  lastMsg.rawText = fullText;
+                  lastMsg.text = fullText.replace(/<fix[^>]*>[\s\S]*?(?:<\/fix>|$)/gi, '').replace(/<\/?(?:section|main|article|div)[^>]*>/gi, '').replace(/\\\*/g, '*').trim();
+                  
+                  // Extract fixes dynamically during stream
+                  const fixes = [];
+                  const fixRegex = /<fix\s+section="([^"]+)">([\s\S]*?)(?:<\/fix>|$)/gi;
+                  let match;
+                  while ((match = fixRegex.exec(fullText)) !== null) {
+                    fixes.push({ section: match[1], content: match[2].trim() });
+                  }
+                  lastMsg.proposedFixes = fixes;
                 }
                 return newMessages;
               });
@@ -281,70 +330,79 @@ Review the AI suggestions in the Studio to weave missing keywords into your expe
         }
       }
       
-      // Post-process the full text to extract <fix> tags
-      let proposedFix = null;
-      let finalDisplayText = fullText;
       let autoApply = false;
-      const fixMatch = fullText.match(/<fix\s+section="([^"]+)">([\s\S]*?)<\/fix>/i);
+      const finalFixes = [];
+      const fixRegex = /<fix\s+section="([^"]+)">([\s\S]*?)(?:<\/fix>|$)/gi;
+      let match;
+      while ((match = fixRegex.exec(fullText)) !== null) {
+        finalFixes.push({
+          section: match[1],
+          content: match[2].trim(),
+          applied: false
+        });
+      }
       
-      if (fixMatch) {
-        proposedFix = {
-          section: fixMatch[1],
-          content: fixMatch[2].trim()
-        };
-        finalDisplayText = fullText.replace(/<fix\s+section="([^"]+)">([\s\S]*?)<\/fix>/gi, '').trim();
-        
-        // Auto apply if it was a quick keyword addition
-        const lastUserMsg = userText.toLowerCase();
-        if (lastUserMsg.includes('keyword') || lastUserMsg.includes('skill') || lastUserMsg.includes('add ')) {
-          autoApply = true;
-        }
+      let finalDisplayText = fullText.replace(/<fix[^>]*>[\s\S]*?(?:<\/fix>|$)/gi, '').replace(/<\/?(?:section|main|article|div)[^>]*>/gi, '').replace(/\\\*/g, '*').trim();
+      
+      const lastUserMsg = userText.toLowerCase();
+      if (finalFixes.length > 0 && (lastUserMsg.includes('keyword') || lastUserMsg.includes('skill') || lastUserMsg.includes('add '))) {
+        autoApply = true;
       }
 
       let newFinalMessages = [];
       setChatMessages(prev => {
          const newMessages = [...prev];
          const lastMsg = newMessages[newMessages.length - 1];
-         if (lastMsg.sender === 'bot') {
-            lastMsg.text = finalDisplayText;
-            lastMsg.isStreaming = false;
-            if (proposedFix) {
-               lastMsg.proposedFix = autoApply ? { ...proposedFix, applied: true } : proposedFix;
-            }
+         lastMsg.text = finalDisplayText || "Here are the updates for your resume:";
+         lastMsg.isStreaming = false;
+         if (finalFixes.length > 0) {
+           lastMsg.proposedFixes = finalFixes;
          }
          newFinalMessages = newMessages;
          return newMessages;
       });
       
-      if (proposedFix && autoApply) {
+      if (finalFixes.length > 0 && autoApply) {
         setShowSplitChat(true);
         setActiveResume(prev => {
           const updated = { ...prev };
-          const sec = proposedFix.section.toLowerCase();
-          if (sec.includes('project')) {
-            updated.fixedProjects = proposedFix.content;
-          } else if (sec.includes('skill')) {
-            updated.fixedSkills = proposedFix.content;
-          } else if (sec.includes('summary')) {
-            updated.fixedSummary = proposedFix.content;
-          } else if (sec.includes('education')) {
-            updated.fixedEducation = proposedFix.content;
-          } else if (sec.includes('format') || sec.includes('heading') || sec.includes('font') || sec.includes('bullet') || sec.includes('space')) {
-            updated.formattingCss = (updated.formattingCss || '') + '\n' + proposedFix.content;
-          } else if (sec.includes('github')) {
-            updated.personalInfo = { ...updated.personalInfo, github: proposedFix.content.trim() };
-          } else if (sec.includes('linkedin')) {
-            updated.personalInfo = { ...updated.personalInfo, linkedin: proposedFix.content.trim() };
-          } else if (sec.includes('email')) {
-            updated.personalInfo = { ...updated.personalInfo, email: proposedFix.content.trim() };
-          } else if (sec.includes('phone')) {
-            updated.personalInfo = { ...updated.personalInfo, phone: proposedFix.content.trim() };
-          } else {
-            updated.rawText = proposedFix.content;
-          }
+          finalFixes.forEach(fix => {
+            const sec = fix.section.toLowerCase();
+            if (sec.includes('project')) {
+              updated.fixedProjects = fix.content;
+            } else if (sec.includes('skill')) {
+              updated.fixedSkills = fix.content;
+            } else if (sec.includes('summary')) {
+              updated.fixedSummary = fix.content;
+            } else if (sec.includes('education')) {
+              updated.fixedEducation = fix.content;
+            } else if (sec.includes('format') || sec.includes('heading') || sec.includes('font') || sec.includes('bullet') || sec.includes('space')) {
+              updated.formattingCss = (updated.formattingCss || '') + '\n' + fix.content;
+            } else if (sec.includes('github')) {
+              updated.personalInfo = { ...updated.personalInfo, github: fix.content.trim() };
+            } else if (sec.includes('linkedin')) {
+              updated.personalInfo = { ...updated.personalInfo, linkedin: fix.content.trim() };
+            } else if (sec.includes('email')) {
+              updated.personalInfo = { ...updated.personalInfo, email: fix.content.trim() };
+            } else if (sec.includes('phone')) {
+              updated.personalInfo = { ...updated.personalInfo, phone: fix.content.trim() };
+            } else if (sec.includes('rawtext')) {
+              updated.rawText = fix.content;
+            }
+          });
           updated.atsScore = Math.min(100, (updated.atsScore || 41) + 4);
           updated.customHtml = '';
           return updated;
+        });
+        
+        // Mark the final fixes as applied in the UI
+        setChatMessages(prev => {
+          const newMessages = [...prev];
+          const lastMsg = newMessages[newMessages.length - 1];
+          if (lastMsg.proposedFixes) {
+            lastMsg.proposedFixes = lastMsg.proposedFixes.map(f => ({...f, applied: true}));
+          }
+          return newMessages;
         });
       }
 

@@ -19,7 +19,12 @@ export default function AdminPanel({ onLogout, onBackToLanding }) {
     return sessionStorage.getItem('adminAuth') === 'true' && !!localStorage.getItem('token');
   });
   const [activeTab, setActiveTab] = useState(() => {
-    return localStorage.getItem('adminTab') || 'dashboard';
+    const saved = localStorage.getItem('adminTab') || 'dashboard';
+    const currentRole = sessionStorage.getItem('adminRole') || 'admin';
+    if ((saved === 'support' || saved === 'admin_management' || saved === 'settings') && currentRole !== 'super_admin') {
+      return 'dashboard';
+    }
+    return saved;
   });
 
   useEffect(() => {
@@ -58,7 +63,7 @@ export default function AdminPanel({ onLogout, onBackToLanding }) {
     { id: 'skills_master', label: 'Skills Master', icon: BookOpen },
     { id: 'analytics', label: 'Analytics', icon: Activity },
     { id: 'support', label: 'Support & Feedback', icon: MessageSquare, role: 'super_admin' },
-    { id: 'settings', label: 'Settings', icon: Settings },
+    { id: 'settings', label: 'Settings', icon: Settings, role: 'super_admin' },
     { id: 'admin_management', label: 'Admin Management', icon: ShieldCheck, role: 'super_admin' },
   ];
 
@@ -73,7 +78,7 @@ export default function AdminPanel({ onLogout, onBackToLanding }) {
   };
 
   const renderContent = () => {
-    if ((activeTab === 'support' || activeTab === 'admin_management') && adminRole !== 'super_admin') {
+    if ((activeTab === 'support' || activeTab === 'admin_management' || activeTab === 'settings') && adminRole !== 'super_admin') {
       return (
         <div style={{ padding: '40px', textAlign: 'center', color: '#ef4444' }}>
           <Shield size={48} style={{ margin: '0 auto 16px' }} />
@@ -253,6 +258,7 @@ export default function AdminPanel({ onLogout, onBackToLanding }) {
                 sessionStorage.removeItem('adminRole');
                 sessionStorage.removeItem('adminName');
                 localStorage.removeItem('token');
+                localStorage.removeItem('adminToken');
               }}
               role={adminRole}
               name={adminName}

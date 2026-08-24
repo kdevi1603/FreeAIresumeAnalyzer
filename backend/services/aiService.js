@@ -714,58 +714,208 @@ ${jobDescription ? `Job Description Context:\n"""\n${jobDescription.slice(0, 200
   const prompt = `${systemInstruction}\n\n--- Chat History ---\n${historyString}\n\nUser: ${userMessage}\n\n[SYSTEM REMINDER: Detect the language of the User's message above (e.g., Tanglish, Tamil, or English). You MUST generate your ENTIRE response in that EXACT same language and script. If Tanglish, reply fully in Tanglish. DO NOT switch back to English.]\nAssistant:`;
 
   if (process.env.GEMINI_API_KEY) {
-    try {
-      const apiKey = process.env.GEMINI_API_KEY;
-      const isApiKey = apiKey.startsWith('AIza') || apiKey.startsWith('AQ.');
-      
-      console.log(`[Gemini Diagnostics] Found GEMINI_API_KEY.`);
-      console.log(`[Gemini Diagnostics] Key Prefix Detected: ${apiKey.startsWith('AIza') ? 'AIza' : (apiKey.startsWith('AQ.') ? 'AQ.' : 'Unknown')}`);
-      console.log(`[Gemini Diagnostics] Selected Model: gemini-flash-lite-latest`);
-      
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:streamGenerateContent?${isApiKey ? `key=${apiKey}&` : ''}alt=sse`;
-      const headers = { 'Content-Type': 'application/json' };
-      if (!isApiKey) headers['Authorization'] = `Bearer ${apiKey}`;
+    const apiKey = process.env.GEMINI_API_KEY;
+    const isApiKey = apiKey.startsWith('AIza') || apiKey.startsWith('AQ.');
+    
+    console.log(`[Gemini Diagnostics] Found GEMINI_API_KEY.`);
+    console.log(`[Gemini Diagnostics] Key Prefix Detected: ${apiKey.startsWith('AIza') ? 'AIza' : (apiKey.startsWith('AQ.') ? 'AQ.' : 'Unknown')}`);
+    console.log(`[Gemini Diagnostics] Selected Model: gemini-flash-lite-latest`);
+    
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:streamGenerateContent?${isApiKey ? `key=${apiKey}&` : ''}alt=sse`;
+    const headers = { 'Content-Type': 'application/json' };
+    if (!isApiKey) headers['Authorization'] = `Bearer ${apiKey}`;
 
-      const response = await fetch(url, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.7 }
-        })
-      });
+    const isTamilScript = /[\\u0B80-\\u0BFF]/.test(userMessage);
+    const requestId = Math.random().toString(36).substring(7);
 
-      if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(`Gemini API stream error (${response.status}): ${errText}`);
-      }
-
-      const stream = response.body;
-      stream.on('data', chunk => {
-        const lines = chunk.toString().split('\n');
-        for (const line of lines) {
-          if (line.startsWith('data: ') && line !== 'data: [DONE]') {
-            try {
-              const data = JSON.parse(line.slice(6));
-              const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-              if (text) {
-                res.write(`data: ${JSON.stringify({ text })}\n\n`);
-              }
-            } catch (e) {}
-          }
+    const attemptGeminiStream = async (retryCount = 0) => {
+      try {
+        let currentInstruction = systemInstruction;
+        if (retryCount > 0 && isTamilScript) {
+          currentInstruction += '\\n\\nCRITICAL PENALTY: Respond in Tamil Unicode script. Do not transliterate Tamil into English letters. Do not use Tanglish. English technical terms are allowed only when they are technical terms.';
         }
-      });
+        
+        console.log(`\\n=== REQUEST TRACE ===`);
+        console.log(`requestId: ${requestId}`);
+        console.log(`attempt: ${retryCount + 1}`);
+        console.log(`responseLanguage: ${isTamilScript ? 'ta' : 'en'}`);
+        console.log(`isTamilScript: ${isTamilScript}`);
 
-      stream.on('end', () => res.end());
-      return;
-    } catch (e) {
-      console.warn('Gemini stream failed', e);
-      if (!process.env.OPENAI_API_KEY) {
-         res.write(`data: ${JSON.stringify({ error: e.message })}\n\n`);
-         res.end();
-         return;
+        const historyString = chatHistory.map(m => (m.sender === 'user' ? 'User: ' : 'Assistant: ') + m.text).join('\\n');
+        const prompt = currentInstruction + "\\n\\n--- Chat History ---\\n" + historyString + "\\n\\nUser: " + userMessage + "\\n\\n[SYSTEM REMINDER: Detect the language of the User's message above (e.g., Tanglish, Tamil, or English). You MUST generate your ENTIRE response in that EXACT same language and script. If Tanglish, reply fully in Tanglish. DO NOT switch back to English.]\\nAssistant:";
+
+        const response = await fetch(url, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { temperature: retryCount > 0 ? 0.1 : 0.7 }
+          })
+        });
+
+        if (!response.ok) {
+          const errText = await response.text();
+          throw new Error(`Gemini API stream error (${response.status}): ${errText}`);
+        }
+
+        const stream = response.body;
+        let isBufferValidated = !isTamilScript;
+        let bufferText = '';
+        let aborted = false;
+
+        function validateTanglish(text) {
+          const allowedTerms = ['resume', 'ats', 'api', 'react', 'node.js', 'python', 'sql', 'mysql', 'javascript', 'html', 'css', 'flask', 'gemini', 'pdf', 'word', 'rest', 'json', 'ui', 'ux', 'ai', 'mern'];
+          let cleanText = text.toLowerCase();
+          let technicalTermsRemoved = [];
+          
+          allowedTerms.forEach(term => {
+            if (cleanText.includes(term)) {
+              technicalTermsRemoved.push(term);
+              cleanText = cleanText.split(term).join('');
+            }
+          });
+          cleanText = cleanText.replace(/<[^>]*>/g, '');
+          
+          const latinMatch = cleanText.match(/[a-z]/g);
+          const latinCount = latinMatch ? latinMatch.length : 0;
+          
+          const tamilMatch = text.match(/[\\u0B80-\\u0BFF]/g);
+          const tamilCount = tamilMatch ? tamilMatch.length : 0;
+          
+          let isTanglish = false;
+          if (cleanText.trim().length > 5) {
+            if (tamilCount === 0 && latinCount > 5) isTanglish = true;
+            if (latinCount > 15 && latinCount > tamilCount * 2) isTanglish = true;
+          }
+          
+          return {
+            isTanglish,
+            cleanText: cleanText.trim(),
+            tamilCount,
+            latinCount,
+            technicalTermsRemoved
+          };
+        }
+
+        function attemptRetryOrFallback(reason) {
+           aborted = true;
+           try { stream.cancel(); } catch (e) {} // Node.js fetch body
+           
+           console.log(`\\n=== RETRY ===`);
+           console.log(`retryTriggered: true`);
+           console.log(`retryReason: ${reason}`);
+           
+           if (retryCount < 2) {
+             res.write(`data: ${JSON.stringify({ clear: true })}\\n\\n`);
+             attemptGeminiStream(retryCount + 1);
+           } else {
+             const fallback = "மன்னிக்கவும். உங்கள் கேள்விக்கான பதிலை தமிழில் உருவாக்குவதில் சிக்கல் ஏற்பட்டுள்ளது. தயவுசெய்து மீண்டும் முயற்சிக்கவும்.";
+             console.log(`\\n=== FINAL ===`);
+             console.log(`finalResponse: ${fallback}`);
+             console.log(`finalValidationPassed: false`);
+             console.log(`fallbackUsed: true`);
+             
+             res.write(`data: ${JSON.stringify({ clear: true })}\\n\\n`);
+             res.write(`data: ${JSON.stringify({ text: fallback })}\\n\\n`);
+             res.end();
+           }
+        }
+
+        function safeWrite(textToWrite) {
+          let willWrite = true;
+          
+          console.log(`\\n=== CHUNK ===`);
+          console.log(`rawChunk: "${textToWrite.replace(/\\n/g, '\\\\n')}"`);
+          console.log(`accumulatedText: "${bufferText.replace(/\\n/g, '\\\\n')}"`);
+
+          if (isTamilScript) {
+             const v = validateTanglish(bufferText);
+             willWrite = !v.isTanglish;
+             
+             console.log(`\\n=== VALIDATION ===`);
+             console.log(`cleanText: "${v.cleanText.replace(/\\n/g, '\\\\n')}"`);
+             console.log(`tamilCount: ${v.tamilCount}`);
+             console.log(`latinCount: ${v.latinCount}`);
+             console.log(`isTanglish: ${v.isTanglish}`);
+             console.log(`isInitialGatePassed: ${isBufferValidated}`);
+             console.log(`isStreamValidated: ${willWrite}`);
+             console.log(`willWriteToSSE: ${willWrite}`);
+             
+             console.log(`\\n=== WRITE ===`);
+             console.log(`safeWriteCalled: true`);
+             console.log(`safeWriteBlocked: ${v.isTanglish}`);
+             
+             if (v.isTanglish) {
+               console.log(`resWriteCalled: false`);
+               console.log(`textWritten: ""`);
+               attemptRetryOrFallback("Tanglish detected");
+               return false;
+             }
+          }
+          
+          console.log(`resWriteCalled: true`);
+          console.log(`textWritten: "${textToWrite.replace(/\\n/g, '\\\\n')}"`);
+          res.write(`data: ${JSON.stringify({ text: textToWrite })}\\n\\n`);
+          return true;
+        }
+
+        let sseBuffer = '';
+        stream.on('data', chunk => {
+          if (aborted) return;
+          sseBuffer += chunk.toString();
+          const lines = sseBuffer.split('\\n');
+          sseBuffer = lines.pop(); 
+          
+          for (const line of lines) {
+            if (line.trim().startsWith('data: ') && line.trim() !== 'data: [DONE]') {
+              try {
+                const dataStr = line.trim().substring(6);
+                const data = JSON.parse(dataStr);
+                const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (text) {
+                  bufferText += text;
+                  if (!isBufferValidated) {
+                    const cleanBuffer = bufferText.replace(/<[^>]*>/g, '').trim();
+                    if (cleanBuffer.length >= 15) {
+                      const success = safeWrite(bufferText);
+                      if (success) isBufferValidated = true;
+                    }
+                  } else {
+                    safeWrite(text);
+                  }
+                }
+              } catch (e) {
+                // Ignore SSE json parse error
+              }
+            }
+          }
+        });
+
+        stream.on('end', () => {
+          if (aborted) return;
+          if (!isBufferValidated && bufferText.length > 0) {
+            safeWrite(bufferText);
+          }
+          if (!aborted) res.end();
+        });
+
+        stream.on('error', (err) => {
+          if (aborted) return;
+          throw err;
+        });
+      } catch (e) {
+        console.warn('Gemini stream failed', e);
+        if (retryCount < 2 && isTamilScript) {
+           attemptGeminiStream(retryCount + 1);
+        } else if (!process.env.OPENAI_API_KEY) {
+           res.write(`data: ${JSON.stringify({ error: e.message })}\\n\\n`);
+           res.end();
+        }
       }
-    }
+    };
+
+    await attemptGeminiStream(0);
+    return;
   }
 
   if (process.env.OPENAI_API_KEY) {

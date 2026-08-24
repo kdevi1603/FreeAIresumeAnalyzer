@@ -49,7 +49,7 @@ router.patch('/users/:id/block', toggleBlockUser);
 router.get('/resumes', getResumes);
 router.delete('/resumes/:id', deleteResume);
 
-// Templates
+// Admin Template Management
 router.get('/templates', getTemplates);
 router.post('/templates', addTemplate);
 router.put('/templates/:id', updateTemplate);
