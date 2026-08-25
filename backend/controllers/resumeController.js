@@ -318,7 +318,13 @@ export async function agentChatEndpoint(req, res) {
 
 export async function agentChatStreamEndpoint(req, res) {
   try {
-    const { message, chatHistory, jobDescription, resumeText } = req.body;
+    const { message, chatHistory, jobDescription, resumeText, requestId } = req.body;
+    
+    console.log(`\n=== 2 BACKEND CONTROLLER LOGS ===`);
+    console.log(`requestId: ${requestId}`);
+    console.log(`req.body message: ${message}`);
+    console.log(`req.body chatHistory length: ${chatHistory ? chatHistory.length : 0}`);
+    
     const resumeId = req.params.id;
     let textToUse = resumeText;
 
@@ -340,7 +346,7 @@ export async function agentChatStreamEndpoint(req, res) {
     }
 
     // Call the streaming service and pass the res object so it can pipe data
-    await agentChatStream(textToUse, jobDescription, message, chatHistory || [], res);
+    await agentChatStream(textToUse, jobDescription, message, chatHistory, res, requestId);
     
   } catch (error) {
     console.error('Agent Chat Stream Error:', error);

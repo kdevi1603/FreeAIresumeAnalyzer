@@ -234,6 +234,9 @@ Review the AI suggestions in the Studio to weave missing keywords into your expe
 
   
   const handleSendMessage = async (userText) => {
+    const requestId = 'req_' + Math.random().toString(36).substr(2, 9);
+    console.log(`\n=== CHAT REQUEST START ===\nrequestId: ${requestId}\nuserMessage: ${userText}\ndetectedLanguage: N/A (backend resolves)`);
+    console.log(`\n=== FRONTEND REQUEST SENT ===\nrequestId: ${requestId}\nendpoint: /api/resumes/${activeResume.id}/chat/stream\npayload: [message, chatHistory, etc]`);
     const newUserMsg = { sender: 'user', text: userText };
     setChatMessages(prev => [...prev, newUserMsg]);
     setIsTyping(true);
@@ -245,78 +248,136 @@ Review the AI suggestions in the Studio to weave missing keywords into your expe
       setChatMessages(prev => [...prev, { sender: 'bot', text: '', isStreaming: true }]);
 
       // Construct live context from current state to prevent hallucinations about missing sections
-      const hasSummary = !!(activeResume.fixedSummary || activeResume.summary || activeResume.personalInfo?.summary);
-      const hasExperience = (activeResume.fixedExperience?.length > 0) || (activeResume.experienceList?.length > 0);
-      const hasProjects = (activeResume.fixedProjects?.length > 0) || (activeResume.projects?.length > 0);
+      const personalInfo = activeResume.personalInfo || {};
+      const hasSummary = !!(activeResume.fixedSummary || (typeof activeResume.summary === 'string' && activeResume.summary.length > 0) || personalInfo.summary);
+      const hasExperience = !!(activeResume.fixedExperience || (activeResume.experienceList?.length > 0));
+      // Fallback: If fixedProjects isn't there, check if we have experienceList which acts as Projects & Experience
+      const hasProjects = !!(activeResume.fixedProjects || (activeResume.experienceList?.length > 0));
       const hasSkills = !!(activeResume.fixedSkills || activeResume.skills || activeResume.skillsFound?.length > 0);
       const hasEducation = !!(activeResume.fixedEducation || activeResume.education);
+      const hasCertifications = !!(activeResume.fixedCertifications || activeResume.certifications);
+      const hasAchievements = !!(activeResume.fixedAchievements || activeResume.achievements);
+      const hasLanguages = !!(activeResume.fixedLanguages || activeResume.languages || personalInfo.languages);
+      const hasContact = !!(personalInfo.email || personalInfo.phone || personalInfo.linkedin);
+
+      // Reusable formatting logic (matching UI renderer)
+      const formatExp = (list) => (list || []).map(exp => {
+        let header = '';
+        const isPlaceholder = exp.company === 'Extracted Experience' || exp.company === 'Original Content' || exp.company === 'Resume Experience Section';
+        if (!isPlaceholder && exp.company) header += exp.company;
+        if (exp.role) header += (header ? ' - ' : '') + exp.role;
+        return header ? header + '\n' + exp.bullets : exp.bullets;
+      }).join('\n\n');
 
       const liveResumeContext = `
-AVAILABLE SECTIONS:
-- summary: ${hasSummary ? 'PRESENT' : 'MISSING'}
-- projects: ${hasProjects ? 'PRESENT' : 'MISSING'}
-- skills: ${hasSkills ? 'PRESENT' : 'MISSING'}
-- education: ${hasEducation ? 'PRESENT' : 'MISSING'}
-- experience: ${hasExperience ? 'PRESENT' : 'MISSING'}
+The resume context below represents the user's CURRENT live resume state. Do not claim that a section or contact field is missing when it is marked PRESENT. Base resume improvement advice only on the supplied resume data. If a field is genuinely marked MISSING, you may mention that it is missing.
 
-Name: ${activeResume.personalInfo?.name || activeResume.personalInfo?.fullName || 'Not provided'}
-Title: ${activeResume.personalInfo?.jobTitle || 'Not provided'}
+AVAILABLE SECTIONS:
+- contact: ${hasContact ? 'PRESENT' : 'MISSING'}
+- summary: ${hasSummary ? 'PRESENT' : 'MISSING'}
+- skills: ${hasSkills ? 'PRESENT' : 'MISSING'}
+- experience: ${hasExperience ? 'PRESENT' : 'MISSING'}
+- projects: ${hasProjects ? 'PRESENT' : 'MISSING'}
+- education: ${hasEducation ? 'PRESENT' : 'MISSING'}
+- certifications: ${hasCertifications ? 'PRESENT' : 'MISSING'}
+- achievements: ${hasAchievements ? 'PRESENT' : 'MISSING'}
+- languages: ${hasLanguages ? 'PRESENT' : 'MISSING'}
+
+CONTACT & PERSONAL INFO:
+Name: ${personalInfo.name || personalInfo.fullName || 'Not provided'}
+Title: ${personalInfo.jobTitle || 'Not provided'}
+Email: ${personalInfo.email || 'Not provided'}
+Phone: ${personalInfo.phone || 'Not provided'}
+Location: ${personalInfo.city || personalInfo.location || 'Not provided'}
+LinkedIn: ${personalInfo.linkedin || 'Not provided'}
+Portfolio/Website: ${personalInfo.portfolio || personalInfo.website || 'Not provided'}
 
 SUMMARY:
-${hasSummary ? (activeResume.fixedSummary || activeResume.summary || activeResume.personalInfo?.summary) : 'Not provided'}
+${hasSummary ? (activeResume.fixedSummary || (typeof activeResume.summary === 'string' && activeResume.summary.length > 0 ? activeResume.summary : null) || personalInfo.summary) : 'Not provided'}
 
 SKILLS:
 ${hasSkills ? (activeResume.fixedSkills || activeResume.skills || (Array.isArray(activeResume.skillsFound) ? activeResume.skillsFound.map(s => typeof s === 'string' ? s : s.skill).join(', ') : '')) : 'Not provided'}
 
 EXPERIENCE:
-${hasExperience ? (activeResume.fixedExperience || (activeResume.experienceList || []).map(e => `${e.jobTitle || 'Role'} at ${e.company || 'Company'}\n${e.description || ''}`).join('\n\n')) : 'Not provided'}
+${hasExperience ? (activeResume.fixedExperience || formatExp(activeResume.experienceList)) : 'Not provided'}
 
 PROJECTS:
-${hasProjects ? (activeResume.fixedProjects || (activeResume.projects || []).map(p => `${p.name || 'Project'}\n${p.description || ''}`).join('\n\n')) : 'Not provided'}
+${hasProjects ? (activeResume.fixedProjects || formatExp(activeResume.experienceList)) : 'Not provided'}
 
 EDUCATION:
 ${hasEducation ? (activeResume.fixedEducation || activeResume.education) : 'Not provided'}
 
 CERTIFICATIONS:
-${activeResume.certifications || 'Not provided'}
-      `.trim();
+${hasCertifications ? (activeResume.fixedCertifications || activeResume.certifications) : 'Not provided'}
 
-      const streamBody = await resumeService.streamAgentChat(activeResume.id, userText, chatMessages, activeResume.jobDescription, liveResumeContext);
+ACHIEVEMENTS / AWARDS:
+${hasAchievements ? (activeResume.fixedAchievements || activeResume.achievements) : 'Not provided'}
+
+LANGUAGES:
+${hasLanguages ? (activeResume.fixedLanguages || activeResume.languages || personalInfo.languages) : 'Not provided'}
+`.trim();
+
+      if (import.meta.env?.DEV) {
+        console.log(`=== LIVE RESUME CONTEXT AUDIT ===
+Name: ${personalInfo.name || personalInfo.fullName || 'Not provided'}
+Email: ${personalInfo.email || 'Not provided'}
+Phone: ${personalInfo.phone || 'Not provided'}
+Location: ${personalInfo.city || personalInfo.location || 'Not provided'}
+LinkedIn: ${personalInfo.linkedin || 'Not provided'}
+Summary availability: ${hasSummary ? 'PRESENT' : 'MISSING'}
+Projects availability: ${hasProjects ? 'PRESENT' : 'MISSING'}
+Experience availability: ${hasExperience ? 'PRESENT' : 'MISSING'}
+Skills availability: ${hasSkills ? 'PRESENT' : 'MISSING'}
+Education availability: ${hasEducation ? 'PRESENT' : 'MISSING'}
+Certifications availability: ${hasCertifications ? 'PRESENT' : 'MISSING'}`);
+      }
+
+
+
+      const streamBody = await resumeService.streamAgentChat(activeResume.id, userText, chatMessages, activeResume.jobDescription, liveResumeContext, requestId);
       
       const reader = streamBody.getReader();
       const decoder = new TextDecoder("utf-8");
       
       let fullText = '';
+      let sseBuffer = '';
       
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
         
         const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n');
+        console.log(`\n=== FRONTEND SSE RECEIVED ===\nrequestId: ${requestId}\nrawData: ${chunk}`);
+        
+        sseBuffer += chunk;
+        const lines = sseBuffer.split('\n');
+        sseBuffer = lines.pop(); // Keep the incomplete line in the buffer
         
         for (const line of lines) {
           if (line.startsWith('data: ')) {
             try {
               const data = JSON.parse(line.slice(6));
+              console.log(`\n=== SSE PARSED EVENT ===\nrequestId: ${requestId}\nparsedText: ${data.text || data.clear || data.error || ''}`);
               if (data.error) {
                 fullText += `\n**Error:** ${data.error}`;
               } else if (data.clear) {
                 fullText = '';
               } else if (data.text) {
+                console.log(`\n=== FRONTEND PARSED TEXT ===\nrequestId: ${requestId}\nparsedText: ${data.text}`);
                 fullText += data.text;
               }
               
               setChatMessages(prev => {
                 const newMessages = [...prev];
                 const lastMsg = newMessages[newMessages.length - 1];
+                console.log(`\n=== UI STATE UPDATE ===\nrequestId: ${requestId}\naccumulatedText: ${fullText}`);
                 if (lastMsg.sender === 'bot' && lastMsg.isStreaming) {
                   lastMsg.rawText = fullText;
                   lastMsg.text = fullText.replace(/<fix[^>]*>[\s\S]*?(?:<\/fix>|$)/gi, '').replace(/<\/?(?:section|main|article|div)[^>]*>/gi, '').replace(/\\\*/g, '*').trim();
                   
                   // Extract fixes dynamically during stream
                   const fixes = [];
-                  const fixRegex = /<fix\s+section="([^"]+)">([\s\S]*?)(?:<\/fix>|$)/gi;
+                  const fixRegex = /<fix\s+section=["']?([^"'>\s]+)["']?[^>]*>([\s\S]*?)(?:<\/fix>|$)/gi;
                   let match;
                   while ((match = fixRegex.exec(fullText)) !== null) {
                     fixes.push({ section: match[1], content: match[2].trim() });
@@ -332,7 +393,7 @@ ${activeResume.certifications || 'Not provided'}
       
       let autoApply = false;
       const finalFixes = [];
-      const fixRegex = /<fix\s+section="([^"]+)">([\s\S]*?)(?:<\/fix>|$)/gi;
+      const fixRegex = /<fix\s+section=["']?([^"'>\s]+)["']?[^>]*>([\s\S]*?)(?:<\/fix>|$)/gi;
       let match;
       while ((match = fixRegex.exec(fullText)) !== null) {
         finalFixes.push({
@@ -361,6 +422,7 @@ ${activeResume.certifications || 'Not provided'}
          newFinalMessages = newMessages;
          return newMessages;
       });
+      console.log(`\n=== CHAT REQUEST END ===\nrequestId: ${requestId}\nfinalResponse: ${finalDisplayText || "Here are the updates for your resume:"}`);
       
       if (finalFixes.length > 0 && autoApply) {
         setShowSplitChat(true);
@@ -561,24 +623,6 @@ ${activeResume.certifications || 'Not provided'}
           </div>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
-          <button
-            onClick={downloadAnalysisReport}
-            className="btn btn-secondary"
-            style={{
-              padding: '10px 20px',
-              fontSize: '0.9rem',
-              borderRadius: '12px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              background: 'rgba(255,255,255,0.05)',
-              color: 'var(--text-main)',
-              border: '1px solid rgba(255,255,255,0.1)'
-            }}
-          >
-            <Download size={16} />
-            <span>Download Analysis</span>
-          </button>
           
           <button
             onClick={() => setShowBuilderModal(true)}

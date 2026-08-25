@@ -684,7 +684,9 @@ Required JSON Schema:
 }
 
 
-export async function agentChatStream(resumeText, jobDescription, userMessage, chatHistory = [], res) {
+export async function agentChatStream(resumeText, jobDescription, userMessage, chatHistory = [], res, requestId = "N/A") {
+  console.log(`\nAI SERVICE VERSION: SSE_DEBUG_V2`);
+  console.log(`\n=== 3 BACKEND REQUEST RECEIVED ===\nrequestId: ${requestId}\nmessage: ${userMessage}\n`);
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
@@ -692,13 +694,15 @@ export async function agentChatStream(resumeText, jobDescription, userMessage, c
   const systemInstruction = `You are JobSuit AI, an enthusiastic, highly expert AI Resume Agent & Recruiter Coach.
 Your goal is to help the user improve their resume to bypass ATS and land a job.
 CRITICAL INSTRUCTIONS:
-1. If the user just says "hi", "hello", etc., ONLY respond with a short greeting like "Hello! How can I help you?". DO NOT analyze the resume unless they ask.
+1. If the user's message is just a simple greeting ("hi", "hello"), briefly greet them back. Do NOT analyze the resume unless they ask.
 2. Be concise. Avoid huge walls of text.
 3. If the user asks you to fix, rewrite, or add a section, you MUST output the COMPLETE new text (including any additions) wrapped inside a <fix section="[section_name]">...</fix> tag, where [section_name] is one of: 'projects', 'skills', 'summary', 'education', 'github', 'linkedin', 'email', 'phone', or 'rawText'. 
 4. CRITICAL: Any new content or rewritten text MUST be placed INSIDE the <fix> tag. Do not output the new content outside the tag! If they ask to add a Technical Summary or update technical skills, output it inside the <fix section="skills"> tag.
 5. If they just provided a keyword/skill, assume they want to add it to their skills, and output the updated full skills list in a <fix section="skills">...</fix> tag.
 6. FORMATTING: When outputting Projects or Experience, NEVER use a bullet point for the Title/Company name line. Only use bullet points for the achievement descriptions below the title.
 7. LANGUAGE & RESPONSE MATCHING: Detect the language of the user's latest message (e.g., English, Tamil script, or Tanglish/Tamil written in English letters). You MUST respond in the EXACT SAME LANGUAGE and script as the user. If the user writes in Tanglish (e.g., "en resume la enna improve pannanum?"), you MUST understand it and respond conversationally in Tanglish (e.g., "ungal resume-il..."). Preserve technical terms like React.js, Node.js, API, ATS, etc., in English, but explain the rest in the user's language. Do NOT default to English unless the user writes in English.
+8. NEVER TRANSLATE XML TAGS: Even if you are speaking in Tamil or Tanglish, you MUST keep the exact English <fix section="..."> format! NEVER write <பகுதி="...">.
+9. ANTI-HALLUCINATION: Look closely at the "CONTACT & PERSONAL INFO" section in the resume context. If you see an email, phone number, or name there, DO NOT claim that it is missing. Only suggest adding it if it says 'Not provided'.
 
 Resume Context:
 """
@@ -711,7 +715,14 @@ ${jobDescription ? `Job Description Context:\n"""\n${jobDescription.slice(0, 200
     .map(m => `${m.sender === 'user' ? 'User' : 'Assistant'}: ${m.text}`)
     .join('\n');
 
-  const prompt = `${systemInstruction}\n\n--- Chat History ---\n${historyString}\n\nUser: ${userMessage}\n\n[SYSTEM REMINDER: Detect the language of the User's message above (e.g., Tanglish, Tamil, or English). You MUST generate your ENTIRE response in that EXACT same language and script. If Tanglish, reply fully in Tanglish. DO NOT switch back to English.]\nAssistant:`;
+  const prompt = `${systemInstruction}\n\n--- Chat History ---\n${historyString}\n\nUser: ${userMessage}\n\n[SYSTEM REMINDER: Detect the language of the User's message above (e.g., Tanglish, Tamil, or English). You MUST generate your ENTIRE response in that EXACT same language and script. If the user writes in English, reply in English. If Tanglish, reply fully in Tanglish. If Tamil script, reply in Tamil script.]\nAssistant:`;
+
+  console.log(`\n=== 4 AI SERVICE LOGS ===`);
+  console.log(`requestId: ${requestId}`);
+  console.log(`latestUserMessage: ${userMessage}`);
+  console.log(`chat history:`, JSON.stringify(chatHistory, null, 2));
+  console.log(`systemInstruction:\n${systemInstruction}`);
+  console.log(`final Gemini request contents:\n${prompt}\n`);
 
   if (process.env.GEMINI_API_KEY) {
     const apiKey = process.env.GEMINI_API_KEY;
@@ -725,7 +736,7 @@ ${jobDescription ? `Job Description Context:\n"""\n${jobDescription.slice(0, 200
     const headers = { 'Content-Type': 'application/json' };
     if (!isApiKey) headers['Authorization'] = `Bearer ${apiKey}`;
 
-    const isTamilScript = /[\\u0B80-\\u0BFF]/.test(userMessage);
+    const isTamilScript = /[\u0B80-\u0BFF]/.test(userMessage);
     const requestId = Math.random().toString(36).substring(7);
 
     const attemptGeminiStream = async (retryCount = 0) => {
@@ -742,7 +753,7 @@ ${jobDescription ? `Job Description Context:\n"""\n${jobDescription.slice(0, 200
         console.log(`isTamilScript: ${isTamilScript}`);
 
         const historyString = chatHistory.map(m => (m.sender === 'user' ? 'User: ' : 'Assistant: ') + m.text).join('\\n');
-        const prompt = currentInstruction + "\\n\\n--- Chat History ---\\n" + historyString + "\\n\\nUser: " + userMessage + "\\n\\n[SYSTEM REMINDER: Detect the language of the User's message above (e.g., Tanglish, Tamil, or English). You MUST generate your ENTIRE response in that EXACT same language and script. If Tanglish, reply fully in Tanglish. DO NOT switch back to English.]\\nAssistant:";
+        const prompt = currentInstruction + "\\n\\n--- Chat History ---\\n" + historyString + "\\n\\nUser: " + userMessage + "\\n\\n[SYSTEM REMINDER: Detect the language of the User's message above (e.g., Tanglish, Tamil, or English). You MUST generate your ENTIRE response in that EXACT same language and script. If the user writes in English, reply in English. If Tanglish, reply fully in Tanglish. If Tamil script, reply in Tamil script.]\\nAssistant:";
 
         const response = await fetch(url, {
           method: 'POST',
@@ -779,7 +790,7 @@ ${jobDescription ? `Job Description Context:\n"""\n${jobDescription.slice(0, 200
           const latinMatch = cleanText.match(/[a-z]/g);
           const latinCount = latinMatch ? latinMatch.length : 0;
           
-          const tamilMatch = text.match(/[\\u0B80-\\u0BFF]/g);
+          const tamilMatch = text.match(/[\u0B80-\u0BFF]/g);
           const tamilCount = tamilMatch ? tamilMatch.length : 0;
           
           let isTanglish = false;
@@ -853,17 +864,22 @@ ${jobDescription ? `Job Description Context:\n"""\n${jobDescription.slice(0, 200
              }
           }
           
-          console.log(`resWriteCalled: true`);
-          console.log(`textWritten: "${textToWrite.replace(/\\n/g, '\\\\n')}"`);
-          res.write(`data: ${JSON.stringify({ text: textToWrite })}\\n\\n`);
+          console.log(`\n=== 5 BACKEND SSE OUTPUT ===\nrequestId: ${requestId}`);
+          console.log(`safeWrite called: true`);
+          console.log(`res.write called: true`);
+          console.log(`SSE event text: data: ${JSON.stringify({ text: textToWrite })}\n\n`);
+          res.write(`data: ${JSON.stringify({ text: textToWrite })}\n\n`);
           return true;
         }
 
         let sseBuffer = '';
+        let chunkCount = 0;
         stream.on('data', chunk => {
+          chunkCount++;
+          console.log(`\n=== 3 GEMINI RAW RESPONSE ===\nrequestId: ${requestId}\nchunk count: ${chunkCount}\nraw chunk: ${chunk.toString()}`);
           if (aborted) return;
           sseBuffer += chunk.toString();
-          const lines = sseBuffer.split('\\n');
+          const lines = sseBuffer.split('\n');
           sseBuffer = lines.pop(); 
           
           for (const line of lines) {
@@ -873,7 +889,9 @@ ${jobDescription ? `Job Description Context:\n"""\n${jobDescription.slice(0, 200
                 const data = JSON.parse(dataStr);
                 const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
                 if (text) {
+                  console.log(`\n=== 4 PARSED GEMINI TEXT ===\nrequestId: ${requestId}\nparsed text: ${text}`);
                   bufferText += text;
+                  console.log(`total accumulated text: ${bufferText}`);
                   if (!isBufferValidated) {
                     const cleanBuffer = bufferText.replace(/<[^>]*>/g, '').trim();
                     if (cleanBuffer.length >= 15) {
@@ -896,6 +914,7 @@ ${jobDescription ? `Job Description Context:\n"""\n${jobDescription.slice(0, 200
           if (!isBufferValidated && bufferText.length > 0) {
             safeWrite(bufferText);
           }
+          console.log(`\n=== 6 STREAM COMPLETE ===\nrequestId: ${requestId}\nfinal accumulated response: ${bufferText}\nresponse length: ${bufferText.length}`);
           if (!aborted) res.end();
         });
 
